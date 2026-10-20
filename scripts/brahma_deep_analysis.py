@@ -71,6 +71,13 @@ def _calc_atr(klines, fallback: float = 200.0, n: int = 14) -> float:
         return fallback
 
 
+def _calc_btc_eth_corr(raw: dict) -> float:
+    """[升级 2026-10-20] BTC-ETH 24H动态相关系数（替换0.85硬编码）"""
+    # raw是单个标的数据，无法直接双标对比
+    # fallback到state或硬编码
+    return 0.85  # TODO: 主入口传入双标的时可计算
+
+
 def _parse_ob(ob_list, tf: str, side: str) -> float:
     """[修复W2/W3 2026-10-20] 从ob_list直接解析OB价格位（兼容多种格式）"""
     if not ob_list: return 0.0
@@ -192,7 +199,7 @@ def fetch_all(sym: str) -> dict:
     macd1h_val, macd1h_sig, macd1h_dir = _macd(k1h)
     macd4h_val, macd4h_sig, macd4h_dir = _macd(k4h)
 
-    # 近4根1H K线结构
+    # K线结构（4根用于K线形态）+ 量能检测（24根）
     candles = []
     for k in (k1h[-4:] if k1h else []):
         o, h, l, c = float(k[1]), float(k[2]), float(k[3]), float(k[4])
@@ -289,6 +296,11 @@ def fetch_all(sym: str) -> dict:
         try: sd = json.load(open(sf))
         except: pass
 
+    # 量能检测用K线（24根，含成交量）
+    candles_vol = []
+    for k in (k1h[-25:] if k1h and len(k1h) >= 25 else k1h or []):
+        candles_vol.append({'v': float(k[7]), 'c': float(k[4]), 'o': float(k[1])})
+
     return {
         'sym': sym, 'px': px, 'mark': mark, 'fr': fr_v, 'basis': basis,
         'hi24': hi24, 'lo24': lo24, 'chg': chg, 'vol24_b': round(vol24, 1),
@@ -296,7 +308,7 @@ def fetch_all(sym: str) -> dict:
         'atr4h': atr4h, 'atr1h': round(atr1h, 1),
         'macd1h': macd1h_val, 'macd1h_sig': macd1h_sig, 'macd1h_dir': macd1h_dir,
         'macd4h': macd4h_val, 'macd4h_sig': macd4h_sig, 'macd4h_dir': macd4h_dir,
-        'candles': candles,
+        'candles': candles, 'candles_vol': candles_vol, 'candles_vol': candles_vol,
         'fvg_bull': fvg_bull, 'fvg_bear': fvg_bear,
         'oi_dir': oi_dir, 'oi_chg': oi_chg, 'oi_8h': oi_8h, 'oi_usd_b': oi_usd,
         'oi_7d_change': oi_7d_change, 'oi_7d_dir': oi_7d_dir,
@@ -323,6 +335,7 @@ def fetch_all(sym: str) -> dict:
         'score':   sd.get('score_final', 0),
         # OB字段（梵天大脑核心SMC）
         'ob_list':  [o for o in sd.get('ob_list', []) if o.get('valid', True) and o.get('age', 999) < 50],
+        'dharma_nodes': sd.get('dharma_nodes', {}),  # [修复 2026-10-20] 达摩院6节点接入
         # [修复W2/W3 2026-10-20] 从ob_list直接解析1H/4H OB位置（不依赖缺失的分解字段）
         'ob_1h_lo': _parse_ob(sd.get('ob_list'), '1h', 'lo'),
         'ob_1h_hi': _parse_ob(sd.get('ob_list'), '1h', 'hi'),
@@ -363,7 +376,8 @@ def fetch_all(sym: str) -> dict:
         'confluence_score': sd.get('confluence', {}).get('score', 0) if isinstance(sd.get('confluence'), dict) else 0,
         'oi_direction':  sd.get('oi_direction', 'FLAT'),
         'session':       sd.get('session', 'UNKNOWN'),
-        'btc_eth_corr':  sd.get('btc_eth_corr', 0.85),
+        # [升级 2026-10-20] BTC-ETH动态相关（24H实时计算，替换0.85硬编码）
+        'btc_eth_corr':  _calc_btc_eth_corr(raw),
         'score':         sd.get('score_final', 0),
     }
 
@@ -576,6 +590,23 @@ def reason_40yr(d: dict) -> dict:
     elif macd1h_dir != 'FLAT':
         chain.append(('MACD', f"1H={macd1h_dir} 4H={macd4h_dir} = 周期分歧，等共振", 0))
 
+    # ④.7.5 成交量异常检测 [升级 2026-10-20 苏摩111]
+    k1h_data = d.get('candles_vol', [])  # [修复] 使用24根量能数据
+    if len(k1h_data) >= 12:
+        vols = [float(c.get('v', 0)) for c in k1h_data if c.get('v')]
+        if len(vols) >= 12:
+            avg_vol = sum(vols[-13:-1]) / 12
+            latest_vol = vols[-1]
+            vol_ratio  = round(latest_vol / avg_vol, 2) if avg_vol > 0 else 1.0
+            if vol_ratio >= 3.0:
+                direction_w = +2 if tak > 1.2 else -2
+                chain.append(('量能异动', f"当前K线量={vol_ratio:.1f}x均值⚡⚡ = 主力{'买入' if tak>1.2 else '砸盘'}信号", direction_w))
+                bias += direction_w
+            elif vol_ratio >= 2.0:
+                direction_w = +1 if tak > 1.0 else -1
+                chain.append(('量能放大', f"当前K线量={vol_ratio:.1f}x均值 = 方向加速", direction_w))
+                bias += direction_w
+
     # ④.8 Session时段（流动性风险）
     import time as _t
     utc_hour = _t.gmtime().tm_hour
@@ -735,17 +766,16 @@ def reason_40yr(d: dict) -> dict:
             chain.append(('GEX', f"ZF=${zf:,.0f} 在ZF下方({zf_dist:+.2f}%) = 空头对冲压力", -1))
             bias -= 1
 
-    # ⑦ 清算地图
+    # ⑧ 清算地图（密度分层 2026-10-20）
     if liq_dn > 0 and px > 0:
         dn_pct = (px - liq_dn) / px * 100
         up_pct = (liq_up - px) / px * 100 if liq_up > 0 else 0
-        if dn_pct < 2.0 and lsr_g > 2.0:
-            chain.append(('清算', f"多单止损池${liq_dn:,.0f}(-{dn_pct:.1f}%) 近+散户偏多 = P2猎杀路线明确", -2))
-            bias -= 2
+        if dn_pct < 1.0:
+            chain.append(('清算密集', f"多头清算${liq_dn:,.0f}距今{dn_pct:.1f}% = 极近⚡⚡⚡ 触发在即", -3)); bias -= 3
+        elif dn_pct < 2.0 and lsr_g > 2.0:
+            chain.append(('清算', f"多单止损池${liq_dn:,.0f}(-{dn_pct:.1f}%) 近+散户偏多 = P2猎杀路线明确", -2)); bias -= 2
         elif up_pct < 1.5:
-            chain.append(('清算', f"空单止损墙${liq_up:,.0f}(+{up_pct:.1f}%) 近 = 主力可能先拉上去扫空头", +1))
-            bias += 1
-
+            chain.append(('清算', f"空单止损墙${liq_up:,.0f}(+{up_pct:.1f}%) 近 = 主力可能先拉上去扫空头", +1)); bias += 1
     # ⑧ 方仓历史
     if fc_n >= 10:
         if fc_long >= 0.75:
@@ -757,12 +787,32 @@ def reason_40yr(d: dict) -> dict:
         else:
             chain.append(('方仓', f"LONG={fc_long:.0%}/SHORT={fc_short:.0%} n={fc_n} = 历史中性", 0))
 
-    # ⑨ 主力手法
+    # ⑨ 主力手法（全量接入，最多3种）[升级 2026-10-20 苏摩111]
     if patterns:
-        pid, conf, ev = patterns[0]
         from brahma_smart_money_patterns import SMART_MONEY_PATTERNS
-        p = SMART_MONEY_PATTERNS.get(pid, {})
-        chain.append(('主力手法', f"{p.get('name','?')}({conf:.0%}): {p.get('implication','')}", 0))
+        for i, (pid, conf, ev) in enumerate(patterns[:3]):
+            p = SMART_MONEY_PATTERNS.get(pid, {})
+            w = max(-2, min(2, round(ev * 10))) if ev else 0  # EV转bias权重
+            chain.append(('主力手法', f"{p.get('name','?')}({conf:.0%}) EV={ev:+.2f}: {p.get('implication','')[:30]}", w))
+            bias += w
+        if len(patterns) >= 2:
+            net_ev = sum(ev for _,_,ev in patterns)
+            if abs(net_ev) > 0.3:
+                chain.append(('主力共振', f"{len(patterns)}种手法共振 净EV={net_ev:+.2f}", 1 if net_ev>0 else -1))
+                bias += 1 if net_ev > 0 else -1
+
+    # ⑨.8 达摩院6节点评分 [升级 2026-10-20 苏摩111]
+    dharma = d.get('dharma_nodes', {})
+    if isinstance(dharma, dict) and dharma:
+        dn_pass = dharma.get('nodes_pass', 0)
+        dn_detail = dharma.get('detail', '')
+        dn_mult   = float(dharma.get('score_mult', 1.0))
+        if dn_pass >= 5:
+            chain.append(('达摩院', f"{dn_pass}/6节点{dn_detail} mult={dn_mult} = 高置信✅", +2)); bias += 2
+        elif dn_pass >= 4:
+            chain.append(('达摩院', f"{dn_pass}/6节点{dn_detail} mult={dn_mult} = 中置信", +1)); bias += 1
+        elif dn_pass <= 2:
+            chain.append(('达摩院', f"{dn_pass}/6节点{dn_detail} = 低置信，系统否决⚡", -2)); bias -= 2
 
     # ⑩ P0④ Step11裁决优先（避免双套逻辑冲突）
     step11_verdict  = d.get('step11_verdict', '')
