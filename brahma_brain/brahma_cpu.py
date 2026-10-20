@@ -342,12 +342,23 @@ def _do_alert(symbol: str, signal_dir: str, score_result: dict,
             _ph = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ph)
             _ph.push_jarvis(msg, priority='P1')
         except Exception as _pe:
-            import subprocess as _sp2
-            _sp2.Popen(['openclaw','message','send',
-                '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
-                '--channel', 'jarvis',
-                '--message', msg[:2000]],
-                stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
+            # [封印 2026-10-20 苏摩111] sync retry(x2) → 最终降级Popen
+            _delivered = False
+            for _attempt in range(2):
+                try:
+                    _spec2 = _ilu.spec_from_file_location('push_hub',
+                        _pl.Path(__file__).parent.parent / 'scripts' / 'push_hub.py')
+                    _ph2 = _ilu.module_from_spec(_spec2); _spec2.loader.exec_module(_ph2)
+                    _ph2.push_jarvis(msg, priority='P1'); _delivered = True; break
+                except Exception:
+                    import time as _t2; _t2.sleep(1)
+            if not _delivered:
+                import subprocess as _sp2
+                _sp2.Popen(['openclaw','message','send',
+                    '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
+                    '--channel', 'jarvis',
+                    '--message', msg[:2000]],
+                    stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL)
     except Exception as e:
         _log.warning(f'[CPU·ALERT] 推送失败: {e}')
 
@@ -572,12 +583,23 @@ def process_event(symbol: str, signal_dir: str = None,
                     _ph = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ph)
                     _ph.push_jarvis(_astra_msg, priority='P2')
                 except Exception as _pe:
-                    import subprocess as _sp
-                    _sp.Popen(['openclaw','message','send',
-                        '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
-                        '--channel', 'jarvis',
-                        '--message', _astra_msg[:2000]],
-                        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+                    # [封印 2026-10-20 苏摩111] sync retry(x2)
+                    _delivered2 = False
+                    for _attempt2 in range(2):
+                        try:
+                            _spec3 = _ilu.spec_from_file_location('push_hub',
+                                _pl.Path(__file__).parent.parent / 'scripts' / 'push_hub.py')
+                            _ph3 = _ilu.module_from_spec(_spec3); _spec3.loader.exec_module(_ph3)
+                            _ph3.push_jarvis(_astra_msg, priority='P2'); _delivered2 = True; break
+                        except Exception:
+                            import time as _t3; _t3.sleep(1)
+                    if not _delivered2:
+                        import subprocess as _sp
+                        _sp.Popen(['openclaw','message','send',
+                            '--to', f'{_JARVIS_USER}:thread:{_JARVIS_THREAD}',
+                            '--channel', 'jarvis',
+                            '--message', _astra_msg[:2000]],
+                            stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
                 _log.info(f'[Astra③] {symbol} {signal_dir} 连续WAIT推送')
         else:
             _wc[_wait_key] = 0  # 有动作则重置

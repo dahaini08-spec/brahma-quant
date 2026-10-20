@@ -358,3 +358,5 @@ print('[deep_analysis] 完成', time.strftime('%H:%M'))
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/brahma_42_monitor.py --mode quick >> logs/monitor_42.log 2>&1
 # L2深度: 每30分钟，含方仓匹配，有信号推送
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 40 python3 scripts/brahma_42_monitor.py --mode signal >> logs/monitor_42.log 2>&1
+# [封印 2026-10-20 苏摩111] ①state_refresh两档刷新：43分=轻量（只GEX价格），13分=完整（含fangcang）
+43 * * * * cd /root/.openclaw/workspace/trading-system && BRAHMA_NO_LLM=1 timeout 60 python3 -c "import sys; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain'); from brahma_state_refresh import _inject_gex_to_state; _inject_gex_to_state(); print('[quick_refresh] GEX done')" >> logs/state_refresh.log 2>&1
