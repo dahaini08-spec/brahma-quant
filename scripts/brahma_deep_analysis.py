@@ -246,13 +246,7 @@ def fetch_all(sym: str) -> dict:
 
 def enrich(d: dict) -> dict:
     sym = d['sym']
-    # 自动注入最新state（修复断裂点①：state过期问题）
-    try:
-        from brahma_state_refresh import _inject_gex_to_state, _inject_fangcang_to_state
-        _inject_gex_to_state()
-        _inject_fangcang_to_state()
-    except Exception:
-        pass
+    # state_refresh已在run_deep_analysis()入口统一调用一次，此处不重复
     try:
         import fangcang_engine as fe
         fe._CACHE_LOADED = False; fe._FANGCANG_CACHE = []
@@ -816,6 +810,17 @@ def run_deep_analysis(symbols: list = None) -> str:
         symbols = ['BTC', 'ETH']
 
     t_total = time.time()
+
+    # 入口注入state（只注入GEX，不重载fangcang避免慢）
+    # fangcang由state_refresh cron每小时:13写入，此处只补GEX ZF
+    _state_f = BASE / 'data' / 'brahma_state_btc.json'
+    _state_age = (time.time() - _state_f.stat().st_mtime) if _state_f.exists() else 9999
+    if _state_age > 3600:  # state超过1小时才强制刷新
+        try:
+            from brahma_state_refresh import _inject_gex_to_state
+            _inject_gex_to_state()
+        except Exception:
+            pass
 
     # 并发拉取+enrichment
     with ThreadPoolExecutor(max_workers=len(symbols)) as ex:

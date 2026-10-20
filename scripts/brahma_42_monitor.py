@@ -154,7 +154,7 @@ def l2_fangcang_match(sym: str, score: int) -> dict:
         return {'fc_n': 0, 'fc_long': 0.5, 'fc_conf': 'LOW'}
     try:
         import fangcang_engine as fe
-        fe._CACHE_LOADED = False; fe._FANGCANG_CACHE = []
+        # 复用进程级缓存，避免每次重载40913案例
         from fangcang_engine import fangcang_context_match as fcm
         # 用score估算bbw/rsi（轻量代理）
         bbw = max(0.5, 2.0 - score/50.0)

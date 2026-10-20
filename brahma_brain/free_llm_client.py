@@ -95,8 +95,8 @@ def _groq_chat(messages: list, max_tokens: int = 200, timeout: int = 20) -> str:
         code = getattr(e, 'status_code', 0) or getattr(
             getattr(e, 'response', None), 'status_code', 0)
         if code == 429:
-            _groq_backoff_until = time.time() + 300
-            print('[groq] 429 backoff 5min', file=sys.stderr)
+            _groq_backoff_until = time.time() + 30  # 30s快速重试，配额耗尽会持续429
+            print('[groq] 429 backoff 30s', file=sys.stderr)
         elif code in (402, 401):
             print(f'[groq] {code} key问题', file=sys.stderr)
         return ''
@@ -134,8 +134,8 @@ def _or_chat(messages: list, max_tokens: int = 200, timeout: int = 25) -> str:
         return content.strip()
     except urllib.error.HTTPError as e:
         if e.code == 429:
-            _or_backoff_until = time.time() + 300
-            print('[or] 429 backoff 5min', file=sys.stderr)
+            _or_backoff_until = time.time() + 30  # 30s快速重试
+            print('[or] 429 backoff 30s', file=sys.stderr)
         return ''
     except Exception:
         return ''
@@ -287,18 +287,28 @@ def council_three_way(
         ),
     }
 
+    # 快速检测：若free AI全在backoff，直接规则判断（避免每路1~2s subprocess等待）
+    free_available = (time.time() >= _groq_backoff_until) or (time.time() >= _or_backoff_until)
+
     votes = {}
-    with _cf.ThreadPoolExecutor(max_workers=3) as ex:
-        futures = {ex.submit(chat, p, task='council', max_tokens=10): role
-                   for role, p in prompts.items()}
-        for fut in _cf.as_completed(futures):
-            role = futures[fut]
-            try:
-                v = (fut.result() or 'WAIT').strip().upper()
-                v = v if v in ('LONG', 'SHORT', 'WAIT') else 'WAIT'
-                votes[role] = v
-            except Exception:
-                votes[role] = 'WAIT'
+    if not free_available:
+        # 规则快速判断（<1ms，不走subprocess）
+        verdict = 'WAIT'
+        if oi_signal == 'LONG_BUILD' and fvg_dir == 'BULL': verdict = 'LONG'
+        elif oi_signal == 'SHORT_BUILD' and fvg_dir == 'BEAR': verdict = 'SHORT'
+        votes = {'macro': verdict, 'structure': verdict, 'quant': verdict}
+    else:
+        with _cf.ThreadPoolExecutor(max_workers=3) as ex:
+            futures = {ex.submit(chat, p, task='council', max_tokens=10): role
+                       for role, p in prompts.items()}
+            for fut in _cf.as_completed(futures):
+                role = futures[fut]
+                try:
+                    v = (fut.result() or 'WAIT').strip().upper()
+                    v = v if v in ('LONG', 'SHORT', 'WAIT') else 'WAIT'
+                    votes[role] = v
+                except Exception:
+                    votes[role] = 'WAIT'
 
     # 多数投票
     from collections import Counter

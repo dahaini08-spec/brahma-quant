@@ -339,7 +339,6 @@ if pathlib.Path(f).exists():
 # ── [封印 2026-10-19 苏摩111] 梵天2.0强制深度分析+神经感知 ───────────────
 # 每小时:20深度分析BTC+ETH并缓存到data/deep_analysis_latest.json
 20 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "
-import sys,json; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain')
 from brahma_deep_analysis import run_deep_analysis, fetch_all, enrich, reason_40yr
 from pathlib import Path
 import time

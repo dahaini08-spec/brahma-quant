@@ -270,10 +270,11 @@ def _notify_warn(state: dict) -> None:
         target = _push_target()
         if not target:
             return
-        import subprocess
         msg = f'⚠️ 梵天Drawdown WARN\n回撤{state["drawdown_pct"]}%≥5%\n降仓50%，暂停新信号3天\n峰值NAV=${state["peak_nav"]:.2f}'
-        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to', target,
-                         '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            import sys as _sys; _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'scripts'))
+            from push_hub import push_jarvis; push_jarvis(msg, priority='P0')
+        except Exception: pass
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_halt(state: dict) -> None:
     """notify halt"""
@@ -281,10 +282,11 @@ def _notify_halt(state: dict) -> None:
         target = _push_target()
         if not target:
             return
-        import subprocess
         msg = f'🛑 梵天Drawdown HALT\n回撤{state["drawdown_pct"]}%≥10%\n暂停所有自动执行\n需苏摩111重启\n峰值NAV=${state["peak_nav"]:.2f}'
-        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to', target,
-                         '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            import sys as _sys; _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'scripts'))
+            from push_hub import push_jarvis; push_jarvis(msg, priority='P0')
+        except Exception: pass
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 def _notify_lockout(state: dict) -> None:
     """notify lockout"""
@@ -292,10 +294,11 @@ def _notify_lockout(state: dict) -> None:
         target = _push_target()
         if not target:
             return
-        import subprocess
         msg = f'🚨 梵天Drawdown LOCKOUT\n回撤{state["drawdown_pct"]}%≥15%\n系统级锁定\n需苏摩111全面复盘后重启\n峰值NAV=${state["peak_nav"]:.2f}'
-        subprocess.Popen(['openclaw', 'message', '--channel', 'jarvis', '--to', target,
-                         '--message', msg], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        try:
+            import sys as _sys; _sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent.parent / 'scripts'))
+            from push_hub import push_jarvis; push_jarvis(msg, priority='P0')
+        except Exception: pass
     except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
 if __name__ == '__main__':
     import sys
