@@ -303,6 +303,7 @@ def fetch_all(sym: str) -> dict:
 
     return {
         'sym': sym, 'px': px, 'mark': mark, 'fr': fr_v, 'basis': basis,
+        'fr_hist_vals': [float(x.get('fundingRate', x.get('rate', 0))) for x in (raw.get('fr_h') or [])[-20:]],
         'hi24': hi24, 'lo24': lo24, 'chg': chg, 'vol24_b': round(vol24, 1),
         'rsi_1h': rsi_1h, 'rsi_4h': rsi_4h, 'rsi_1d': rsi_1d,
         'atr4h': atr4h, 'atr1h': round(atr1h, 1),
@@ -421,7 +422,7 @@ def reason_40yr(d: dict) -> dict:
     sym = d['sym']; px = d['px']
     atr4h = d['atr4h']; atr1h = d['atr1h']
     rsi = d['rsi_1h']; rsi_4h = d['rsi_4h']
-    lsr_g = d['lsr_g']; lsr_p = d['lsr_p']
+    lsr_g = d['lsr_g']; lsr_p = d['lsr_p']; lsr_t = d.get('lsr_t', lsr_p)
     tak = d['tak']; tak_avg = d['tak_avg']
     oi_dir = d['oi_dir']; oi_8h = d['oi_8h']
     ba = d['ba']
@@ -508,6 +509,14 @@ def reason_40yr(d: dict) -> dict:
     elif lsr_g > 1.8:
         chain.append(('LSR散户', f"={lsr_g} = 偏多但未到猎杀阈值", -1)); bias -= 1
     # 大户仓位 vs 散户账户分离
+    # [升级 2026-10-20] LSR大户3路综合（账户/仓位交叉 = 最强信号）
+    if lsr_t > lsr_p * 1.15 and lsr_g > 2.0:
+        # 大户账户多/空比 > 大户仓位多/空比 → 正在加杠杆做多，散户却更多
+        chain.append(('LSR大户', f"账户{lsr_t}>仓位{lsr_p}(+{lsr_t-lsr_p:.2f}) = 大户加杠杆单向下注最强信号", -2 if lsr_g>2.5 else -1))
+        bias += -2 if lsr_g > 2.5 else -1
+    elif lsr_t < lsr_p * 0.85:
+        # 大户账户比小于仓位 → 大户在减仓/多头平仓
+        chain.append(('LSR大户', f"账户{lsr_t}<仓位{lsr_p}(-{lsr_p-lsr_t:.2f}) = 大户减仓中，方向弱化", 0))
     if lsr_p > 1.5 and lsr_g > 2.0:
         chain.append(('LSR背离', f"大户仓位{lsr_p}<散户{lsr_g} = 大户做多但散户更多，主力可能在等清算", -1))
         bias -= 1
@@ -569,16 +578,28 @@ def reason_40yr(d: dict) -> dict:
     elif oi_7d_dir == 'EXPAND' and oi_7d > 5:
         chain.append(('OI7D', f"7日OI扩张{oi_7d:+.1f}% = 主力持续建仓，趋势强化", +1)); bias += 1
 
-    # ④.6.5 FR趋势判断（基于d字段，无需raw）[修复 2026-10-20 苏摩111]
+    # ④.6.5 FR历史趋势（5期vs20期均值）[升级 2026-10-20 苏摩111]
     fr_now   = float(d.get('fr', 0))
     fr_basis = float(d.get('basis', 0))
-    # FR + 基差联合判断：双负 = 空头加速建仓
-    if fr_now < -0.001 and fr_basis < -0.03:
-        chain.append(('FR趋势', f"FR={fr_now:+.4f}%负值+基差{fr_basis:+.4f}% = 空头双重建仓加速⚡", -2)); bias -= 2
-    elif fr_now < 0:
-        chain.append(('FR趋势', f"FR={fr_now:+.4f}%转负 = 空头开始付费，空头信心增强", -1)); bias -= 1
-    elif fr_now > 0.01:
-        chain.append(('FR趋势', f"FR={fr_now:+.4f}%偏高 = 多头过热，回调风险", -1)); bias -= 1
+    fr_hist  = d.get('fr_hist_vals', [])  # 从fetch_all传入
+    if len(fr_hist) >= 20:
+        fr_short = sum(fr_hist[-5:])  / 5   # 5期均值
+        fr_long  = sum(fr_hist[-20:]) / 20  # 20期均值
+        fr_accel = fr_short - fr_long        # 加速方向
+        if fr_accel < -0.0005 and fr_now < 0:
+            chain.append(('FR趋势', f"FR短均{fr_short*100:+.4f}%<长均{fr_long*100:+.4f}% 加速转负 = 空头持续建仓⚡", -2)); bias -= 2
+        elif fr_accel > 0.0005 and fr_now > 0:
+            chain.append(('FR趋势', f"FR短均{fr_short*100:+.4f}%>长均{fr_long*100:+.4f}% 加速升 = 多头过热预警", -1)); bias -= 1
+        elif fr_now < -0.001 and fr_basis < -0.03:
+            chain.append(('FR趋势', f"FR={fr_now:+.4f}%+基差{fr_basis:+.4f}% = 空头双重加速⚡", -2)); bias -= 2
+    else:
+        # fallback: 只用当前值
+        if fr_now < -0.001 and fr_basis < -0.03:
+            chain.append(('FR趋势', f"FR={fr_now:+.4f}%+基差{fr_basis:+.4f}% = 空头双重建仓⚡", -2)); bias -= 2
+        elif fr_now < 0:
+            chain.append(('FR趋势', f"FR={fr_now:+.4f}%转负 = 空头付费，信心增强", -1)); bias -= 1
+        elif fr_now > 0.01:
+            chain.append(('FR趋势', f"FR={fr_now:+.4f}%偏高 = 多头过热", -1)); bias -= 1
 
     # ④.7 MACD趋势（新增 2026-10-20）
     macd1h_dir = d.get('macd1h_dir','FLAT')
@@ -646,7 +667,19 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('RSI15M', f"={rsi_15m}(超买⚡) = 短线过热，不追多", -1))
         bias -= 1
     else:
-        chain.append(('RSI15M', f"={rsi_15m}  RSI多周期: 15M={rsi_15m}/1H={rsi}/4H={rsi_4h}", 0))
+        chain.append(('RSI15M', f"={rsi_15m}  RSI多周期: 15M={rsi_15m}/1H={rsi}/4H={d.get('rsi_4h',0):.0f}/1D={d.get('rsi_1d',0):.0f}", 0))
+
+    # [升级 2026-10-20] RSI_4H/1D独立评分
+    rsi_4h_now = d.get('rsi_4h', 50)
+    rsi_1d_now = d.get('rsi_1d', 50)
+    if rsi_4h_now < 30:
+        chain.append(('RSI_4H', f"={rsi_4h_now:.1f}(超卖⚡) = 4H级别洗盘底部，中线多头信号", +2)); bias += 2
+    elif rsi_4h_now > 70:
+        chain.append(('RSI_4H', f"={rsi_4h_now:.1f}(超买⚡) = 4H过热，回调风险高", -2)); bias -= 2
+    if rsi_1d_now < 25:
+        chain.append(('RSI_1D', f"={rsi_1d_now:.1f}(日线超卖⚡⚡) = 历史底部区域，大级别反转信号", +3)); bias += 3
+    elif rsi_1d_now > 75:
+        chain.append(('RSI_1D', f"={rsi_1d_now:.1f}(日线超买⚡⚡) = 历史顶部区域，大级别回调", -2)); bias -= 2
 
     # ⑤.15 RSI背离检测（底部/顶部反转先行信号）
     candles = d.get('candles', [])
@@ -695,11 +728,15 @@ def reason_40yr(d: dict) -> dict:
 
     # ⑤.3 BB squeeze预警（P0⑤）
     bb_width = d.get('bb_width', 2.0)
-    if bb_width < 1.2:
-        chain.append(('BB-squeeze', f"bb_width={bb_width:.3f}(极窄⚡<1.2) = 即将方向性突破，OI+Taker决定方向", -1 if tak < 0.8 else +1))
-        bias += (-1 if tak < 0.8 else +1)
+    # [升级 2026-10-20 苏摩111] BB对标Coinglass: <0.5极度/<1.0收窄/<1.5警戒
+    if bb_width < 0.5:
+        w = -2 if tak < 0.8 else +2
+        chain.append(('BB-squeeze', f"bb_width={bb_width:.3f}(P0极度收窄⚡⚡ Coinglass<0.5) = 爆发在即，方向{'空' if tak<0.8 else '多'}", w)); bias += w
+    elif bb_width < 1.0:
+        w = -1 if tak < 0.8 else +1
+        chain.append(('BB-squeeze', f"bb_width={bb_width:.3f}(收窄⚡<1.0) = 方向性突破在即，等Taker确认", w)); bias += w
     elif bb_width < 1.5:
-        chain.append(('BB宽度', f"bb_width={bb_width:.3f}(收窄) = 震荡收敛中，突破在即", 0))
+        chain.append(('BB宽度', f"bb_width={bb_width:.3f}(警戒区<1.5) = 震荡收敛中", 0))
 
     # ⑤.4 EV期望值（P1）
     ev_pct = d.get('ev_pct', 0)
