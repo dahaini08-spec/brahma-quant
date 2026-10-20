@@ -325,27 +325,11 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 7 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_flow_batch.py --pool B_WATCH >> logs/flow_batch.log 2>&1  # B组20标的每4小时
 7 */8 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_flow_batch.py --pool C_OPPO >> logs/flow_batch.log 2>&1   # C组12标的每8小时
 # Layer2: 信号路由（:23，batch完成后16min，有充足时间）
-23 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "
-import sys,json; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain')
-from brahma_signal_router import route_signals
-f='data/batch_signals.json'
-import pathlib
-if pathlib.Path(f).exists():
-    d=json.load(open(f)); syms=[k for k in d if not k.startswith('_')]
-    results=[d[s] for s in syms]
-    route_signals(results)
-" >> logs/signal_router.log 2>&1
+23 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "import sys,json,pathlib; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain'); from brahma_signal_router import route_signals; f='data/batch_signals.json'; d=json.load(open(f)) if pathlib.Path(f).exists() else {}; route_signals([d[s] for s in d if not s.startswith('_')]) if d else None" >> logs/signal_router.log 2>&1
 
 # ── [封印 2026-10-19 苏摩111] 梵天2.0强制深度分析+神经感知 ───────────────
 # 每小时:20深度分析BTC+ETH并缓存到data/deep_analysis_latest.json
-20 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "
-from brahma_deep_analysis import run_deep_analysis, fetch_all, enrich, reason_40yr
-from pathlib import Path
-import time
-result=run_deep_analysis(['BTC','ETH'])
-Path('data/deep_analysis_latest.json').write_text(json.dumps({'ts':time.time(),'output':result}))
-print('[deep_analysis] 完成', time.strftime('%H:%M'))
-" >> logs/deep_analysis.log 2>&1
+20 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "import sys,json,time; sys.path.insert(0,'brahma_brain'); from brahma_deep_analysis import run_deep_analysis; from pathlib import Path; r=run_deep_analysis(['BTC','ETH']); Path('data/deep_analysis_latest.json').write_text(json.dumps({'ts':time.time(),'output':r})); print('[deep_analysis] done', time.strftime('%H:%M'))" >> logs/deep_analysis.log 2>&1
 
 # ── [封印 2026-10-19 苏摩111] 神经感知VIP监控 ──────────────────────────────
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/brahma_vip_watcher.py >> logs/vip_watcher.log 2>&1
