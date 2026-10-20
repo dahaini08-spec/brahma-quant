@@ -351,3 +351,9 @@ print('[deep_analysis] 完成', time.strftime('%H:%M'))
 
 # ── [封印 2026-10-19 苏摩111] 先行信号层 每15分钟预判 ──────────────────────
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/brahma_signal_early_alert.py >> logs/early_alert.log 2>&1
+
+# ── [封印 2026-10-20 苏摩111] 42标的轻量监控 分层架构 ─────────────────────
+# L1快扫: 每15分钟，零AI，全42标的
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/brahma_42_monitor.py --mode quick >> logs/monitor_42.log 2>&1
+# L2深度: 每30分钟，含方仓匹配，有信号推送
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 40 python3 scripts/brahma_42_monitor.py --mode signal >> logs/monitor_42.log 2>&1
