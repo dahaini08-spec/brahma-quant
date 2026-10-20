@@ -109,18 +109,21 @@ def fetch_all(sym: str) -> dict:
         futs = {
             'price':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={s}'),
             'stats':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={s}'),
-            'k1h':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=1h&limit=15'),
-            'k4h':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=4h&limit=10'),
-            'k1d':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=1d&limit=5'),
+            # [升级 2026-10-20 苏摩111] K线窗口全面升级至专业标准
+            'k1h':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=1h&limit=200'),   # RSI/BB/MACD/Hurst全覆盖
+            'k4h':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=4h&limit=100'),   # RSI_4H/ATR_4H/BB_4H
+            'k1d':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=1d&limit=60'),    # RSI_1D/周趋势
+            'k15m':   ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=15m&limit=100'),  # 新增:短线精度/背离
             'fr':     ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={s}'),
+            'fr_h':   ex.submit(fetch, f'https://fapi.binance.com/futures/data/fundingRate?symbol={s}&limit=100'),  # FR历史100期,
             'oi':     ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/openInterest?symbol={s}'),
-            'oi_h':   ex.submit(fetch, f'https://fapi.binance.com/futures/data/openInterestHist?symbol={s}&period=1h&limit=6'),
-            'lsr_g':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={s}&period=5m&limit=6'),
+            'oi_h':   ex.submit(fetch, f'https://fapi.binance.com/futures/data/openInterestHist?symbol={s}&period=1h&limit=168'),
+            'lsr_g':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={s}&period=5m&limit=288'),
             'lsr_t':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol={s}&period=5m&limit=3'),
             'lsr_p':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={s}&period=5m&limit=3'),
             'taker':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=6'),
             'taker1m': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1m&limit=3'),
-            'kl_4h':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=4h&limit=16'),
+            'kl_4h':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=4h&limit=100'),
             'depth':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/depth?symbol={s}&limit=20'),
         }
         raw = {k: f.result(timeout=10) for k, f in futs.items()}
@@ -145,7 +148,33 @@ def fetch_all(sym: str) -> dict:
     rsi_4h = _rsi([float(k[4]) for k in k4h[-15:]]) if len(k4h) >= 3 else 50
     rsi_1d = _rsi([float(k[4]) for k in k1d[-5:]])  if len(k1d) >= 3 else 50
     atr4h  = _atr4h(k4h)
-    atr1h  = _atr4h(k1h[-5:]) if len(k1h) >= 2 else 0
+    atr1h  = _atr4h(k1h[-14:]) if len(k1h) >= 14 else _atr4h(k1h)  # [升级] 14根ATR
+
+    # ── MACD(12/26/9) 新增 [升级 2026-10-20 苏摩111] ─────────────
+    def _macd(klines, fast=12, slow=26, signal=9):
+        if not klines or len(klines) < slow+signal+5: return 0.0, 0.0, 'FLAT'
+        closes = [float(k[4]) for k in klines]
+        def ema(data, n):
+            k2 = 2/(n+1); e = data[0]
+            for d in data[1:]: e = d*k2 + e*(1-k2)
+            return e
+        # 用最近slow+signal根计算
+        cl = closes[-(slow+signal+5):]
+        ema_fast = []; ema_slow = []
+        ef = cl[0]; es = cl[0]
+        kf=2/(fast+1); ks=2/(slow+1)
+        for c in cl:
+            ef = c*kf + ef*(1-kf); ema_fast.append(ef)
+            es = c*ks + es*(1-ks); ema_slow.append(es)
+        macd_line = [f-s for f,s in zip(ema_fast, ema_slow)]
+        sig_line = [macd_line[0]]
+        ks2=2/(signal+1)
+        for m in macd_line[1:]: sig_line.append(m*ks2 + sig_line[-1]*(1-ks2))
+        hist = macd_line[-1] - sig_line[-1]
+        trend = 'BULL' if hist > 0 and hist > (macd_line[-2]-sig_line[-2]) else                 'BEAR' if hist < 0 and hist < (macd_line[-2]-sig_line[-2]) else 'FLAT'
+        return round(macd_line[-1],4), round(sig_line[-1],4), trend
+    macd1h_val, macd1h_sig, macd1h_dir = _macd(k1h)
+    macd4h_val, macd4h_sig, macd4h_dir = _macd(k4h)
 
     # 近4根1H K线结构
     candles = []
@@ -180,6 +209,14 @@ def fetch_all(sym: str) -> dict:
 
     # OI趋势
     oi_h = raw['oi_h'] if isinstance(raw['oi_h'], list) else []
+    # [升级 2026-10-20 苏摩111] OI 7天趋势（168根1H）
+    oi_7d_change = 0.0; oi_7d_dir = 'FLAT'
+    if len(oi_h) >= 24:
+        oi_vals_all = [float(h.get('sumOpenInterestValue',0))/1e9 for h in oi_h]
+        oi_7d_change = round((oi_vals_all[-1]-oi_vals_all[0])/oi_vals_all[0]*100,2) if oi_vals_all[0]>0 else 0
+        oi_7d_dir = 'EXPAND' if oi_7d_change>2 else ('CONTRACT' if oi_7d_change<-2 else 'FLAT')
+        # OI与价格背离检测
+        price_7d_chg = round((float(raw.get('price',{}).get('price',0) if isinstance(raw.get('price'),dict) else 0) - 0)/1,2)
     oi_chg = []
     if len(oi_h) >= 2:
         for i in range(1, len(oi_h)):
@@ -199,8 +236,14 @@ def fetch_all(sym: str) -> dict:
     lsr_g  = round(float(lsr_g_list[-1]['longShortRatio']), 3) if lsr_g_list else 1
     lsr_t  = round(float(lsr_t_list[-1]['longShortRatio']), 3) if lsr_t_list else 1
     lsr_p  = round(float(lsr_p_list[-1]['longShortRatio']), 3) if lsr_p_list else 1
-    lsr_g_vals = [round(float(x['longShortRatio']),3) for x in lsr_g_list]
+    lsr_g_vals = [round(float(x['longShortRatio']),3) for x in lsr_g_list[-6:]]  # 显示最近6根
     lsr_g_trend = '↑' if len(lsr_g_vals)>1 and lsr_g_vals[-1]>lsr_g_vals[0] else '↓'
+    # [升级 2026-10-20 苏摩111] 24H LSR趋势（288根5min=1天）
+    lsr_g_24h_min = round(min(float(x['longShortRatio']) for x in lsr_g_list),3) if lsr_g_list else lsr_g
+    lsr_g_24h_max = round(max(float(x['longShortRatio']) for x in lsr_g_list),3) if lsr_g_list else lsr_g
+    lsr_g_24h_avg = round(sum(float(x['longShortRatio']) for x in lsr_g_list)/len(lsr_g_list),3) if lsr_g_list else lsr_g
+    lsr_vs_avg = round(lsr_g - lsr_g_24h_avg, 3)  # 当前vs24H均值偏差
+    lsr_extreme = lsr_g >= lsr_g_24h_max * 0.95  # 是否接近24H极值
 
     # Taker
     tak_list = raw['taker'] if isinstance(raw['taker'], list) else []
@@ -235,10 +278,18 @@ def fetch_all(sym: str) -> dict:
         'hi24': hi24, 'lo24': lo24, 'chg': chg, 'vol24_b': round(vol24, 1),
         'rsi_1h': rsi_1h, 'rsi_4h': rsi_4h, 'rsi_1d': rsi_1d,
         'atr4h': atr4h, 'atr1h': round(atr1h, 1),
+        'macd1h': macd1h_val, 'macd1h_sig': macd1h_sig, 'macd1h_dir': macd1h_dir,
+        'macd4h': macd4h_val, 'macd4h_sig': macd4h_sig, 'macd4h_dir': macd4h_dir,
         'candles': candles,
         'fvg_bull': fvg_bull, 'fvg_bear': fvg_bear,
         'oi_dir': oi_dir, 'oi_chg': oi_chg, 'oi_8h': oi_8h, 'oi_usd_b': oi_usd,
+        'oi_7d_change': oi_7d_change, 'oi_7d_dir': oi_7d_dir,
+        'lsr_g_24h_min': lsr_g_24h_min, 'lsr_g_24h_max': lsr_g_24h_max,
+        'lsr_g_24h_avg': lsr_g_24h_avg, 'lsr_trend': lsr_g_trend,
         'lsr_g': lsr_g, 'lsr_g_trend': lsr_g_trend, 'lsr_g_vals': lsr_g_vals,
+        'lsr_g_24h_min': lsr_g_24h_min, 'lsr_g_24h_max': lsr_g_24h_max,
+        'lsr_g_24h_avg': lsr_g_24h_avg, 'lsr_vs_avg': lsr_vs_avg, 'lsr_extreme': lsr_extreme,
+        'oi_7d_change': oi_7d_change, 'oi_7d_dir': oi_7d_dir,
         'lsr_t': lsr_t, 'lsr_p': lsr_p,
         'tak': tak_now, 'tak_avg': tak_avg, 'tak_trend': tak_trend, 'tak_vals': tak_vals,
         'ba': ba,
@@ -415,12 +466,16 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('盘口', f"买/卖={ba}x = 均衡", 0))
 
     # ④ LSR散户多空
-    if lsr_g > 2.5:
-        chain.append(('LSR散户', f"={lsr_g}(>2.5⚡) = 猎杀结构完整，清算池近", -2))
-        bias -= 2
+    # [升级] LSR：结合24H极值判断
+    lsr_24h_max = d.get('lsr_g_24h_max', lsr_g)
+    lsr_extreme = d.get('lsr_extreme', False)
+    lsr_vs_avg  = d.get('lsr_vs_avg', 0)
+    if lsr_g > 2.5 and lsr_extreme:
+        chain.append(('LSR散户', f"={lsr_g}(24H极值{lsr_24h_max}⚡⚡) = 猎杀临界点，偏差均值+{lsr_vs_avg}", -3)); bias -= 3
+    elif lsr_g > 2.5:
+        chain.append(('LSR散户', f"={lsr_g}(>2.5⚡) = 猎杀结构完整，清算池近", -2)); bias -= 2
     elif lsr_g > 1.8:
-        chain.append(('LSR散户', f"={lsr_g} = 偏多但未到猎杀阈值", -1))
-        bias -= 1
+        chain.append(('LSR散户', f"={lsr_g} = 偏多但未到猎杀阈值", -1)); bias -= 1
     # 大户仓位 vs 散户账户分离
     if lsr_p > 1.5 and lsr_g > 2.0:
         chain.append(('LSR背离', f"大户仓位{lsr_p}<散户{lsr_g} = 大户做多但散户更多，主力可能在等清算", -1))
@@ -476,6 +531,22 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('OI', f"LONG_UNWIND+Taker买 = 逼空行情", +1)); bias += 1
     elif oi_dir == 'FLAT':
         chain.append(('OI', f"FLAT OI8H={oi_8h:+.2f}% = 无明确建仓方向", 0))
+    # [升级] OI 7天趋势叠加判断
+    oi_7d = d.get('oi_7d_change', 0); oi_7d_dir = d.get('oi_7d_dir','FLAT')
+    if oi_7d_dir == 'CONTRACT' and oi_7d < -5:
+        chain.append(('OI7D', f"7日OI萎缩{oi_7d:+.1f}% = 主力持续撤离，趋势减弱⚡", -2)); bias -= 2
+    elif oi_7d_dir == 'EXPAND' and oi_7d > 5:
+        chain.append(('OI7D', f"7日OI扩张{oi_7d:+.1f}% = 主力持续建仓，趋势强化", +1)); bias += 1
+
+    # ④.7 MACD趋势（新增 2026-10-20）
+    macd1h_dir = d.get('macd1h_dir','FLAT')
+    macd4h_dir = d.get('macd4h_dir','FLAT')
+    if macd1h_dir == 'BULL' and macd4h_dir == 'BULL':
+        chain.append(('MACD', f"1H+4H双周期多头 = 趋势向上共振⚡", +2)); bias += 2
+    elif macd1h_dir == 'BEAR' and macd4h_dir == 'BEAR':
+        chain.append(('MACD', f"1H+4H双周期空头 = 趋势向下共振⚡", -2)); bias -= 2
+    elif macd1h_dir != 'FLAT':
+        chain.append(('MACD', f"1H={macd1h_dir} 4H={macd4h_dir} = 周期分歧，等共振", 0))
 
     # ④.8 Session时段（流动性风险）
     import time as _t
