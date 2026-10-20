@@ -23,14 +23,16 @@ sys.path.insert(0, str(BASE / 'brahma_brain'))
 sys.path.insert(0, str(BASE / 'scripts'))
 
 # 42标的分组（A核心/B中型/C小币）
+# 标的池（含XAU黄金/CL原油U本位合约）
 SYMBOL_POOLS = {
     'A': ['BTC','ETH','SOL','BNB','XRP','ADA','AVAX','DOGE','DOT','LINK'],
     'B': ['UNI','AAVE','ATOM','NEAR','FIL','ARB','OP','INJ','TIA','PYTH',
           'SUI','APT','SEI','WLD','BLUR','MANTA','STRK','ALT','PIXEL','PORTAL'],
     'C': ['PEPE','BONK','WIF','FLOKI','ORDI','BOME','PEOPLE','MEME','NEIRO',
           'BLUR','PIXEL','MANTA'],
+    'MACRO': ['XAU','CL'],  # 黄金+原油U本位合约
 }
-ALL_42 = list(dict.fromkeys([s for g in SYMBOL_POOLS.values() for s in g]))[:42]
+ALL_42 = list(dict.fromkeys([s for g in list(SYMBOL_POOLS.values()) for s in g]))[:44]
 
 STATE_FILE = BASE / 'data' / 'monitor_42_state.json'
 RESULT_FILE = BASE / 'data' / 'monitor_42_latest.json'
@@ -85,37 +87,57 @@ def l1_quick_scan(sym: str) -> dict:
             oi_rate = round((c-p)/p*100, 3)
             oi_dir = 'BUILD' if oi_rate > 0.3 else ('UNWIND' if oi_rate < -0.3 else 'FLAT')
 
-    # 评分（纯规则，零AI）
-    score = 0; reasons = []
+    # ── 预判型评分矩阵（找蓄力完成但未爆发的结构）──────────────────
+    # 核心原则: 埋伏 = 价格还没动 但结构已经就绪
+    score = 0; reasons = []; pre_signals = []
 
-    # RSI简化（用24H涨跌代替，快速估算动量方向）
-    if chg <= -5:  score += 20; reasons.append(f'超卖chg{chg:.1f}%')
-    elif chg <= -3: score += 12; reasons.append(f'回调chg{chg:.1f}%')
-    elif chg >= 5:  score += 10; reasons.append(f'涨势chg{chg:.1f}%')
+    # P1: BB蓄力信号（最强预判：收窄=即将爆发）
+    # 用价格振幅估算BB状态（轻量代理，无需K线）
+    hi24 = float(raw['stats'].get('highPrice', px)) if raw['stats'] else px
+    lo24 = float(raw['stats'].get('lowPrice', px)) if raw['stats'] else px
+    amplitude = (hi24 - lo24) / lo24 * 100 if lo24 > 0 else 0
+    if amplitude < 1.5 and vol > 10:
+        score += 30; pre_signals.append(f'低振幅{amplitude:.1f}%蓄力⚡')
+    elif amplitude < 2.5:
+        score += 15; pre_signals.append(f'振幅收窄{amplitude:.1f}%')
 
-    if tak_now >= 1.5 and tak_trend > 0:
-        score += 25; reasons.append(f'Taker强买{tak_now}↑')
-    elif tak_now >= 1.2:
-        score += 12; reasons.append(f'Taker偏买{tak_now}')
-    elif tak_now <= 0.6:
-        score -= 10; reasons.append(f'Taker卖{tak_now}')
-
-    if oi_dir == 'BUILD' and tak_now >= 1.0:
-        score += 20; reasons.append('OI+Taker共振')
+    # P2: OI BUILD + Taker未追（主力已建仓但散户未知）
+    if oi_dir == 'BUILD' and 0.8 <= tak_now <= 1.3:
+        score += 30; pre_signals.append(f'OI建仓{oi_rate:+.2f}%+Taker中性=主力埋伏中')
+    elif oi_dir == 'BUILD' and tak_now > 1.3:
+        score += 15; pre_signals.append(f'OI建仓+Taker{tak_now}已启动')
     elif oi_dir == 'BUILD':
-        score += 8;  reasons.append(f'OI BUILD{oi_rate:+.2f}%')
-    elif oi_dir == 'UNWIND':
-        score -= 8;  reasons.append('OI减仓')
+        score += 10; pre_signals.append(f'OI BUILD{oi_rate:+.2f}%')
 
+    # P3: LSR极值（猎杀前结构 = 触发在即）
     if lsr >= 3.0:
-        score -= 15; reasons.append(f'LSR猎杀{lsr}')
+        score += 25; pre_signals.append(f'LSR={lsr}猎杀结构满溢⚡')
     elif lsr >= 2.5:
-        score -= 8;  reasons.append(f'LSR偏高{lsr}')
-    elif lsr <= 0.8:
-        score += 12; reasons.append(f'LSR偏空{lsr}')
+        score += 15; pre_signals.append(f'LSR={lsr}猎杀结构积累')
+    elif lsr <= 0.7:
+        score += 20; pre_signals.append(f'LSR={lsr}大户偏空=逼空结构')
 
-    # 信号分级
-    signal = 'S' if score >= 50 else ('A' if score >= 30 else ('B' if score >= 10 else 'WAIT'))
+    # P4: Taker方向翻转信号（从卖→买 = 主力开始推）
+    if tak_trend > 0.4 and tak_now > 1.0:
+        score += 20; pre_signals.append(f'Taker翻转{tak_trend:+.2f}↑买盘启动')
+    elif tak_trend < -0.4 and tak_now < 0.8:
+        score += 15; pre_signals.append(f'Taker翻转{tak_trend:+.2f}↓卖盘启动')
+
+    # P5: 价格回调但OI未减（主力没跑 = 回调是机会）
+    if chg <= -3 and oi_dir != 'UNWIND':
+        score += 20; pre_signals.append(f'价格回调{chg:.1f}%但OI未减=埋伏位')
+    elif chg <= -5:
+        score += 10; pre_signals.append(f'超跌{chg:.1f}%')
+
+    # 减分：滞后信号（已经涨了再说，不是预判）
+    if chg >= 8 and oi_dir == 'BUILD':
+        score -= 15; pre_signals.append(f'已涨{chg:.1f}%追高风险')
+    if oi_dir == 'UNWIND':
+        score -= 15; pre_signals.append('OI减仓=主力出场')
+
+    reasons = pre_signals[:3]
+    # 信号分级（预判型阈值更严格）
+    signal = 'S' if score >= 55 else ('A' if score >= 35 else ('B' if score >= 15 else 'WAIT'))
 
     return {
         'sym': sym, 'px': px, 'chg': round(chg,2), 'vol_m': round(vol,1),
@@ -226,6 +248,26 @@ def run_monitor(mode: str = 'quick') -> str:
     lines.append(f"\n💡 S级→发标的名触发梵天深度分析")
 
     result_str = '\n'.join(lines)
+
+    # ── 免费AI增强层（Groq qwen3.8-27b全力利用）──────────────────
+    if s_list and mode in ('deep','signal'):
+        # S级标的：用Groq一句话摘要（免费，0.24s/次）
+        try:
+            from free_llm_client import chat
+            ai_lines = ["\n[Groq AI增强摘要]"]
+            for sym, r in s_list[:3]:  # 最多3个S级
+                prompt = (f"{sym} 价格{r['px']:.4f} Taker={r['tak']} OI={r['oi_dir']} "
+                         f"振幅={r.get('amplitude',0):.1f}% LSR={r['lsr']} "
+                         f"信号:{'/'.join(r['reasons'][:2])} "
+                         f"用10字以内判断合约方向和埋伏策略")
+                ai_r = chat(prompt, task='vip', max_tokens=30)
+                if ai_r:
+                    ai_lines.append(f"  {sym}: {ai_r[:40]}")
+            if len(ai_lines) > 1:
+                lines.extend(ai_lines)
+                result_str = '\n'.join(lines)
+        except Exception:
+            pass
 
     # 推送（有S/A级时）
     if (s_list or a_list) and mode == 'signal':
