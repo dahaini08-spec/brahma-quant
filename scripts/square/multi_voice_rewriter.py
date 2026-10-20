@@ -30,7 +30,20 @@ def _llm_rewrite(original: str, persona: str, max_tokens: int = 250) -> str:
             f'要求：150-300字，有观点，有数字，结尾不加品牌签名，不得出现"梵天""姓赵不宣""设计院"'
         )
         result = _fc(prompt, task='vip', max_tokens=max_tokens)
-        return result.strip() if result and len(result) > 50 else ''
+        if not result or len(result) < 50:
+            return ''
+        r = result.strip()
+        # [2026-10-20 苏摩111] 防LLM提示词泄露：拒绝包含内部分析框架的内容
+        _LEAK_MARKERS = [
+            'Analyze the Request', 'analyze the request',
+            '**Role:**', '**Persona:**', '**Task:**',
+            'Here is the rewritten', 'Here\'s the rewritten',
+            'I need to', 'The user wants', 'Based on the analysis',
+            '```', 'json{', 'json\n{',
+        ]
+        if any(m in r for m in _LEAK_MARKERS):
+            return ''
+        return r
     except Exception:
         return ''
 
