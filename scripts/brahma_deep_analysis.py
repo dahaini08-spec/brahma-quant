@@ -53,6 +53,24 @@ def _atr4h(k4h: list) -> float:
 
 # ── Step1: 全量数据拉取（U本位宪法）─────────────────────────────────────
 
+def _calc_atr(klines, fallback: float = 200.0, n: int = 14) -> float:
+    """[修复A 2026-10-20] 实时ATR计算，避免EU_OPEN时state缓存ATR低估"""
+    try:
+        if not klines or len(klines) < 3:
+            return fallback
+        trs = []
+        for i in range(1, len(klines)):
+            h  = float(klines[i][2])
+            lo = float(klines[i][3])
+            pc = float(klines[i-1][4])
+            trs.append(max(h-lo, abs(h-pc), abs(lo-pc)))
+        if not trs:
+            return fallback
+        return round(sum(trs[-n:]) / min(n, len(trs)), 2)
+    except Exception:
+        return fallback
+
+
 def _get_liq(sym: str, sd: dict, field: str) -> float:
     """[修复 2026-10-20] liq三级fallback，解决ETH清算位=0的bug"""
     # 1. state直接字段
@@ -102,6 +120,7 @@ def fetch_all(sym: str) -> dict:
             'lsr_p':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={s}&period=5m&limit=3'),
             'taker':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=6'),
             'taker1m': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1m&limit=3'),
+            'kl_4h':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=4h&limit=16'),
             'depth':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/depth?symbol={s}&limit=20'),
         }
         raw = {k: f.result(timeout=10) for k, f in futs.items()}
