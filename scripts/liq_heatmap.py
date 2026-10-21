@@ -59,10 +59,14 @@ def get_liq_heatmap(sym: str = 'BTCUSDT') -> dict:
     """
     try:
         # 1. 实时价格
-        px = float(_HTTP.get(
+        _px_r = _HTTP.get(
             'https://fapi.binance.com/fapi/v1/ticker/price',
             params={'symbol': sym}, timeout=5, verify=False
-        ).json()['price'])
+        ).json()
+        if 'price' not in _px_r:  # [修复 2026-10-21] 防KeyError
+            print(f'[liq_heatmap] {sym} price fetch failed: {str(_px_r)[:80]}')
+            return None
+        px = float(_px_r['price'])
 
         # 2. 订单簿深度（获取大额挂单聚集区）
         depth = _HTTP.get(
