@@ -257,10 +257,19 @@ def run_monitor(mode: str = 'quick') -> str:
             from brahma_deep_analysis import run_deep_analysis
             deep_out = run_deep_analysis(s_syms)
             # 提取VIP卡片行
+            # [修复 2026-10-21] 过滤WAIT内容，有实质策略才附加
+            has_real_vip = any(('止损$' in l or ('多单｜' in l and '暂无' not in l) or
+                                ('空单｜' in l and '暂无' not in l)) for l in deep_out.splitlines())
             vip_lines = [l for l in deep_out.splitlines() if '姓赵' in l or '止损' in l or '多单' in l or '空单' in l]
-            if vip_lines:
+            if vip_lines and has_real_vip:
                 lines.append('[S级自动深度策略]')
                 lines.extend(vip_lines[:8])
+                result_str = '\n'.join(lines)
+            elif not has_real_vip:
+                # 无实质VIP时附加原因摘要
+                lines.append('[S级信号摘要]（等待入场触发）')
+                for sym2, r2 in s_list[:2]:
+                    lines.append(f"  {sym2}: {' / '.join(r2.get('reasons',[]))[:60]}")
                 result_str = '\n'.join(lines)
         except Exception as e:
             pass
@@ -291,8 +300,8 @@ def run_monitor(mode: str = 'quick') -> str:
             sys.path.insert(0, str(BASE/'scripts'))
             from push_hub import push_jarvis
             push_jarvis(result_str, priority='P1',
-                       dedup_key=f'monitor42_{int(time.time()//3600)}',
-                       dedup_ttl=3600)
+                       dedup_key=f'monitor42_{int(time.time()//1800)}',  # [修复 2026-10-21] 30min去重
+                       dedup_ttl=1800)
         except Exception as e:
             pass
 
