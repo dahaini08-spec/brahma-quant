@@ -64,3 +64,9 @@ data/**
 !data/veteran_rules_config.json
 !data/BRAHMA_ANALYSIS_CANONICAL.md
 !data/BRAHMA_ANALYSIS_CANONICAL_v2.md
+
+# 媒体文件（不入库）
+openclaw-media/
+
+# scripts/data 运行时数据（不入库）
+scripts/data/
