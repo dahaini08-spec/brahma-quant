@@ -169,7 +169,7 @@ def fetch_all(sym: str) -> dict:
 
     rsi_1h = _rsi([float(k[4]) for k in k1h[-15:]]) if len(k1h) >= 3 else 50
     rsi_4h = _rsi([float(k[4]) for k in k4h[-15:]]) if len(k4h) >= 3 else 50
-    rsi_1d = _rsi([float(k[4]) for k in k1d[-5:]])  if len(k1d) >= 3 else 50
+    rsi_1d = _rsi([float(k[4]) for k in k1d])       if len(k1d) >= 15 else 50  # [修复P0 2026-10-21] 用全部60根，旧版5根严重失真
     atr4h  = _atr4h(k4h)
     atr1h  = _atr4h(k1h[-14:]) if len(k1h) >= 14 else _atr4h(k1h)  # [升级] 14根ATR
 
@@ -293,7 +293,21 @@ def fetch_all(sym: str) -> dict:
     sd = {}
     sf = BASE / 'data' / f'brahma_state_{sym.lower()}.json'
     if sf.exists():
-        try: sd = json.load(open(sf))
+        try:
+            sd = json.load(open(sf))
+            # [门控 P0修复 2026-10-21] state超过60min → 清空RSI/BB等时效性字段
+            state_age_min = (time.time() - sd.get('price_ts', 0)) / 60
+            if state_age_min > 60:
+                # 这些字段随市场实时变化，超过60min缓存=过期=有害
+                stale_keys = ['rsi_1h','rsi_4h','rsi_1d','rsi_15m','bb_width',
+                              'lsr_g','lsr_t','lsr_p','oi_direction',
+                              'cvd_1h','cvd_4h','step11_verdict',
+                              'sl','tp1','tp2','rr','ev_pct']
+                for k in stale_keys:
+                    sd.pop(k, None)
+                # 记录state降级
+                sd['_state_stale'] = True
+                sd['_state_age_min'] = round(state_age_min, 1)
         except: pass
 
     # 量能检测用K线（24根，含成交量）
@@ -1049,7 +1063,7 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
         f" 宏观={council['votes'].get('macro','?')}  结构={council['votes'].get('structure','?')}  量化={council['votes'].get('quant','?')}",
         f" 裁决={council['verdict']} 置信={council['confidence']}",
         f"",
-        f"【Step11系统裁决】",
+        f"【Step11系统裁决】{'⚠️[STATE过期{:.0f}min,RSI等指标已从state剔除]'.format(d.get('_state_age_min',0)) if d.get('_state_stale') else ''}",
         f" verdict={reasoning.get('step11_verdict') or 'N/A'}  SL=${reasoning.get('step11_sl',0):,.1f}  TP1=${reasoning.get('step11_tp1',0):,.1f}  TP2=${reasoning.get('step11_tp2',0):,.1f}",
         f" EV={d.get('ev_pct',0):.3f}%  RR={reasoning['rr']:.2f}  恐贪={d.get('fear_greed',50)}({'贪婪' if d.get('fear_greed',50)>75 else '恐惧' if d.get('fear_greed',50)<25 else '中性'})",
         f" Session={d.get('session','?')}  BTC-ETH相关={d.get('btc_eth_corr',0.85):.2f}",
