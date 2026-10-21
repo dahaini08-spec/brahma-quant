@@ -919,9 +919,24 @@ def reason_40yr(d: dict) -> dict:
     # SL计算：优先用step11精确SL，备用ATR铁律
     sl_min = atr4h * 1.5
     if step11_sl > 0:
-        sl_long  = round(step11_sl, 1)
-        sl_short = round(px + (px - step11_sl), 1)  # 对称SL
-        chain.append(('Step11-SL', f"系统精确SL=${step11_sl:,.1f}(含11道闸门验证) RR={step11_rr_val:.2f}", 0))
+        # [bugfix 2026-10-21] 验证SL方向有效性（state可能过期导致SL方向错误）
+        # step11_verdict决定SL方向（此时direction还未赋值）
+        _sl_dir = 'SHORT' if step11_verdict in ('ENTER','WATCH') and step11_sl > px * 1.001 else 'LONG'
+        sl_dir_ok = ((_sl_dir == 'LONG'  and step11_sl < px * 0.99) or
+                     (_sl_dir == 'SHORT' and step11_sl > px * 1.001))
+        if sl_dir_ok:
+            if _sl_dir == 'SHORT':
+                sl_short = round(step11_sl, 1)
+                sl_long  = round(px - (step11_sl - px), 1)
+            else:
+                sl_long  = round(step11_sl, 1)
+                sl_short = round(px + (px - step11_sl), 1)
+            chain.append(('Step11-SL', f"系统精确SL=${step11_sl:,.1f}(含11道闸门验证) RR={step11_rr_val:.2f}", 0))
+        else:
+            # state过期，SL方向错误，用ATR兜底
+            sl_long  = round(px - sl_min, 1)
+            sl_short = round(px + sl_min, 1)
+            chain.append(('SL修正', f"state SL={step11_sl:,.0f}方向错误(当前价{px:,.0f})，改用ATR=${sl_long:,.0f}", 0))
     else:
         sl_long  = round(px - sl_min, 1)
         sl_short = round(px + sl_min, 1)
@@ -1107,9 +1122,15 @@ def format_vip(d: dict, reasoning: dict) -> str:
     fvg_1h_m = d.get('fvg_1h_magnet', 0)
 
     if direction == 'LONG':
-        # TP: step11 > 清算 > FVG > ATR估算
-        tp1 = s11_tp1 if s11_tp1 > px * 1.005 else (round(liq_up * 0.998, 1) if liq_up > px * 1.005 else round(px + atr4h * 2, 1))
-        tp2 = s11_tp2 if s11_tp2 > tp1 * 1.001 else (round(fvg_1h_m, 1) if fvg_1h_m > tp1 else round(px + atr4h * 3, 1))
+        # [bugfix 2026-10-21] 验证state params价格有效性
+        params_valid = (entry_lo > 0 and abs(entry_lo - px) / px < 0.03)
+        # TP: step11(验证后) > 清算 > FVG > ATR估算
+        tp1 = (s11_tp1 if params_valid and s11_tp1 > px * 1.005
+               else (round(liq_up * 0.998, 1) if liq_up > px * 1.005
+               else round(px + atr4h * 2, 1)))
+        tp2 = (s11_tp2 if params_valid and s11_tp2 > tp1 * 1.001
+               else (round(fvg_1h_m, 1) if fvg_1h_m > tp1
+               else round(px + atr4h * 3, 1)))
         # 入场：OB回踩精确位
         if ob_1h_lo > 0 and px > ob_1h_lo * 1.001:
             entry_str = f"等回踩OB ${ob_1h_lo:,.1f}~${ob_1h_lo + atr4h*0.3:,.1f}"
@@ -1122,8 +1143,14 @@ def format_vip(d: dict, reasoning: dict) -> str:
         warn = f"{'LSR>2.5猎杀结构，等清算池' if d['lsr_g']>2.5 else f'方向={direction} RR={rr_str} EV={d.get(chr(101)+chr(118)+chr(95)+chr(112)+chr(99)+chr(116),0):.3f}%'}"
         bust = f"跌破${sl_long:,.1f}+OI减少作废"
     elif direction == 'SHORT':
-        tp1 = s11_tp1 if 0 < s11_tp1 < px * 0.995 else (round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 2, 1))
-        tp2 = s11_tp2 if 0 < s11_tp2 < tp1 * 0.999 else (round(liq_dn * 0.995, 1) if 0 < liq_dn < px * 0.995 else round(px - atr4h * 3, 1))
+        # [bugfix 2026-10-21] 验证state params价格与当前价匹配（state可能过期）
+        params_valid = (entry_lo > 0 and abs(entry_lo - px) / px < 0.03)  # 入场区在当前价3%以内
+        tp1 = (s11_tp1 if params_valid and 0 < s11_tp1 < px * 0.995
+               else (round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995
+               else round(px - atr4h * 2, 1)))
+        tp2 = (s11_tp2 if params_valid and 0 < s11_tp2 < tp1 * 0.999
+               else (round(liq_dn * 0.995, 1) if 0 < liq_dn < px * 0.99
+               else round(px - atr4h * 3, 1)))
         # 空单入场：GEX ZF阻力区
         if zf > px * 0.998:
             entry_str = f"等ZF阻力区 ${px*1.001:,.1f}~${zf*0.999:,.1f}"
@@ -1132,7 +1159,8 @@ def format_vip(d: dict, reasoning: dict) -> str:
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = "🟢 暂无多单｜等待结构"
         short_line = f"🔴 空单｜{entry_str}"
-        long_sl    = f"止损${sl_short:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
+        short_sl   = f"止损${sl_short:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
+        long_sl    = short_sl   # [bugfix 2026-10-21] 空单时long_sl显示空单信息
         warn = f"{'Taker<0.6持续卖压' if d['tak']<0.6 else f'方向={direction} RR={rr_str}'}"
         bust = f"突破${sl_short:,.1f}+OI增加作废"
     else:
@@ -1142,20 +1170,42 @@ def format_vip(d: dict, reasoning: dict) -> str:
         warn = "双侧均在等待，无入场信号"
         bust = f"GEX ZF=${zf:,.0f}为关键位"
 
-    lines = [
-        f"🌿 姓赵不宣 | {sym} 当前布局",
-        f"——— {sym} ———",
-        long_line,
-    ]
-    if long_sl:
-        lines.append(long_sl)
-    lines += [
-        f"  杠杆3x｜仓位1.5%",
-        short_line,
-        f"⚠️ {warn}",
-        f"🚫 {bust}",
-        f"🌿 姓赵不宣 | 不是建议",
-    ]
+    # [bugfix 2026-10-21] VIP输出格式修复：多空单分开显示，不混用SL字段
+    if direction == 'LONG':
+        lines = [
+            f"🌿 姓赵不宣 | {sym} 当前布局",
+            f"——— {sym} ———",
+            long_line,
+            long_sl,
+            f"  杠杆3x｜仓位1.5%",
+            short_line,
+            f"⚠️ {warn}",
+            f"🚫 {bust}",
+            f"🌿 姓赵不宣 | 不是建议",
+        ]
+    elif direction == 'SHORT':
+        lines = [
+            f"🌿 姓赵不宣 | {sym} 当前布局",
+            f"——— {sym} ———",
+            long_line,
+            short_line,
+            long_sl,   # 空单的SL+TP
+            f"  杠杆3x｜仓位1.5%",
+            f"⚠️ {warn}",
+            f"🚫 {bust}",
+            f"🌿 姓赵不宣 | 不是建议",
+        ]
+    else:
+        lines = [
+            f"🌿 姓赵不宣 | {sym} 当前布局",
+            f"——— {sym} ———",
+            long_line,
+            f"  杠杆3x｜仓位1.5%",
+            short_line,
+            f"⚠️ {warn}",
+            f"🚫 {bust}",
+            f"🌿 姓赵不宣 | 不是建议",
+        ]
     return '\n'.join(lines)
 
 
