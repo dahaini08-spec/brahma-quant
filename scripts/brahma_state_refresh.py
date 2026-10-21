@@ -189,6 +189,69 @@ def main():
                 if _fvg_tf_list:
                     _nearest = min(_fvg_tf_list, key=lambda x: abs(x.get('mid',0) - cleaned.get('price',0)))
                     cleaned[_fvg_field] = float(_nearest.get('mid', 0))
+            # [修复 2026-10-21 苏摩111] 补齐展示层必需字段到顶层
+            _ms = cleaned.get('momentum', {}) or {}
+            _smc = cleaned.get('smc', {}) or {}
+            _wave = cleaned.get('wave', {}) or {}
+            # hurst
+            if not cleaned.get('hurst') and _wave.get('hurst'):
+                cleaned['hurst'] = float(_wave['hurst'])
+            elif not cleaned.get('hurst') and cleaned.get('_hurst'):
+                cleaned['hurst'] = float(cleaned['_hurst'])
+            # bb_width (百分比格式)
+            if not cleaned.get('bb_width'):
+                _bb = _ms.get('bb', {}) or {}
+                if _bb.get('width_pct'):
+                    cleaned['bb_width'] = float(_bb['width_pct'])
+            # atr_1h / atr_4h
+            if not cleaned.get('atr_1h') and _ms.get('atr_1h'):
+                cleaned['atr_1h'] = float(_ms['atr_1h'])
+            if not cleaned.get('atr_4h') and _ms.get('atr_4h'):
+                cleaned['atr_4h'] = float(_ms['atr_4h'])
+            # rsi_15m
+            if not cleaned.get('rsi_15m') and _ms.get('rsi_15m'):
+                cleaned['rsi_15m'] = float(_ms['rsi_15m'])
+            # liq_long / liq_short
+            _liq = cleaned.get('key_levels', {}) or {}
+            if not cleaned.get('liq_long') and _liq.get('liq_long'):
+                cleaned['liq_long'] = float(_liq['liq_long'])
+            if not cleaned.get('liq_short') and _liq.get('liq_short'):
+                cleaned['liq_short'] = float(_liq['liq_short'])
+            # fvg_consensus
+            if not cleaned.get('fvg_consensus'):
+                _fvg_votes = cleaned.get('fvg_votes', {}) or {}
+                if isinstance(_fvg_votes, dict):
+                    _bull = sum(1 for v in _fvg_votes.values() if v == 'BULL')
+                    _bear = sum(1 for v in _fvg_votes.values() if v == 'BEAR')
+                    cleaned['fvg_consensus'] = 'BULL' if _bull > _bear else ('BEAR' if _bear > _bull else 'NEUTRAL')
+            # hurst (从extra._k4h_closes实时计算)
+            if not cleaned.get('hurst'):
+                try:
+                    _k4h = (cleaned.get('extra',{}) or {}).get('_k4h_closes',[]) or []
+                    if len(_k4h) >= 50:
+                        import numpy as _np
+                        _prices = _np.array(_k4h[-100:], dtype=float)
+                        _lags = range(2, 20)
+                        _tau = [_np.std(_np.subtract(_prices[lag:], _prices[:-lag])) for lag in _lags]
+                        _poly = _np.polyfit(_np.log(_lags), _np.log(_tau), 1)
+                        cleaned['hurst'] = round(float(_poly[0]), 3)
+                except Exception: pass
+            # liq_long / liq_short (从liq_density或coinglass获取)
+            if not cleaned.get('liq_long'):
+                _liq_cg = (cleaned.get('extra',{}) or {}).get('coinglass',{}) or {}
+                _liq_d  = _liq_cg.get('liquidation',{}) or {}
+                if _liq_d.get('short_liq', 0) > 0:  # short_liq=空头止损=上方清算
+                    cleaned['liq_long']  = float(_liq_d.get('short_liq', 0))
+                    cleaned['liq_short'] = float(_liq_d.get('long_liq', 0))
+            # bias (优先用wave.bias，再从score推导)
+            if not cleaned.get('bias'):
+                _wave_bias = (cleaned.get('wave',{}) or {}).get('bias','')
+                _sf = float(cleaned.get('score_final', 0) or 0)
+                _dir = cleaned.get('signal_dir', cleaned.get('direction', 'NEUTRAL'))
+                if _wave_bias == 'LONG':   cleaned['bias'] = max(3, int(_sf/10))
+                elif _wave_bias == 'SHORT': cleaned['bias'] = min(-3, -int(_sf/10))
+                else: cleaned['bias'] = int(_sf/10) if _dir=='LONG' else (-int(_sf/10) if _dir=='SHORT' else 0)
+
             all_states[sym] = cleaned
 
             regime    = cleaned.get('regime', '')
