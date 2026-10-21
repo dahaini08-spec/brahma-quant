@@ -223,5 +223,31 @@ def main():
     except Exception as e:
         print(f'[ERR] {e}')
 
+
+def _check_state_age():
+    """[修复 2026-10-21] state过期>90min推P1告警"""
+    import time, json
+    from pathlib import Path
+    BASE = Path(__file__).parent.parent
+    sys.path.insert(0, str(BASE/'scripts'))
+    try:
+        from push_hub import push_jarvis
+    except: return
+    for sym in ['btc','eth']:
+        sf = BASE / f'data/brahma_state_{sym}.json'
+        if not sf.exists(): continue
+        d = json.load(open(sf))
+        age_min = (time.time() - d.get('price_ts',0)) / 60
+        if age_min > 90:
+            push_jarvis(
+                f"⚠️ [STATE过期] {sym.upper()} state已{age_min:.0f}min未刷新！\n"
+                f"  价格={d.get('price',0):.1f}  regime={d.get('regime','?')}\n"
+                f"  → supercronic/state_refresh可能中断，数据不可信",
+                priority='P1',
+                dedup_key=f'state_age_{sym}_{int(age_min//90)}',
+                dedup_ttl=5400
+            )
+
 if __name__ == '__main__':
+    _check_state_age()
     main()

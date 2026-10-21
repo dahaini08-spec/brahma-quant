@@ -27,7 +27,7 @@ fi
 # ── 检查模式 ──
 if [ "$1" = "--check" ]; then
     echo "=== 进程状态检查 ==="
-    pgrep -f "supercronic.*brahma_crontab" > /dev/null && echo "✅ supercronic" || echo "❌ supercronic"
+    ([ -f /tmp/brahma_supercronic.pid ] && kill -0 $(cat /tmp/brahma_supercronic.pid) 2>/dev/null) || pgrep -a supercronic > /dev/null && echo "✅ supercronic" || echo "❌ supercronic"
     pgrep -f "cvd_ws_collector" > /dev/null && echo "✅ CVD" || echo "❌ CVD"
     pgrep -f "liqmap_collector" > /dev/null && echo "✅ liqmap" || echo "❌ liqmap"
     pgrep -f "independent_watchdog" > /dev/null && echo "✅ watchdog" || echo "❌ watchdog"
@@ -38,7 +38,7 @@ fi
 echo "=== 梵天4进程自启 ==="
 
 # 1. supercronic — [P0-1 2026-09-30 苏摩111] 直启改调start_supercronic.sh（复用PIDFILE+flock锁+依赖恢复）
-if ! pgrep -f "supercronic.*brahma_crontab" > /dev/null; then
+if ! ([ -f /tmp/brahma_supercronic.pid ] && kill -0 $(cat /tmp/brahma_supercronic.pid) 2>/dev/null) || pgrep -a supercronic > /dev/null; then
     bash start_supercronic.sh
 else
     echo "✅ supercronic 已运行"

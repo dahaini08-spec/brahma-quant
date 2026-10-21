@@ -12,7 +12,7 @@ ts() { date -u '+%Y-%m-%dT%H:%M:%SZ'; }
 RESTARTED=""
 
 # 1. supercronic — 清理旧PID文件后重启
-if ! pgrep -f "supercronic.*brahma_crontab" > /dev/null 2>&1; then
+if ! ([ -f /tmp/brahma_supercronic.pid ] && kill -0 $(cat /tmp/brahma_supercronic.pid) 2>/dev/null) || pgrep -a supercronic > /dev/null 2>&1; then
     rm -f /tmp/brahma_supercronic.pid
     nohup /root/.openclaw/workspace/trading-system/supercronic \
         /root/.openclaw/workspace/trading-system/brahma_crontab.txt \

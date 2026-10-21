@@ -1123,7 +1123,7 @@ def format_vip(d: dict, reasoning: dict) -> str:
 
     if direction == 'LONG':
         # [bugfix 2026-10-21] 验证state params价格有效性
-        params_valid = (entry_lo > 0 and abs(entry_lo - px) / px < 0.03)
+        params_valid = (entry_lo > 0 and abs(entry_lo - px) / px < 0.015)  # [修复] 1.5%偏差门限
         # TP: step11(验证后) > 清算 > FVG > ATR估算
         tp1 = (s11_tp1 if params_valid and s11_tp1 > px * 1.005
                else (round(liq_up * 0.998, 1) if liq_up > px * 1.005
@@ -1132,7 +1132,14 @@ def format_vip(d: dict, reasoning: dict) -> str:
                else (round(fvg_1h_m, 1) if fvg_1h_m > tp1
                else round(px + atr4h * 3, 1)))
         # 入场：OB回踩精确位
-        if ob_1h_lo > 0 and px > ob_1h_lo * 1.001:
+        # [修复 2026-10-21] Taker>1.2+bias≥+5 → 当前价直接入场，不等回踩
+        tak_now = d.get('tak', 1.0)
+        bias_val = d.get('bias', 0)
+        if tak_now > 1.2 and bias_val >= 5:
+            # 信号强，当前价入场（±0.2%）
+            entry_str = f"当前价 ${px*0.998:,.1f}~${px*1.002:,.1f}（Taker={tak_now:.2f}↑ bias=+{bias_val}）"
+        elif ob_1h_lo > 0 and px > ob_1h_lo * 1.001:
+            # 价格在OB上方但信号弱，等回踩到OB
             entry_str = f"等回踩OB ${ob_1h_lo:,.1f}~${ob_1h_lo + atr4h*0.3:,.1f}"
         else:
             entry_str = f"${px*0.997:,.1f}~${px*0.999:,.1f}"
@@ -1144,7 +1151,7 @@ def format_vip(d: dict, reasoning: dict) -> str:
         bust = f"跌破${sl_long:,.1f}+OI减少作废"
     elif direction == 'SHORT':
         # [bugfix 2026-10-21] 验证state params价格与当前价匹配（state可能过期）
-        params_valid = (entry_lo > 0 and abs(entry_lo - px) / px < 0.03)  # 入场区在当前价3%以内
+        params_valid = (entry_lo > 0 and abs(entry_lo - px) / px < 0.015)  # [修复 2026-10-21] 入场区在当前价1.5%以内
         tp1 = (s11_tp1 if params_valid and 0 < s11_tp1 < px * 0.995
                else (round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995
                else round(px - atr4h * 2, 1)))
