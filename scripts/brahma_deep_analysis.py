@@ -167,8 +167,8 @@ def fetch_all(sym: str) -> dict:
     k4h = raw['k4h'] if isinstance(raw['k4h'], list) else []
     k1d = raw['k1d'] if isinstance(raw['k1d'], list) else []
 
-    rsi_1h = _rsi([float(k[4]) for k in k1h[-15:]]) if len(k1h) >= 3 else 50
-    rsi_4h = _rsi([float(k[4]) for k in k4h[-15:]]) if len(k4h) >= 3 else 50
+    rsi_1h = _rsi([float(k[4]) for k in k1h[-28:]]) if len(k1h) >= 15 else 50  # [修复] 28根=2×n更稳定
+    rsi_4h = _rsi([float(k[4]) for k in k4h[-28:]]) if len(k4h) >= 15 else 50  # [修复] 28根=2×n更稳定
     rsi_1d = _rsi([float(k[4]) for k in k1d])       if len(k1d) >= 15 else 50  # [修复P0 2026-10-21] 用全部60根，旧版5根严重失真
     atr4h  = _atr4h(k4h)
     atr1h  = _atr4h(k1h[-14:]) if len(k1h) >= 14 else _atr4h(k1h)  # [升级] 14根ATR
@@ -369,14 +369,25 @@ def fetch_all(sym: str) -> dict:
         # P0③ RSI 15分钟
         'rsi_15m': sd.get('rsi_15m', 50),
         # P0④ Step11系统裁决（避免双套逻辑）
-        'step11_verdict': sd.get('step11_verdict', 'WAIT'),
-        'step11_sl':      sd.get('sl', 0),
-        'step11_tp1':     sd.get('tp1', 0),
-        'step11_tp2':     sd.get('tp2', 0),
-        'step11_rr':      sd.get('rr', 0),
-        'ev_pct':         sd.get('ev_pct', 0),
+        # [修复 2026-10-21 苏摩111] 字段名映射修正：state用decision{}
+        'step11_verdict': (sd.get('decision', {}) or {}).get('action', 'WAIT')
+                          if isinstance(sd.get('decision'), dict)
+                          else sd.get('step11_verdict', 'WAIT'),
+        # [修复 2026-10-21 苏摩111] params字段包含完整SL/TP/RR
+        'step11_sl':   (sd.get('params') or {}).get('stop_loss',
+                        sd.get('sl', 0)),
+        'step11_tp1':  (sd.get('params') or {}).get('tp1',
+                        sd.get('tp1', 0)),
+        'step11_tp2':  (sd.get('params') or {}).get('tp2',
+                        sd.get('tp2', 0)),
+        'step11_rr':   (sd.get('params') or {}).get('rr1',
+                        sd.get('rr', 0)),
+        'step11_entry_lo': (sd.get('params') or {}).get('entry_lo', 0),
+        'step11_entry_hi': (sd.get('params') or {}).get('entry_hi', 0),
+        'ev_pct':      sd.get('ev_pct', (sd.get('params') or {}).get('rr1', 0) * 0.5),
         # P0⑤ BB宽度squeeze
-        'bb_width':  sd.get('bb_width', 2.0),
+        # [修复 2026-10-21] bb_width：state过期时实时计算替代
+        'bb_width':  sd.get('bb_width', 2.0),  # 门控已在state_load处理过期
         # P1 补充
         'cvd_1h':    sd.get('cvd_1h', 0),
         'cvd_4h':    sd.get('cvd_4h', 0),
@@ -1085,6 +1096,10 @@ def format_vip(d: dict, reasoning: dict) -> str:
     liq_up = d['liq_up']; liq_dn = d['liq_dn']
     zf = d['zf']; atr4h = d['atr4h']
     rr = reasoning['rr']
+    # Step11精确入场区（优先）[修复 2026-10-21]
+    entry_lo = d.get('step11_entry_lo', 0)
+    entry_hi = d.get('step11_entry_hi', 0)
+
     # Step11精确TP（优先）
     s11_tp1 = reasoning.get('step11_tp1', 0)
     s11_tp2 = reasoning.get('step11_tp2', 0)
