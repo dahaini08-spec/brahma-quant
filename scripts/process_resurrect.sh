@@ -105,3 +105,81 @@ if ! pgrep -f "price_alert_monitor" > /dev/null 2>&1; then
     setsid python3 /root/.openclaw/workspace/trading-system/scripts/price_alert_monitor.py \
         >> /root/.openclaw/workspace/trading-system/logs/price_alert.log 2>&1 &
 fi
+
+# ══ State自愈层 [封印 2026-10-22 苏摩111] ══════════════════════════════
+# 根因：gateway重启后GEX/FVG/liq/HAR-RV字段全归0，需人工补全
+# 修复：重启后检测state字段，若缺失自动触发补全（每次resurrect跑一次检查）
+_STATE_HEAL_LOCK="/tmp/brahma_state_heal.lock"
+_STATE_HEAL_LOG="logs/state_heal.log"
+
+_need_heal() {
+    python3 -c "
+import json, sys
+for sym in ['btc','eth']:
+    try:
+        d = json.load(open(f'data/brahma_state_{sym}.json'))
+        if d.get('zero_flip',0)==0 or d.get('fvg_1h_magnet',0)==0 or d.get('liq_long',0)==0:
+            sys.exit(0)  # 需要修复
+    except: sys.exit(0)
+sys.exit(1)  # 不需要修复
+" 2>/dev/null
+    return $?
+}
+
+if _need_heal && [ ! -f "$_STATE_HEAL_LOCK" ]; then
+    touch "$_STATE_HEAL_LOCK"
+    echo "[$(date -u '+%H:%M')] state字段缺失 → 自动补全启动" >> "$_STATE_HEAL_LOG"
+    (
+        # Step1: GEX ZeroFlip
+        timeout 30 python3 -c "
+from brahma_brain.gex_unified import scan_gex
+[scan_gex(s, force=True) for s in ['BTC','ETH']]
+print('[heal] GEX完成')
+" >> "$_STATE_HEAL_LOG" 2>&1
+
+        # Step2: HAR-RV
+        timeout 45 python3 scripts/har_rv_refresh.py >> "$_STATE_HEAL_LOG" 2>&1
+        echo "[heal] HAR-RV完成" >> "$_STATE_HEAL_LOG"
+
+        # Step3: liq_heatmap
+        timeout 20 python3 scripts/liq_heatmap.py BTCUSDT >> "$_STATE_HEAL_LOG" 2>&1
+        timeout 20 python3 scripts/liq_heatmap.py ETHUSDT >> "$_STATE_HEAL_LOG" 2>&1
+        echo "[heal] liq完成" >> "$_STATE_HEAL_LOG"
+
+        # Step4: state_refresh（注入GEX/FVG/liq）
+        timeout 60 python3 scripts/brahma_state_refresh.py BTC ETH >> "$_STATE_HEAL_LOG" 2>&1
+        echo "[heal] state_refresh完成" >> "$_STATE_HEAL_LOG"
+
+        # Step5: 直接注入liq_long/liq_short/harv/hurst
+        timeout 15 python3 -c "
+import json, time, urllib.request
+from pathlib import Path
+BASE = Path('.')
+for sym_lower in ['btc','eth']:
+    state_f = BASE / f'data/brahma_state_{sym_lower}.json'
+    liq_f   = BASE / f'data/liq_heatmap_{sym_lower}usdt.json'
+    if not liq_f.exists() or not state_f.exists(): continue
+    liq   = json.loads(liq_f.read_text())
+    state = json.loads(state_f.read_text())
+    ns = float(liq.get('nearest_short_liq',0))
+    nl = float(liq.get('nearest_long_liq',0))
+    if ns>0: state['liq_short'] = ns
+    if nl>0: state['liq_long']  = nl
+    harv_f = BASE / 'data/har_rv_cache.json'
+    if harv_f.exists():
+        harv = json.loads(harv_f.read_text())
+        hd = harv.get(sym_lower.upper()+'USDT',{}).get('data',{})
+        rv_f = float(hd.get('rv_forecast',0))
+        px   = float(state.get('price',0))
+        if rv_f>0 and px>0:
+            state['harv_lo'] = round(px*(1-rv_f),1)
+            state['harv_hi'] = round(px*(1+rv_f),1)
+    state_f.write_text(json.dumps(state,ensure_ascii=False,indent=2))
+    print(f'[heal] {sym_lower.upper()} liq/harv注入完成')
+" >> "$_STATE_HEAL_LOG" 2>&1
+
+        echo "[$(date -u '+%H:%M')] state自愈完成" >> "$_STATE_HEAL_LOG"
+        rm -f "$_STATE_HEAL_LOCK"
+    ) &
+fi
+# ══ State自愈层结束 ══════════════════════════════════════════════════════
