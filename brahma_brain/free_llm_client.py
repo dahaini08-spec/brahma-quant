@@ -46,7 +46,9 @@ GROQ_MODEL   = 'qwen/qwen3.8-27b'
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 # OpenRouter: xing4.0-29b 备用（Groq故障时接管）
-OR_MODEL   = 'nvidia/nemotron-3.5-lightning:free'  # [修复 2026-10-22 苏摩111] xing4.0下线→nemotron可用
+OR_MODEL   = 'cohere/north-mini-code:free'          # [修复 2026-10-22 苏摩111 v2] cohere最快0.5s+标准输出
+OR_MODEL_2 = 'google/gemma-4-26b-a4b-it:free'      # 备选1: 1.1s 标准输出
+OR_MODEL_3 = 'nvidia/nemotron-3.5-lightning:free'  # 备选2: 0.5s但需关键词提取
 OR_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # Groq退避（429时）
@@ -106,46 +108,54 @@ def _groq_chat(messages: list, max_tokens: int = 200, timeout: int = 20) -> str:
 _or_backoff_until = 0.0
 
 def _or_chat(messages: list, max_tokens: int = 200, timeout: int = 25) -> str:
-    """OpenRouter备用通道：xing4.0-29b，Groq故障时接管"""
+    """OpenRouter备用通道：多模型降级链。Groq故障时接管
+    [修复 2026-10-22 苏摩111 v3] 多模型降级：cohere(0.5s)→gemma4(1.1s)→nemotron(推理型)
+    """
     global _or_backoff_until
     if not OR_KEY:
         return ''
     if time.time() < _or_backoff_until:
         return ''
-    try:
-        payload = json.dumps({
-            'model': OR_MODEL,
-            'messages': messages,
-            'max_tokens': max_tokens,
-            'temperature': 0.2,
-        }).encode()
-        req = urllib.request.Request(OR_API_URL, data=payload, headers={
-            'Authorization': f'Bearer {OR_KEY}',
-            'Content-Type': 'application/json',
-        })
-        kw = {'timeout': timeout}
-        if _ctx: kw['context'] = _ctx
-        with urllib.request.urlopen(req, **kw) as r:
-            resp = json.loads(r.read())
-        choices = resp.get('choices') or []
-        if not choices:
-            return ''
-        msg = choices[0].get('message') or {}
-        content = msg.get('content') or msg.get('reasoning') or ''
-        # [修复 2026-10-22 苏摩111] nemotron推理型模型content可能为None，从reasoning提取
-        if content:
-            # 取最后一个LONG/SHORT/WAIT关键词（推理型模型会有thinking过程）
-            import re as _re
-            hits = _re.findall(r'\b(LONG|SHORT|WAIT)\b', content.upper())
-            if hits: return hits[-1]
-        return content.strip() if content else ''
-    except urllib.error.HTTPError as e:
-        if e.code == 429:
-            _or_backoff_until = time.time() + 30  # 30s快速重试
-            print('[or] 429 backoff 30s', file=sys.stderr)
-        return ''
-    except Exception:
-        return ''
+    import re as _re
+    _model_chain = [OR_MODEL, OR_MODEL_2, OR_MODEL_3]
+    for _try_model in _model_chain:
+        try:
+            payload = json.dumps({
+                'model': _try_model,
+                'messages': messages,
+                'max_tokens': max_tokens,
+                'temperature': 0.2,
+            }).encode()
+            req = urllib.request.Request(OR_API_URL, data=payload, headers={
+                'Authorization': f'Bearer {OR_KEY}',
+                'Content-Type': 'application/json',
+                'HTTP-Referer': 'https://brahma.ai',
+                'X-Title': 'brahma-council',
+            })
+            kw = {'timeout': timeout}
+            if _ctx: kw['context'] = _ctx
+            with urllib.request.urlopen(req, **kw) as r:
+                resp = json.loads(r.read())
+            choices = resp.get('choices') or []
+            if not choices:
+                continue
+            msg = choices[0].get('message') or {}
+            raw = msg.get('content') or msg.get('reasoning') or ''
+            if raw:
+                hits = _re.findall(r'\b(LONG|SHORT|WAIT)\b', raw.upper())
+                if hits: return hits[-1]
+                if raw.strip(): return raw.strip()
+            continue  # 内容为空，尝试下一个模型
+        except urllib.error.HTTPError as e:
+            if e.code == 429:
+                continue  # 该模型429，尝试下一个
+            break
+        except Exception:
+            break
+    # 全部失败
+    _or_backoff_until = time.time() + 30
+    print('[or] 全模型失败 backoff 30s', file=sys.stderr)
+    return ''
 
 # ── 主AI兜底 ─────────────────────────────────────────────────────────────
 
