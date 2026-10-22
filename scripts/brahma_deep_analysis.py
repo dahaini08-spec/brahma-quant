@@ -519,6 +519,64 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('猎杀预判', f"{lv} {'+'.join(hunt_flags)} = 猎杀结构就绪，等Taker<0.5确认", -1 if hunt_score==3 else 0))
         if hunt_score == 3: bias -= 1
 
+    # ══ Step0.5: 清算扫完反转检测 [封印 2026-10-22 苏摩111] ══
+    # 教训：ETH $2,510已过清算$2,488，梵天仍输出LONG→追多爆仓
+    # 铁律：价格在清算位上方0~1×ATR1H = 主力任务完成，禁止追多
+    atr1h_val = atr1h if atr1h > 0 else atr4h * 0.4
+    if liq_up > 0 and px > liq_up:
+        swept_dist = (px - liq_up) / px * 100
+        atr1h_pct  = atr1h_val / px * 100 if px > 0 else 2.0
+        if swept_dist <= atr1h_pct:
+            chain.append(('清算扫完⚡⚡', f"价格${px:,.0f}越清算↑${liq_up:,.0f}(+{swept_dist:.2f}%) 在1×ATR1H内 = 主力任务完成，强制禁止追多", -5))
+            bias -= 5
+        elif swept_dist <= 2.0:
+            chain.append(('清算扫完⚡', f"越清算${liq_up:,.0f} +{swept_dist:.2f}% = 警惕主力反手", -3))
+            bias -= 3
+    if liq_dn > 0 and px < liq_dn:
+        swept_dist_dn = (liq_dn - px) / px * 100
+        atr1h_pct = atr1h_val / px * 100 if px > 0 else 2.0
+        if swept_dist_dn <= atr1h_pct:
+            chain.append(('清算扫完⚡⚡', f"价格${px:,.0f}越清算↓${liq_dn:,.0f}(-{swept_dist_dn:.2f}%) = 主力任务完成，强制禁止追空", +5))
+            bias += 5
+
+    # ══ Step1.5: 盘口Spoofing检测 [封印 2026-10-22 苏摩111] ══
+    # 教训：盘口20.88x但Taker<均值=Spoofing，梵天当真实买盘
+    # 铁律：盘口>5x但Taker<均值×0.85 = 虚假挂单，盘口信号归零
+    _ba_effective = ba
+    if ba > 5.0 and tak_avg > 0 and tak < tak_avg * 0.85:
+        chain.append(('盘口Spoofing⚡', f"买/卖={ba}x但Taker={tak}<均值{tak_avg}×0.85={round(tak_avg*0.85,3)} = 虚假大买单，盘口信号作废", 0))
+        _ba_effective = 1.0  # 归零，不再影响后续盘口判断
+    elif ba < 0.2 and tak_avg > 0 and tak > tak_avg * 1.15:
+        chain.append(('盘口Spoofing⚡', f"买/卖={ba}x但Taker={tak}>均值×1.15 = 虚假大卖单，盘口信号作废", 0))
+        _ba_effective = 1.0
+
+    # ══ FR连续上升强制降级 [封印 2026-10-22 苏摩111] ══
+    # 教训：FR连续4期上升，梵天给⚠️但bias不变
+    # 铁律：FR连续≥4期上升且>0.008% = 多头拥挤，bias强制-3
+    _fr_hist = d.get('fr_hist_vals', [])
+    _fr_crowd_adj = 0
+    if len(_fr_hist) >= 4:
+        _fr4 = _fr_hist[-4:]
+        _fr_up = all(_fr4[i] > _fr4[i-1] for i in range(1, 4))
+        if _fr_up and abs(_fr4[-1]) > 0.00008:  # >0.008%（原始小数单位）
+            _fr_crowd_adj = -3
+            chain.append(('FR拥挤⚡⚡', f"FR连续4期上升至{_fr4[-1]*100:.5f}% = 多头严重拥挤，强制降级", -3))
+            bias -= 3
+        elif _fr_up and abs(_fr4[-1]) > 0.00005:
+            _fr_crowd_adj = -1
+            chain.append(('FR趋势⚡', f"FR连续4期上升至{_fr4[-1]*100:.5f}% = 拥挤度累积", -1))
+            bias -= 1
+
+    # ══ 高位三重否决门 [封印 2026-10-22 苏摩111] ══
+    # 教训：RSI1H=79+FR上升+大户减仓三重同时，梵天仍LONG
+    # 铁律：三重同时 = 强制额外-4，任何做多信号减半
+    _lsr_diff = (lsr_t - lsr_p) if lsr_t > 0 and lsr_p > 0 else 0
+    _big_reducing = _lsr_diff < -0.3
+    _triple_top   = (rsi > 75 and _fr_crowd_adj < 0 and _big_reducing)
+    if _triple_top:
+        chain.append(('三重顶部⚡⚡', f"RSI1H={rsi}>75 + FR拥挤 + 大户减仓{_lsr_diff:+.3f} = 三重否决，强制WAIT", -4))
+        bias -= 4
+
     # ① K线结构读取
     if candles:
         last = candles[-1]
