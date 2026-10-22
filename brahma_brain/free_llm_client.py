@@ -46,7 +46,7 @@ GROQ_MODEL   = 'qwen/qwen3.8-27b'
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 # OpenRouter: xing4.0-29b 备用（Groq故障时接管）
-OR_MODEL   = 'xingchen-agi/xing4.0-29b-a4b:free'
+OR_MODEL   = 'nvidia/nemotron-3.5-lightning:free'  # [修复 2026-10-22 苏摩111] xing4.0下线→nemotron可用
 OR_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 # Groq退避（429时）
@@ -130,8 +130,15 @@ def _or_chat(messages: list, max_tokens: int = 200, timeout: int = 25) -> str:
         choices = resp.get('choices') or []
         if not choices:
             return ''
-        content = (choices[0].get('message') or {}).get('content', '') or ''
-        return content.strip()
+        msg = choices[0].get('message') or {}
+        content = msg.get('content') or msg.get('reasoning') or ''
+        # [修复 2026-10-22 苏摩111] nemotron推理型模型content可能为None，从reasoning提取
+        if content:
+            # 取最后一个LONG/SHORT/WAIT关键词（推理型模型会有thinking过程）
+            import re as _re
+            hits = _re.findall(r'\b(LONG|SHORT|WAIT)\b', content.upper())
+            if hits: return hits[-1]
+        return content.strip() if content else ''
     except urllib.error.HTTPError as e:
         if e.code == 429:
             _or_backoff_until = time.time() + 30  # 30s快速重试
