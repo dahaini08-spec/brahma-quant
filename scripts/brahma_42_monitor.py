@@ -135,6 +135,16 @@ def l1_quick_scan(sym: str) -> dict:
     if oi_dir == 'UNWIND':
         score -= 15; pre_signals.append('OI减仓=主力出场')
 
+    # ══ Step0.5: 清算扫完反转检测 [封印 2026-10-22 苏摩111] ══
+    # 42标的同步接入：价格已越过24H高点（清算代理位），追多风险高
+    # 逻辑：24H高点附近=空头止损密集区，扫完后主力可能反手
+    hi24_dist = (px - hi24) / px * 100 if hi24 > 0 and px > 0 else -99
+    if -0.5 <= hi24_dist <= 0.5 and chg >= 3:  # 在24H高点±0.5%内且已涨3%+
+        score -= 20; pre_signals.append(f'清算区警告:在24H高点附近{hi24_dist:+.2f}%追多风险')
+    # Step1.5: Spoofing检测代理（LSR极高但Taker弱 = 诱多）
+    if lsr >= 2.5 and tak_now < 0.8:
+        score -= 15; pre_signals.append(f'诱多警告:LSR={lsr}高但Taker={tak_now}弱')
+
     reasons = pre_signals[:3]
     # 信号分级（预判型阈值更严格）
     signal = 'S' if score >= 55 else ('A' if score >= 35 else ('B' if score >= 15 else 'WAIT'))

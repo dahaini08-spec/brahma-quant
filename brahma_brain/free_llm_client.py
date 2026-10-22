@@ -287,17 +287,24 @@ def council_three_way(
         ),
     }
 
-    # 快速检测：若free AI全在backoff，直接规则判断（避免每路1~2s subprocess等待）
-    free_available = (time.time() >= _groq_backoff_until) or (time.time() >= _or_backoff_until)
+    # [封印 2026-10-22 苏摩111] council真实AI推理+RULE_FALLBACK明确标注
+    # 修复：Groq/OR全在backoff时走规则，但需明确标注RULE_FALLBACK，不能假装AI推理
+    groq_live = time.time() >= _groq_backoff_until
+    or_live   = time.time() >= _or_backoff_until
+    free_available = groq_live or or_live
+    _is_rule_fallback = False
 
     votes = {}
     if not free_available:
-        # 规则快速判断（<1ms，不走subprocess）
+        # 规则快速判断（<1ms，不走subprocess）— 明确标注RULE_FALLBACK
+        _is_rule_fallback = True
         verdict = 'WAIT'
         if oi_signal == 'LONG_BUILD' and fvg_dir == 'BULL': verdict = 'LONG'
         elif oi_signal == 'SHORT_BUILD' and fvg_dir == 'BEAR': verdict = 'SHORT'
         votes = {'macro': verdict, 'structure': verdict, 'quant': verdict}
     else:
+        # 真实AI推理：若任意一路返回非WAIT，说明AI真实响应
+        ai_responded = False
         with _cf.ThreadPoolExecutor(max_workers=3) as ex:
             futures = {ex.submit(chat, p, task='council', max_tokens=10): role
                        for role, p in prompts.items()}
@@ -307,16 +314,20 @@ def council_three_way(
                     v = (fut.result() or 'WAIT').strip().upper()
                     v = v if v in ('LONG', 'SHORT', 'WAIT') else 'WAIT'
                     votes[role] = v
+                    if v != 'WAIT': ai_responded = True
                 except Exception:
                     votes[role] = 'WAIT'
+        # 若三路全WAIT且AI未真实响应，标注为RULE_FALLBACK
+        if not ai_responded:
+            _is_rule_fallback = True
 
     # 多数投票
     from collections import Counter
     counts = Counter(votes.values())
     winner = counts.most_common(1)[0][0]
     agree  = counts[winner]
-    # [修复W6-W8 2026-10-20] 规则兜底时明确标注
-    conf = ('RULE_FALLBACK' if not free_available
+    # [封印 2026-10-22 苏摩111] 用_is_rule_fallback精确判断，而非free_available
+    conf = ('RULE_FALLBACK' if _is_rule_fallback
             else 'HIGH' if agree == 3
             else ('MED' if agree == 2 else 'LOW'))
 
