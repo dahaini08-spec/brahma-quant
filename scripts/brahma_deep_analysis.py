@@ -1243,17 +1243,50 @@ def format_vip(d: dict, reasoning: dict) -> str:
         tp2 = (s11_tp2 if params_valid and 0 < s11_tp2 < tp1 * 0.999
                else (round(liq_dn * 0.995, 1) if 0 < liq_dn < px * 0.99
                else round(px - atr4h * 3, 1)))
-        # 空单入场：GEX ZF阻力区
-        if zf > px * 0.998:
-            entry_str = f"等ZF阻力区 ${px*1.001:,.1f}~${zf*0.999:,.1f}"
+        # 空单入场：插针等待门控+RR验证 [封印 2026-10-23 苏摩111]
+        # 核心铁律：先算当前入场RR，不达标→强制等插针
+        # 上方止损池 = 24H高点（空头止损密集区）= 最优插针目标
+        liq_up_val   = d.get('liq_up', 0) or (px * 1.021)   # 空头清算位≈插针上限
+        h24_proxy    = max(d.get('hi24', px), liq_up_val * 0.99)  # 24H高点近似
+        tp1_now      = (round(liq_dn * 1.002, 1) if 0 < liq_dn < px * 0.995
+                        else round(px - atr4h * 2, 1))
+        sl_now       = sl_short
+
+        # RR验证：当前价入场
+        rr_now = (px - tp1_now) / (sl_now - px) if sl_now > px and tp1_now < px else 0
+
+        # 插针目标位（止损池）
+        spike_target_lo = h24_proxy * 0.999
+        spike_target_hi = sl_now * 0.998  # SL之下留缓冲
+        rr_spike = (spike_target_lo - tp1_now) / (sl_now - spike_target_lo) if sl_now > spike_target_lo else 0
+
+        # 决策：当前RR≥1.5 → 直接入场；否则强制等插针
+        if rr_now >= 1.5:
+            # 当前即可入场
+            if zf > px * 0.998:
+                entry_str = f"等ZF阻力区 ${px*1.001:,.1f}~${zf*0.999:,.1f}"
+            else:
+                entry_str = f"${px*1.001:,.1f}~${px*1.003:,.1f}"
+            entry_note = f"RR={rr_now:.2f}✅直接挂单"
         else:
-            entry_str = f"${px*1.001:,.1f}~${px*1.003:,.1f}"
+            # RR不达标 → 必须等插针完成后入场
+            spike_lo_str = f"${spike_target_lo:,.1f}"
+            spike_hi_str = f"${spike_target_hi:,.1f}"
+            entry_str = f"等插针后 {spike_lo_str}~{spike_hi_str}"
+            entry_note = f"当前RR={rr_now:.2f}<1.5→等插针RR={rr_spike:.2f}"
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = "🟢 暂无多单｜等待结构"
         short_line = f"🔴 空单｜{entry_str}"
         short_sl   = f"止损${sl_short:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
         long_sl    = short_sl   # [bugfix 2026-10-21] 空单时long_sl显示空单信息
-        warn = f"{'Taker<0.6持续卖压' if d['tak']<0.6 else f'方向={direction} RR={rr_str}'}"
+        # [封印 2026-10-23] warn显示插针等待状态+SL清算区警告
+        sl_near_liq = d.get('liq_short', 0)
+        sl_warn = (f"⚠️SL=${sl_short:,.1f}≈空头清算${sl_near_liq:,.1f}危险！" 
+                   if sl_near_liq > 0 and abs(sl_short - sl_near_liq) / sl_near_liq < 0.005
+                   else "")
+        warn = (f"{entry_note} {sl_warn}".strip() 
+                if 'entry_note' in dir() and entry_note 
+                else f"{'Taker<0.6持续卖压' if d['tak']<0.6 else f'方向={direction} RR={rr_str}'}  {sl_warn}".strip())
         bust = f"突破${sl_short:,.1f}+OI增加作废"
     else:
         long_line  = "🟢 暂无多单｜等待结构"
@@ -1410,8 +1443,28 @@ def run_deep_analysis(symbols: list = None) -> str:
 
 
 if __name__ == '__main__':
-    import argparse
+    import argparse, subprocess as _sp, os as _os, json as _j, time as _t
+    from pathlib import Path as _P
     ap = argparse.ArgumentParser()
     ap.add_argument('--symbols', nargs='+', default=['BTC','ETH'])
     args = ap.parse_args()
+    syms = [s.upper() for s in (args.symbols or ['BTC','ETH'])]
+
+    # [封印 2026-10-23 苏摩111] state过期自动刷新（>60min影响RSI/GEX精度）
+    _needs = False
+    for _s in [s.lower() for s in syms]:
+        _sf = _P(f'data/brahma_state_{_s}.json')
+        if not _sf.exists():
+            _needs = True; break
+        try:
+            _age = (_t.time() - _j.loads(_sf.read_text()).get('price_ts',0)) / 60
+            if _age > 60: _needs = True; break
+        except: _needs = True; break
+    if _needs:
+        try:
+            _base = _os.path.dirname(_os.path.abspath(__file__))
+            _sp.run(['python3', _os.path.join(_base,'brahma_state_refresh.py')] + syms,
+                    capture_output=True, timeout=28, cwd=_os.path.join(_base,'..'))
+        except: pass
+
     print(run_deep_analysis(args.symbols))
