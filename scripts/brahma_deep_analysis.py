@@ -30,15 +30,28 @@ def fetch(url: str) -> dict:
         return {}
 
 
-def _rsi(closes: list) -> float:
-    if len(closes) < 3:
+def _rsi(closes: list, n: int = 14) -> float:
+    """标准RSI（Wilder's Smoothed MA）— [封印 2026-10-23 苏摩111]
+    修复根因：旧版用简单平均(sum/len)，与TradingView/Coinglass差异>20点
+    正确算法：Wilder SMMA = (prev_avg*(n-1) + current) / n
+    需要至少 n*2 根K线保证收敛精度
+    """
+    if len(closes) < n + 1:
         return 50.0
     diffs = [closes[i] - closes[i-1] for i in range(1, len(closes))]
     gains = [max(d, 0) for d in diffs]
     losses = [max(-d, 0) for d in diffs]
-    ag = sum(gains) / len(gains) or 0.001
-    al = sum(losses) / len(losses) or 0.001
-    return round(100 - 100 / (1 + ag / al), 1)
+    # 初始值：前n期简单平均（Wilder标准）
+    avg_g = sum(gains[:n]) / n
+    avg_l = sum(losses[:n]) / n
+    # 后续：Wilder SMMA（指数平滑）
+    for i in range(n, len(gains)):
+        avg_g = (avg_g * (n - 1) + gains[i]) / n
+        avg_l = (avg_l * (n - 1) + losses[i]) / n
+    if avg_l == 0:
+        return 100.0
+    rs = avg_g / avg_l
+    return round(100 - 100 / (1 + rs), 1)
 
 
 def _atr4h(k4h: list) -> float:
@@ -167,8 +180,8 @@ def fetch_all(sym: str) -> dict:
     k4h = raw['k4h'] if isinstance(raw['k4h'], list) else []
     k1d = raw['k1d'] if isinstance(raw['k1d'], list) else []
 
-    rsi_1h = _rsi([float(k[4]) for k in k1h[-28:]]) if len(k1h) >= 15 else 50  # [修复] 28根=2×n更稳定
-    rsi_4h = _rsi([float(k[4]) for k in k4h[-28:]]) if len(k4h) >= 15 else 50  # [修复] 28根=2×n更稳定
+    rsi_1h = _rsi([float(k[4]) for k in k1h]) if len(k1h) >= 15 else 50        # [封印 2026-10-23] 全200根=Wilder SMMA收敛
+    rsi_4h = _rsi([float(k[4]) for k in k4h]) if len(k4h) >= 15 else 50        # [封印 2026-10-23] 全100根=Wilder SMMA收敛
     rsi_1d = _rsi([float(k[4]) for k in k1d])       if len(k1d) >= 15 else 50  # [修复P0 2026-10-21] 用全部60根，旧版5根严重失真
     atr4h  = _atr4h(k4h)
     atr1h  = _atr4h(k1h[-14:]) if len(k1h) >= 14 else _atr4h(k1h)  # [升级] 14根ATR
@@ -366,8 +379,14 @@ def fetch_all(sym: str) -> dict:
         # P0② HAR-RV波动率边界
         'harv_hi': sd.get('harv_hi', 0),
         'harv_lo': sd.get('harv_lo', 0),
-        # P0③ RSI 15分钟
-        'rsi_15m': sd.get('rsi_15m', 50),
+        # P0③ RSI 15分钟 — [封印 2026-10-23 苏摩111] 实时K线计算替代state缓存
+        # 根因：rsi_15m以前从state读，state过期997min时输出50（假中性），真实值可达60~70
+        # 修复：直接用fetch_all已拉取的k15m实时计算（与rsi_1h/4h/1d保持一致）
+        # P0③ RSI 15分钟 — [封印 2026-10-23 苏摩111] 实时拉取K线计算，不依赖state缓存
+        # 根因：fetch_all不传k15m给enrich；state过期时rsi_15m=50假中性
+        # 修复：enrich内直接fetch 15m K线实时计算（约0.2s，可接受）
+        'rsi_15m': (lambda kl15: _rsi([float(k[4]) for k in kl15]) if len(kl15)>=15 else sd.get('rsi_15m',50))(
+            fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}USDT&interval=15m&limit=100') or []),
         # P0④ Step11系统裁决（避免双套逻辑）
         # [修复 2026-10-21 苏摩111] 字段名映射修正：state用decision{}
         'step11_verdict': (sd.get('decision', {}) or {}).get('action', 'WAIT')
