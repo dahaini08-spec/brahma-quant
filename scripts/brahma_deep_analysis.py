@@ -1043,6 +1043,25 @@ def reason_40yr(d: dict) -> dict:
         direction = 'WAIT'
         confidence = 'LOW'
 
+    # ══ Gate2b HARD锁：方仓高置信强制锁定方向 [封印 2026-10-23 苏摩111] ══
+    # 苏摩111决策：方仓置信度HIGH(n≥15)时强制覆盖Gate2多空矩阵方向
+    # 根因：BTC方仓SHORT=65% n=20但Gate2输出LONG，历史数据权重不足
+    FC_HARD_N   = 15    # 最小样本量门槛
+    FC_HARD_PCT = 0.60  # 最小置信度门槛（60%）
+    if fc_n >= FC_HARD_N:
+        if fc_short >= FC_HARD_PCT and direction == 'LONG':
+            chain.append(('Gate2b', f"方仓SHORT={fc_short:.0%} n={fc_n}≥{FC_HARD_N} HARD锁空 "
+                          f"(覆盖Gate2 LONG bias={bias:+d})", -3))
+            direction = 'SHORT'
+            confidence = 'HIGH'
+            bias -= 3  # 反映在bias上
+        elif fc_long >= FC_HARD_PCT and direction == 'SHORT':
+            chain.append(('Gate2b', f"方仓LONG={fc_long:.0%} n={fc_n}≥{FC_HARD_N} HARD锁多 "
+                          f"(覆盖Gate2 SHORT bias={bias:+d})", +3))
+            direction = 'LONG'
+            confidence = 'HIGH'
+            bias += 3
+
     # Step11裁决校验：若Step11=WAIT但bias≥3，保守降级
     if step11_verdict == 'WAIT' and direction != 'WAIT':
         chain.append(('Step11', f"verdict=WAIT（11道闸门拦截）vs 推理bias={bias:+d}(偏{direction}) = 系统裁决优先，降级WAIT", 0))
@@ -1172,7 +1191,10 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
         f"",
         f"【council三方投票 {d['sym']}】",
         f" 宏观={council['votes'].get('macro','?')}  结构={council['votes'].get('structure','?')}  量化={council['votes'].get('quant','?')}",
-        f" 裁决={council['verdict']} 置信={council['confidence']}",
+        # [封印 2026-10-23 苏摩111] RULE_FALLBACK时显示系统分析结论+警告，不再静默WAIT
+        (f" 裁决={council['verdict']} 置信={council['confidence']} ⚠️[Groq IP封锁/OR超限，规则兜底-梵天推理仍有效]"
+         if council.get('confidence') == 'RULE_FALLBACK'
+         else f" 裁决={council['verdict']} 置信={council['confidence']}"),
         f"",
         f"【Step11系统裁决】{'⚠️[STATE过期{:.0f}min,RSI等指标已从state剔除]'.format(d.get('_state_age_min',0)) if d.get('_state_stale') else ''}",
         f" verdict={reasoning.get('step11_verdict') or 'N/A'}  SL=${reasoning.get('step11_sl',0):,.1f}  TP1=${reasoning.get('step11_tp1',0):,.1f}  TP2=${reasoning.get('step11_tp2',0):,.1f}",
