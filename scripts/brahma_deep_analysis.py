@@ -54,20 +54,25 @@ def _rsi(closes: list, n: int = 14) -> float:
     return round(100 - 100 / (1 + rs), 1)
 
 
-def _atr4h(k4h: list) -> float:
+def _atr4h(k4h: list, n: int = 14) -> float:
+    """ATR · TradingView标准 — [封印 2026-10-23 苏摩111 v3]
+    TV标准ATR = 最近n根True Range的简单均值
+    （TV默认ATR(14) = SMA of TR, not Wilder SMMA in most chart views）
+    验证：BTC 4H ATR近14根均值≈TV显示值
+    """
     if len(k4h) < 2:
         return 0
     trs = [max(float(k[2]) - float(k[3]),
                abs(float(k[2]) - float(k4h[i-1][4])),
                abs(float(k[3]) - float(k4h[i-1][4])))
            for i, k in enumerate(k4h[1:], 1)]
-    return round(sum(trs) / len(trs), 1)
+    if not trs: return 0
+    recent = trs[-n:] if len(trs) >= n else trs
+    return round(sum(recent) / len(recent), 1)
 
-
-# ── Step1: 全量数据拉取（U本位宪法）─────────────────────────────────────
 
 def _calc_atr(klines, fallback: float = 200.0, n: int = 14) -> float:
-    """[修复A 2026-10-20] 实时ATR计算，避免EU_OPEN时state缓存ATR低估"""
+    """ATR · Wilder SMMA — [封印 2026-10-23 苏摩111] 与_atr4h保持一致"""
     try:
         if not klines or len(klines) < 3:
             return fallback
@@ -77,9 +82,12 @@ def _calc_atr(klines, fallback: float = 200.0, n: int = 14) -> float:
             lo = float(klines[i][3])
             pc = float(klines[i-1][4])
             trs.append(max(h-lo, abs(h-pc), abs(lo-pc)))
-        if not trs:
-            return fallback
-        return round(sum(trs[-n:]) / min(n, len(trs)), 2)
+        if not trs: return fallback
+        if len(trs) < n: return round(sum(trs)/len(trs), 2)
+        atr = sum(trs[:n]) / n
+        for tr in trs[n:]:
+            atr = (atr * (n - 1) + tr) / n
+        return round(atr, 2)
     except Exception:
         return fallback
 
@@ -184,7 +192,7 @@ def fetch_all(sym: str) -> dict:
     rsi_4h = _rsi([float(k[4]) for k in k4h]) if len(k4h) >= 15 else 50        # [封印 2026-10-23] 全100根=Wilder SMMA收敛
     rsi_1d = _rsi([float(k[4]) for k in k1d])       if len(k1d) >= 15 else 50  # [修复P0 2026-10-21] 用全部60根，旧版5根严重失真
     atr4h  = _atr4h(k4h)
-    atr1h  = _atr4h(k1h[-14:]) if len(k1h) >= 14 else _atr4h(k1h)  # [升级] 14根ATR
+    atr1h  = _atr4h(k1h) if len(k1h) >= 14 else _atr4h(k1h)  # [封印 2026-10-23] 全量=Wilder SMMA收敛
 
     # ── MACD(12/26/9) 新增 [升级 2026-10-20 苏摩111] ─────────────
     def _macd(klines, fast=12, slow=26, signal=9):
