@@ -967,16 +967,19 @@ def reason_40yr(d: dict) -> dict:
         else:
             chain.append(('方仓', f"LONG={fc_long:.0%}/SHORT={fc_short:.0%} n={fc_n} = 历史中性", 0))
 
-    # ⑨ 主力手法（全量接入，最多3种）[升级 2026-10-20 苏摩111]
+    # ⑨ 主力手法（全量接入，最多3种）[bugfix 2026-10-24 苏摩111]
+    # patterns结构=(pid:str, conf:float, desc:str) — 第3元素是描述文字非EV数值
     if patterns:
         from brahma_smart_money_patterns import SMART_MONEY_PATTERNS
-        for i, (pid, conf, ev) in enumerate(patterns[:3]):
+        for i, (pid, conf, desc) in enumerate(patterns[:3]):
             p = SMART_MONEY_PATTERNS.get(pid, {})
-            w = max(-2, min(2, round(ev * 10))) if ev else 0  # EV转bias权重
-            chain.append(('主力手法', f"{p.get('name','?')}({conf:.0%}) EV={ev:+.2f}: {p.get('implication','')[:30]}", w))
+            # EV从SMART_MONEY_PATTERNS读取，不从patterns[2]读取
+            ev_val = float(p.get('ev', 0) or 0)
+            w = max(-2, min(2, round(ev_val * 10))) if ev_val else 0
+            chain.append(('主力手法', f"{p.get('name', pid)}({conf:.0%}): {desc[:40]}", w))
             bias += w
         if len(patterns) >= 2:
-            net_ev = sum(ev for _,_,ev in patterns)
+            net_ev = sum(float(SMART_MONEY_PATTERNS.get(pid,{}).get('ev',0) or 0) for pid,_,_ in patterns)
             if abs(net_ev) > 0.3:
                 chain.append(('主力共振', f"{len(patterns)}种手法共振 净EV={net_ev:+.2f}", 1 if net_ev>0 else -1))
                 bias += 1 if net_ev > 0 else -1
@@ -1174,8 +1177,8 @@ def format_full(d: dict, reasoning: dict, council: dict) -> str:
     ]
 
     if d['patterns']:
-        for pid, conf, ev in d['patterns']:
-            lines.append(f" {pid}({conf:.0%}): {ev}")
+        for pid, conf, desc in d['patterns']:
+            lines.append(f" {pid}({conf:.0%}): {desc}")
     else:
         lines.append(" 无明确手法（正常震荡区间）")
 
@@ -1277,10 +1280,18 @@ def format_vip(d: dict, reasoning: dict) -> str:
         # RR验证：当前价入场
         rr_now = (px - tp1_now) / (sl_now - px) if sl_now > px and tp1_now < px else 0
 
-        # 插针目标位（止损池）
-        spike_target_lo = h24_proxy * 0.999
-        spike_target_hi = sl_now * 0.998  # SL之下留缓冲
-        rr_spike = (spike_target_lo - tp1_now) / (sl_now - spike_target_lo) if sl_now > spike_target_lo else 0
+        # 插针目标位（止损池）[bugfix 2026-10-24]
+        # 空单插针逻辑：价格先上插到止损池 → 在止损池顶部入空
+        # spike_entry = h24高点附近（止损池）= 最优空单入场位
+        # 入场区：[h24_proxy, sl_now-缓冲)，lo < hi，从低到高
+        spike_entry_lo = round(h24_proxy * 0.999, 1)   # 24H高点略下方（保守入场）
+        spike_entry_hi = round(sl_now    * 0.997, 1)   # SL下方留缓冲（激进入场）
+        # 确保lo < hi（入场区从低价到高价）
+        if spike_entry_lo > spike_entry_hi:
+            spike_entry_lo, spike_entry_hi = spike_entry_hi, spike_entry_lo
+        # RR基于最优入场点（spike_entry_lo）计算
+        rr_spike = ((spike_entry_lo - tp1_now) / (sl_now - spike_entry_lo)
+                    if sl_now > spike_entry_lo > tp1_now else 0)
 
         # 决策：当前RR≥1.5 → 直接入场；否则强制等插针
         if rr_now >= 1.5:
@@ -1291,15 +1302,20 @@ def format_vip(d: dict, reasoning: dict) -> str:
                 entry_str = f"${px*1.001:,.1f}~${px*1.003:,.1f}"
             entry_note = f"RR={rr_now:.2f}✅直接挂单"
         else:
-            # RR不达标 → 必须等插针完成后入场
-            spike_lo_str = f"${spike_target_lo:,.1f}"
-            spike_hi_str = f"${spike_target_hi:,.1f}"
-            entry_str = f"等插针后 {spike_lo_str}~{spike_hi_str}"
+            # RR不达标 → 必须等插针完成后入场（在上方止损池入空）
+            entry_str = f"等插针后 ${spike_entry_lo:,.1f}~${spike_entry_hi:,.1f}"
             entry_note = f"当前RR={rr_now:.2f}<1.5→等插针RR={rr_spike:.2f}"
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = "🟢 暂无多单｜等待结构"
         short_line = f"🔴 空单｜{entry_str}"
-        short_sl   = f"止损${sl_short:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
+        # [bugfix 2026-10-24] 等插针时SL基于插针入场位重算（原sl_short基于当前价px偏低）
+        if rr_now < 1.5 and 'spike_entry_hi' in dir():
+            # 等插针后入场更高价，SL必须在插针入场位上方ATR1H
+            atr1h_val = d.get('atr1h', atr4h * 0.4)
+            sl_for_vip = round(spike_entry_hi + atr1h_val, 1)
+        else:
+            sl_for_vip = sl_short
+        short_sl   = f"止损${sl_for_vip:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
         long_sl    = short_sl   # [bugfix 2026-10-21] 空单时long_sl显示空单信息
         # [封印 2026-10-23] warn显示插针等待状态+SL清算区警告
         sl_near_liq = d.get('liq_short', 0)
