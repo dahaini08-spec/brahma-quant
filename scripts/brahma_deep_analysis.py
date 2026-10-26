@@ -462,6 +462,37 @@ def enrich(d: dict) -> dict:
     except Exception:
         d['patterns'] = []
 
+    # [P0接入 2026-10-26 苏摩111] 宏观体制锐注入 — 顶层全局视角
+    # 接入位置：enrich()末尾，供后续推理链和format_vip使用
+    try:
+        from macro_regime_engine import run_macro_regime
+        macro = run_macro_regime()  # 有缓存，不重复拉取
+        sym_macro = macro.get(sym.upper(), {})
+        d['macro_regime']     = sym_macro.get('macro_regime', 'UNKNOWN')
+        d['macro_pos52']      = sym_macro.get('pos52', 50)
+        d['macro_bias_short'] = sym_macro.get('bias_mult', {}).get('SHORT', 1.0)
+        d['macro_bias_long']  = sym_macro.get('bias_mult', {}).get('LONG', 1.0)
+        d['weekly_support']   = sym_macro.get('weekly_support', 0)
+        d['weekly_resist']    = sym_macro.get('weekly_resist', 0)
+        d['near_weekly_sup']  = sym_macro.get('near_support', False)
+        d['near_weekly_res']  = sym_macro.get('near_resist', False)
+        d['consec_bear_weeks']= sym_macro.get('consec_bear_weeks', 0)
+        # ETH/BTC相对强弱（铁律⑥豁免判断）
+        d['eth_btc_rel_4w']   = macro.get('ETH_BTC_rel_4w', 0)
+        d['eth_btc_rel_sig']  = macro.get('ETH_BTC_rel_signal', 'NEUTRAL')
+    except Exception:
+        d['macro_regime']     = 'UNKNOWN'
+        d['macro_pos52']      = 50
+        d['macro_bias_short'] = 1.0
+        d['macro_bias_long']  = 1.0
+        d['weekly_support']   = 0
+        d['weekly_resist']    = 0
+        d['near_weekly_sup']  = False
+        d['near_weekly_res']  = False
+        d['consec_bear_weeks']= 0
+        d['eth_btc_rel_4w']   = 0
+        d['eth_btc_rel_sig']  = 'NEUTRAL'
+
     return d
 
 
@@ -513,6 +544,40 @@ def reason_40yr(d: dict) -> dict:
 
     chain = []   # 推理链，每条含[信号,结论,权重]
     bias = 0     # 正=偏多 负=偏空
+
+    # ══ Step-0: 宏观体制锚 [P0接入 2026-10-26 苏摩111] ══
+    # 40年老手第一眼：周线/月线主趋势，不看短线指标
+    macro_regime     = d.get('macro_regime', 'UNKNOWN')
+    macro_pos52      = d.get('macro_pos52', 50)
+    macro_bias_short = d.get('macro_bias_short', 1.0)
+    near_weekly_sup  = d.get('near_weekly_sup', False)
+    weekly_support   = d.get('weekly_support', 0)
+    eth_btc_rel_sig  = d.get('eth_btc_rel_sig', 'NEUTRAL')
+    eth_btc_rel_4w   = d.get('eth_btc_rel_4w', 0)
+
+    if macro_regime not in ('UNKNOWN',):
+        if macro_regime in ('BULL_EARLY', 'BULL_MID'):
+            chain.append(('宏观体制', f"{macro_regime}({macro_pos52:.0f}%)周线牛市偏多，空单降权×{macro_bias_short}", -1))
+            bias -= 1
+        elif macro_regime == 'BULL_LATE':
+            chain.append(('宏观体制', f"{macro_regime}({macro_pos52:.0f}%)高位震荡，双向谨慎", 0))
+        elif macro_regime in ('BEAR_EARLY', 'BEAR_DEEP'):
+            chain.append(('宏观体制', f"{macro_regime}({macro_pos52:.0f}%)熊市偏空，空单加权×{macro_bias_short}", +1))
+            bias += 1
+        elif macro_regime == 'DIST_TOP':
+            chain.append(('宏观体制', f"{macro_regime}({macro_pos52:.0f}%)顶部分发，偏空", +1))
+            bias += 1
+
+    if near_weekly_sup and weekly_support > 0:
+        chain.append(('周线支撑', f"在周线支撑${weekly_support:,.0f}附近(1.5%内)→空单高风险降权", -2))
+        bias -= 2
+
+    if eth_btc_rel_sig == 'ETH_WEAK' and sym == 'ETH':
+        chain.append(('相对弱势', f"ETH相对BTC弱{eth_btc_rel_4w:+.1f}%→ETH单边做空合理", -1))
+        bias -= 1
+    elif eth_btc_rel_sig == 'ETH_STRONG' and sym == 'ETH':
+        chain.append(('相对强势', f"ETH相对BTC强{eth_btc_rel_4w:+.1f}%→ETH单边做多合理", +1))
+        bias += 1
 
     # ══ Step-1: 预判型矩阵 [2026-10-20 苏摩111] ══
     # 40年核心：找"蓄力完成但未爆发"的结构，比确认信号早30min~4H
@@ -1370,6 +1435,16 @@ def format_vip(d: dict, reasoning: dict) -> str:
             f"🚫 {bust}",
             f"🌿 姓赵不宣 | 不是建议",
         ]
+    # [P1接入 2026-10-26 苏摩111] VIP顶层说明行 — 苏摩一眼看清大背景
+    macro_tag  = d.get('macro_regime', '')
+    pos_tag    = f"{d.get('macro_pos52',50):.0f}%"
+    ema_tag    = f"周线EMA${d.get('weekly_ema20', d.get('weekly_support',0)):,.0f}" if d.get('weekly_support') else ''
+    rel_tag    = f"ETH相对弱{d.get('eth_btc_rel_4w',0):+.1f}%" if d.get('eth_btc_rel_sig')=='ETH_WEAK' and sym=='ETH' else (
+                 f"ETH相对强{d.get('eth_btc_rel_4w',0):+.1f}%" if d.get('eth_btc_rel_sig')=='ETH_STRONG' and sym=='ETH' else '')
+    sup_tag    = f"⚠️近周线支撑${d.get('weekly_support',0):,.0f}" if d.get('near_weekly_sup') else ''
+    top_parts  = [x for x in [macro_tag and f"宏观:{macro_tag}({pos_tag})", sup_tag, rel_tag] if x]
+    if top_parts:
+        lines.insert(0, f"📍 {' | '.join(top_parts)}")
     vip_output = '\n'.join(lines)
 
     # [P0修复 2026-10-26 苏摩111] 概率树vip_context构建
