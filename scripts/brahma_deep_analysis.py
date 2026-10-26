@@ -590,6 +590,39 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('相对强势', f"ETH相对BTC强{eth_btc_rel_4w:+.1f}%→ETH单边做多合理", +1))
         bias += 1
 
+    # [P1 2026-10-26 苏摩111] 大户虚多实空信号
+    # lsr_t=大户账户比 / lsr_p=大户仓位比；lsr_t>>lsr_p=虚多诱散户，实际在建空
+    lsr_t_val = float(d.get('lsr_t', 1.0) or 1.0)
+    lsr_p_val = float(d.get('lsr_p', 1.0) or 1.0)
+    if lsr_t_val > 0 and lsr_p_val > 0 and lsr_t_val > 1.5:
+        diverge = (lsr_t_val - lsr_p_val) / lsr_t_val
+        if diverge > 0.25:
+            chain.append(('大户虚多实空',
+                f"大户账户={lsr_t_val:.2f}>仓位={lsr_p_val:.2f} 差{diverge:.0%}→诱多做空",
+                -2))
+            bias -= 2
+        elif diverge > 0.15:
+            chain.append(('大户轻度分歧',
+                f"大户账户={lsr_t_val:.2f}>仓位={lsr_p_val:.2f} 差{diverge:.0%}→警惕",
+                -1))
+            bias -= 1
+
+    # [P0 2026-10-26 苏摩111] OI增+Taker买=禁止做空硬门控
+    # OI持续建仓+主力主买=多头在积累，此时做空=顶到主力
+    oi_8h_val = float(d.get('oi_8h', 0) or 0)
+    tak_val   = float(d.get('tak', 1.0) or 1.0)
+    tak_avg_v = float(d.get('tak_avg', 1.0) or 1.0)
+    if oi_8h_val > 1.0 and tak_avg_v > 1.3:
+        chain.append(('OI+Taker多头建仓',
+            f"OI8H={oi_8h_val:+.1f}%增仓+Taker均={tak_avg_v:.2f}主买→禁止做空",
+            -3))
+        bias -= 3
+    elif oi_8h_val > 0.5 and tak_avg_v > 1.1:
+        chain.append(('OI+Taker偏多',
+            f"OI8H={oi_8h_val:+.1f}%+Taker={tak_avg_v:.2f}偏买→空单降权",
+            -1))
+        bias -= 1
+
     # 宏观硬门控 [P0 2026-10-26 苏摩111]
     # BULL_EARLY/MID = 宏观牛市，做空逆势，强制WAIT（不允许94维score覆盖宏观方向）
     _macro_force_wait = False
@@ -1526,6 +1559,19 @@ def format_vip(d: dict, reasoning: dict) -> str:
         'scan_target': _scan_target,
         'direction':   direction,
     }
+    # [P1 2026-10-26 苏摩111] 三方联合辩论附录固化
+    # 自动从chain提取顶层信号，输出简洁三层裁决
+    if direction in ('SHORT', 'LONG', 'WAIT') and direction != 'WAIT':
+        _macro_sig = next((c for c in reasoning.get('chain',[]) if '宏观' in str(c[0])), None)
+        _flow_sig  = next((c for c in reasoning.get('chain',[]) if 'OI' in str(c[0]) or 'Taker' in str(c[0])), None)
+        _smart_sig = next((c for c in reasoning.get('chain',[]) if '大户' in str(c[0]) or 'LSR' in str(c[0])), None)
+        _debate_lines = []
+        if _macro_sig:  _debate_lines.append(f"  A宏观: {_macro_sig[1][:35]}")
+        if _flow_sig:   _debate_lines.append(f"  B流量: {_flow_sig[1][:35]}")
+        if _smart_sig:  _debate_lines.append(f"  C主力: {_smart_sig[1][:35]}")
+        if _debate_lines:
+            vip_output += '\n📋 三方核心依据：\n' + '\n'.join(_debate_lines)
+
     # 每次VIP输出自动记录预测，4H后由prediction_settler结算
     if direction in ('LONG', 'SHORT'):
         try:
