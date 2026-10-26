@@ -361,3 +361,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/brahma_robot.py --mode heartbeat >> logs/robot.log 2>&1
 # 定时播报：UTC01/07/13:30（亚盘/欧盘/美盘开盘布局）
 30 1,7,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_robot.py --mode broadcast >> logs/robot_broadcast.log 2>&1
+
+# macro_regime_engine — 宏观体制锚 [封印 2026-10-26 苏摩111]
+# 每4H:33分，计算周线/月线宏观体制，注入顶层偏置
+33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_regime_engine.py >> logs/macro_regime.log 2>&1
