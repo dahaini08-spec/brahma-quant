@@ -1372,7 +1372,33 @@ def format_vip(d: dict, reasoning: dict) -> str:
         ]
     vip_output = '\n'.join(lines)
 
-    # [封印 2026-10-26 苏摩111] prediction_ledger接入 — 自我进化闭环起点
+    # [P0修复 2026-10-26 苏摩111] 概率树vip_context构建
+    # 把当前入场决策暴露给外部，解决概率树与VIP逗辑矛盾
+    _wait_mode = (rr_now < 1.5) if direction == 'SHORT' else False
+    _scan_target = spike_entry_hi if direction == 'SHORT' and _wait_mode else (
+        liq_up if direction == 'SHORT' else liq_dn)
+    if direction == 'SHORT':
+        _e_lo = spike_entry_lo if _wait_mode else round(px*1.001,1)
+        _e_hi = spike_entry_hi if _wait_mode else round(px*1.003,1)
+        _vsl  = sl_for_vip
+        _tp1  = tp1; _tp2 = tp2
+    elif direction == 'LONG':
+        _e_lo = round(px*0.997,1); _e_hi = round(px*1.001,1)
+        _vsl  = sl_long; _tp1 = tp1; _tp2 = tp2
+        _wait_mode = False; _scan_target = liq_dn
+    else:
+        _e_lo = _e_hi = _vsl = _tp1 = _tp2 = 0
+        _wait_mode = False; _scan_target = 0
+    d['_vip_context'] = {
+        'entry_lo':    _e_lo,
+        'entry_hi':    _e_hi,
+        'sl':          _vsl,
+        'tp1':         _tp1,
+        'tp2':         _tp2,
+        'wait_mode':   _wait_mode,
+        'scan_target': _scan_target,
+        'direction':   direction,
+    }
     # 每次VIP输出自动记录预测，4H后由prediction_settler结算
     if direction in ('LONG', 'SHORT'):
         try:
