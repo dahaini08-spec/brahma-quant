@@ -1541,11 +1541,17 @@ def format_vip(d: dict, reasoning: dict) -> str:
         _rr_at_liq = round((_e_lo - _tp1) / (_vsl - _e_lo), 2) if _vsl > _e_lo > _tp1 > 0 else 0
     elif direction == 'LONG':
         _scan_target = liq_dn if liq_dn and liq_dn < px else round(px * 0.985, 1)
-        _e_hi = round(_scan_target * 1.006, 1)
-        _e_lo = round(_scan_target * 1.002, 1)
+        # 多单：在空头清算位（liq_dn）上方入场
+        _e_lo = round(_scan_target * 1.002, 1)   # 清算位上方0.2%
+        _e_hi = round(_scan_target * 1.006, 1)   # 清算位上方0.6%
         if _e_lo > _e_hi: _e_lo, _e_hi = _e_hi, _e_lo
-        _vsl  = sl_long; _tp1 = tp1; _tp2 = tp2
-        _wait_mode = True; _rr_at_liq = 0
+        _atr1h = d.get('atr1h', atr4h * 0.4)
+        # 多单SL在清算位下方ATR1H（结构失效位）
+        _vsl = round(_scan_target * 0.997 - _atr1h, 1)
+        _vsl = min(_vsl, sl_long)   # 取SL和清算位-ATR中更低的（更保守）
+        _tp1 = tp1; _tp2 = tp2
+        _wait_mode = True
+        _rr_at_liq = round((_tp1 - _e_lo) / (_e_lo - _vsl), 2) if _e_lo > _vsl and _tp1 > _e_lo else 0
     else:
         _e_lo = _e_hi = _vsl = _tp1 = _tp2 = 0
         _wait_mode = False; _scan_target = 0; _rr_at_liq = 0
@@ -1560,15 +1566,21 @@ def format_vip(d: dict, reasoning: dict) -> str:
         'direction':   direction,
     }
     # [P1 2026-10-26 苏摩111] 三方联合辩论附录固化
-    # 自动从chain提取顶层信号，输出简洁三层裁决
-    if direction in ('SHORT', 'LONG', 'WAIT') and direction != 'WAIT':
-        _macro_sig = next((c for c in reasoning.get('chain',[]) if '宏观' in str(c[0])), None)
-        _flow_sig  = next((c for c in reasoning.get('chain',[]) if 'OI' in str(c[0]) or 'Taker' in str(c[0])), None)
-        _smart_sig = next((c for c in reasoning.get('chain',[]) if '大户' in str(c[0]) or 'LSR' in str(c[0])), None)
+    # 从chain筛选与当前direction一致的信号，避免空头依据出现在多单附录
+    if direction in ('SHORT', 'LONG'):
+        chain_all = reasoning.get('chain', [])
+        # 按方向筛选：bias<0=看空，bias>0=看多，0=中性都展示
+        _dir_bias = -1 if direction == 'SHORT' else +1
+        def _rel(c):
+            w = c[2] if len(c) > 2 else 0
+            return w * _dir_bias > 0 or w == 0
+        _macro_sig = next((c for c in chain_all if '宏观' in str(c[0])), None)
+        _flow_sig  = next((c for c in chain_all if ('OI' in str(c[0]) or 'Taker' in str(c[0])) and _rel(c)), None)
+        _smart_sig = next((c for c in chain_all if ('大户' in str(c[0]) or 'LSR' in str(c[0])) and _rel(c)), None)
         _debate_lines = []
-        if _macro_sig:  _debate_lines.append(f"  A宏观: {_macro_sig[1][:35]}")
-        if _flow_sig:   _debate_lines.append(f"  B流量: {_flow_sig[1][:35]}")
-        if _smart_sig:  _debate_lines.append(f"  C主力: {_smart_sig[1][:35]}")
+        if _macro_sig:  _debate_lines.append(f"  A宏观: {_macro_sig[1][:38]}")
+        if _flow_sig:   _debate_lines.append(f"  B流量: {_flow_sig[1][:38]}")
+        if _smart_sig:  _debate_lines.append(f"  C主力: {_smart_sig[1][:38]}")
         if _debate_lines:
             vip_output += '\n📋 三方核心依据：\n' + '\n'.join(_debate_lines)
 
