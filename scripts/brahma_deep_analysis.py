@@ -1359,28 +1359,30 @@ def format_vip(d: dict, reasoning: dict) -> str:
         rr_spike = ((spike_entry_lo - tp1_now) / (sl_now - spike_entry_lo)
                     if sl_now > spike_entry_lo > tp1_now else 0)
 
-        # 决策：当前RR≥1.5 → 直接入场；否则强制等插针
+        # [P0修复 v2 2026-10-26 苏摩111] SL先初始化（后续rr_at_liq需要它）
+        atr1h_val = d.get('atr1h', atr4h * 0.4)
+        sl_for_vip = round(liq_up_val + atr1h_val, 1) if rr_now < 1.5 else sl_short
+        # 在止损清算位附近入场（苏摩逻辑：liq_up是止损池 → 等价格到达时就在那里入空）
+        liq_entry_hi = round(liq_up_val * 0.998, 1)   # 清算位下方0.2%
+        liq_entry_lo = round(liq_up_val * 0.994, 1)   # 清算位下方0.6%
+        rr_at_liq = ((liq_entry_lo - tp1_now) / (sl_for_vip - liq_entry_lo)
+                     if sl_for_vip > liq_entry_lo > tp1_now > 0 else 0)
         if rr_now >= 1.5:
-            # 当前即可入场
+            # 当前即可入场（价格已在合理位置）
             if zf > px * 0.998:
                 entry_str = f"等ZF阻力区 ${px*1.001:,.1f}~${zf*0.999:,.1f}"
             else:
                 entry_str = f"${px*1.001:,.1f}~${px*1.003:,.1f}"
             entry_note = f"RR={rr_now:.2f}✅直接挂单"
         else:
-            # RR不达标 → 必须等插针完成后入场（在上方止损池入空）
-            entry_str = f"等插针后 ${spike_entry_lo:,.1f}~${spike_entry_hi:,.1f}"
-            entry_note = f"当前RR={rr_now:.2f}<1.5→等插针RR={rr_spike:.2f}"
+            # 等价格到达止损清算位（liq_up）时入场
+            # = 路线A路径：价格扫多头止损池 → 在清算位挂空单
+            entry_str = f"等清算位 ${liq_entry_lo:,.1f}~${liq_entry_hi:,.1f}"
+            entry_note = f"等价格到${liq_up_val:,.0f}清算位附近入空 RR={rr_at_liq:.2f}"
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
         long_line  = "🟢 暂无多单｜等待结构"
         short_line = f"🔴 空单｜{entry_str}"
-        # [bugfix 2026-10-24] 等插针时SL基于插针入场位重算（原sl_short基于当前价px偏低）
-        if rr_now < 1.5 and 'spike_entry_hi' in dir():
-            # 等插针后入场更高价，SL必须在插针入场位上方ATR1H
-            atr1h_val = d.get('atr1h', atr4h * 0.4)
-            sl_for_vip = round(spike_entry_hi + atr1h_val, 1)
-        else:
-            sl_for_vip = sl_short
+        # sl_for_vip已在上方初始化（liq_up+ATR1H或sl_short）
         short_sl   = f"止损${sl_for_vip:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
         long_sl    = short_sl   # [bugfix 2026-10-21] 空单时long_sl显示空单信息
         # [封印 2026-10-23] warn显示插针等待状态+SL清算区警告
@@ -1447,23 +1449,33 @@ def format_vip(d: dict, reasoning: dict) -> str:
         lines.insert(0, f"📍 {' | '.join(top_parts)}")
     vip_output = '\n'.join(lines)
 
-    # [P0修复 2026-10-26 苏摩111] 概率树vip_context构建
-    # 把当前入场决策暴露给外部，解决概率树与VIP逗辑矛盾
-    _wait_mode = (rr_now < 1.5) if direction == 'SHORT' else False
-    _scan_target = spike_entry_hi if direction == 'SHORT' and _wait_mode else (
-        liq_up if direction == 'SHORT' else liq_dn)
+    # [P0修复 2026-10-26 苏摩111 v2] 概率树vip_context构建
+    # 苏摩铁律：在止损清算位附近入场，不等回落
+    # scan_target = liq_up（真实止损池位置）
+    # 入场区 = 清算位下方0.5%缓冲内（等价格扫到清算位时入场）
+    # 路线A语义：价格涨到scan_target扫多头止损 → 就在这里入空
     if direction == 'SHORT':
-        _e_lo = spike_entry_lo if _wait_mode else round(px*1.001,1)
-        _e_hi = spike_entry_hi if _wait_mode else round(px*1.003,1)
+        _scan_target = liq_up if liq_up and liq_up > px else round(px * 1.015, 1)
+        # 入场区：在清算位附近（清算位-0.5% ~ SL-缓冲）
+        # = 等价格到达清算位时，挂单在清算位略下方
+        _e_hi = round(_scan_target * 0.998, 1)   # 清算位下方0.2%（保守）
+        _e_lo = round(_scan_target * 0.994, 1)   # 清算位下方0.6%（激进）
+        if _e_lo > _e_hi: _e_lo, _e_hi = _e_hi, _e_lo
         _vsl  = sl_for_vip
         _tp1  = tp1; _tp2 = tp2
+        _wait_mode = True   # 等价格到达清算位才入场
+        # RR验证：在清算位附近入场的RR
+        _rr_at_liq = (_e_lo - tp1) / (_vsl - _e_lo) if _vsl > _e_lo > tp1 > 0 else 0
     elif direction == 'LONG':
-        _e_lo = round(px*0.997,1); _e_hi = round(px*1.001,1)
+        _scan_target = liq_dn if liq_dn and liq_dn < px else round(px * 0.985, 1)
+        _e_hi = round(_scan_target * 1.006, 1)
+        _e_lo = round(_scan_target * 1.002, 1)
+        if _e_lo > _e_hi: _e_lo, _e_hi = _e_hi, _e_lo
         _vsl  = sl_long; _tp1 = tp1; _tp2 = tp2
-        _wait_mode = False; _scan_target = liq_dn
+        _wait_mode = True; _rr_at_liq = 0
     else:
         _e_lo = _e_hi = _vsl = _tp1 = _tp2 = 0
-        _wait_mode = False; _scan_target = 0
+        _wait_mode = False; _scan_target = 0; _rr_at_liq = 0
     d['_vip_context'] = {
         'entry_lo':    _e_lo,
         'entry_hi':    _e_hi,
