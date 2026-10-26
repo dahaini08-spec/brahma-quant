@@ -344,3 +344,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 40 python3 scripts/brahma_42_monitor.py --mode signal >> logs/monitor_42.log 2>&1
 # [封印 2026-10-20 苏摩111] ①state_refresh两档刷新：43分=轻量（只GEX价格），13分=完整（含fangcang）
 43 * * * * cd /root/.openclaw/workspace/trading-system && BRAHMA_NO_LLM=1 timeout 60 python3 -c "import sys; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain'); from brahma_state_refresh import _inject_gex_to_state; _inject_gex_to_state(); print('[quick_refresh] GEX done')" >> logs/state_refresh.log 2>&1
+# prediction_settler — 梵天3.0预测结算 [封印 2026-10-26 苏摩111]
+# 每4H:17分运行，检查OPEN预测，对照实时价格结算，自动写入方仓
+17 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/prediction_settler.py --quiet >> logs/prediction_settler.log 2>&1
