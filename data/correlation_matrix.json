@@ -1,0 +1,28 @@
+{
+  "ts": 1793018887.4718897,
+  "dt": "2026-10-26T12:48:07Z",
+  "corr_matrix": {
+    "BTC-ETH": 0.936,
+    "BTC-SOL": 0.906,
+    "BTC-BNB": 0.768,
+    "ETH-SOL": 0.912,
+    "ETH-BNB": 0.813,
+    "SOL-BNB": 0.847
+  },
+  "macro": {
+    "signals": [
+      "BTC-ETH强同向(0.94)→双标操作有效✅",
+      "SOL领先指标(0.91)→跟随BTC方向",
+      "山寨同向(0.84)→市场一致性高，趋势延续"
+    ],
+    "bias_addon": 0,
+    "btc_eth": 0.936,
+    "altcoin_avg": 0.837
+  },
+  "symbols": [
+    "BTC",
+    "ETH",
+    "SOL",
+    "BNB"
+  ]
+}

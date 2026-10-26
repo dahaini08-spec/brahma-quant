@@ -1,0 +1,6 @@
+{"ts": 1793014540.9301732, "pid": "test0001", "symbol": "ETH", "direction": "DOWN", "pnl": 3.35, "status": "HIT_TP1", "regime": "CHOP_MID"}
+{"ts": 1793017987.1327207, "pid": "5907239c", "symbol": "ETH", "direction": "UP", "pnl": 1.113, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793014593.2162395, "pid": "test0001", "symbol": "ETH", "direction": "DOWN", "pnl": 3.35, "status": "HIT_TP1", "regime": "CHOP_MID"}
+{"ts": 1793018676.1116383, "pid": "225d7857", "symbol": "BTC", "direction": "UP", "pnl": 1.433, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793018676.111823, "pid": "15645626", "symbol": "BTC", "direction": "UP", "pnl": 1.433, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793018676.112637, "pid": "e1068b07", "symbol": "BTC", "direction": "UP", "pnl": 1.433, "status": "HIT_SL", "regime": "CHOP_MID"}
