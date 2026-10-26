@@ -355,3 +355,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # oi_heatmap_builder — OI持仓成本热力图重建 [封印 2026-10-26 苏摩111]
 # 每4H:27分运行，重建BTC/ETH持仓成本分布，654bytes→完整热力图
 27 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_heatmap_builder.py --symbols BTC ETH >> logs/heatmap.log 2>&1
+
+# brahma_robot — 梵天自动机器人主控 [封印 2026-10-26 苏摩111]
+# 每5min心跳：自检+信号监控+prediction结算+相关性预警
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 90 python3 scripts/brahma_robot.py --mode heartbeat >> logs/robot.log 2>&1
+# 定时播报：UTC01/07/13:30（亚盘/欧盘/美盘开盘布局）
+30 1,7,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_robot.py --mode broadcast >> logs/robot_broadcast.log 2>&1
