@@ -116,7 +116,18 @@ def _parse_ob(ob_list, tf: str, side: str) -> float:
 
 
 def _get_liq(sym: str, sd: dict, field: str) -> float:
-    """[修复 2026-10-20] liq三级fallback，解决ETH清算位=0的bug"""
+    """[修复 2026-10-26 苏摩111] liq四级fallback，从extra.liq_snap读真实清算位"""
+    # 0. extra.liq_snap（优先，来自coinglass实时数据）
+    try:
+        liq_snap = sd.get('extra', {}).get('liq_snap', {})
+        if field == 'liq_short':
+            v0 = float(liq_snap.get('liq_short_5pct', 0) or liq_snap.get('liq_short_3pct', 0))
+        else:
+            v0 = float(liq_snap.get('liq_long_5pct', 0) or liq_snap.get('liq_long_3pct', 0))
+        if v0 > 0:
+            return v0
+    except Exception:
+        pass
     # 1. state直接字段
     v = sd.get(field, 0)
     if v and float(v) > 0:
@@ -578,6 +589,16 @@ def reason_40yr(d: dict) -> dict:
     elif eth_btc_rel_sig == 'ETH_STRONG' and sym == 'ETH':
         chain.append(('相对强势', f"ETH相对BTC强{eth_btc_rel_4w:+.1f}%→ETH单边做多合理", +1))
         bias += 1
+
+    # 宏观硬门控 [P0 2026-10-26 苏摩111]
+    # BULL_EARLY/MID = 宏观牛市，做空逆势，强制WAIT（不允许94维score覆盖宏观方向）
+    _macro_force_wait = False
+    if macro_regime in ('BULL_EARLY', 'BULL_MID'):
+        _macro_force_wait = True   # 牛市中禁止做空
+    if near_weekly_sup and macro_regime not in ('BEAR_EARLY', 'BEAR_DEEP', 'DIST_TOP'):
+        # 周线支撑区内禁止做空——但宏观已偏空时豁免（空单顺势）
+        _macro_force_wait = True
+    d['_macro_force_wait'] = _macro_force_wait  # 写入d，供reason_40yr末尾硬门控读取
 
     # ══ Step-1: 预判型矩阵 [2026-10-20 苏摩111] ══
     # 40年核心：找"蓄力完成但未爆发"的结构，比确认信号早30min~4H
@@ -1152,6 +1173,16 @@ def reason_40yr(d: dict) -> dict:
         chain.append(('RR', f"RR={rr:.2f}<1.2 = 风险回报不达标，降级WAIT", 0))
         direction = 'WAIT'
 
+    # [P0硬门控 2026-10-26 苏摩111] 宏观否决：牛市/周线支撑区禁止做空
+    _macro_force_wait = d.get('_macro_force_wait', False)
+    if _macro_force_wait and direction == 'SHORT':
+        macro_r = d.get('macro_regime', '')
+        near_sup = d.get('near_weekly_sup', False)
+        reason = ('牛市' + macro_r if macro_r in ('BULL_EARLY','BULL_MID') else '周线支撑区')
+        chain.append(('宏观硬门控', f"{reason}禁止做空→强制WAIT", -99))
+        direction = 'WAIT'
+        confidence = 'LOW'
+
     return {
         'chain': chain, 'bias': bias,
         'direction': direction, 'confidence': confidence,
@@ -1359,9 +1390,14 @@ def format_vip(d: dict, reasoning: dict) -> str:
         rr_spike = ((spike_entry_lo - tp1_now) / (sl_now - spike_entry_lo)
                     if sl_now > spike_entry_lo > tp1_now else 0)
 
-        # [P0修复 v2 2026-10-26 苏摩111] SL先初始化（后续rr_at_liq需要它）
+        # [P0修复 v3 2026-10-26 苏摩111] SL初始化：在清算位入场，SL=清算位+ATR1H（上方）
+        # 铁律：做空SL必须在入场区上方，liq_up+ATR1H > liq_up > entry_lo
         atr1h_val = d.get('atr1h', atr4h * 0.4)
-        sl_for_vip = round(liq_up_val + atr1h_val, 1) if rr_now < 1.5 else sl_short
+        if rr_now < 1.5 and liq_up_val > 0:
+            # 清算位入场模式：SL在清算位上方ATR1H
+            sl_for_vip = round(liq_up_val * 1.003 + atr1h_val, 1)
+        else:
+            sl_for_vip = sl_short
         # 在止损清算位附近入场（苏摩逻辑：liq_up是止损池 → 等价格到达时就在那里入空）
         liq_entry_hi = round(liq_up_val * 0.998, 1)   # 清算位下方0.2%
         liq_entry_lo = round(liq_up_val * 0.994, 1)   # 清算位下方0.6%
@@ -1456,16 +1492,20 @@ def format_vip(d: dict, reasoning: dict) -> str:
     # 路线A语义：价格涨到scan_target扫多头止损 → 就在这里入空
     if direction == 'SHORT':
         _scan_target = liq_up if liq_up and liq_up > px else round(px * 1.015, 1)
-        # 入场区：在清算位附近（清算位-0.5% ~ SL-缓冲）
-        # = 等价格到达清算位时，挂单在清算位略下方
-        _e_hi = round(_scan_target * 0.998, 1)   # 清算位下方0.2%（保守）
-        _e_lo = round(_scan_target * 0.994, 1)   # 清算位下方0.6%（激进）
+        # 入场区：在清算位附近（清算位-0.6% ~ 清算位-0.2%）
+        _e_hi = round(_scan_target * 0.998, 1)   # 清算位下方0.2%
+        _e_lo = round(_scan_target * 0.994, 1)   # 清算位下方0.6%
         if _e_lo > _e_hi: _e_lo, _e_hi = _e_hi, _e_lo
-        _vsl  = sl_for_vip
+        # SL必须在入场区上方 [P0修复 v4 2026-10-26 苏摩111]
+        # 无论rr_now如何，入场在liq_up附近则SL = liq_up + ATR1H
+        _atr1h = d.get('atr1h', atr4h * 0.4)
+        _vsl_liq = round(_scan_target * 1.003 + _atr1h, 1)
+        # 取sl_for_vip和liq_up+ATR中更大的（确保SL在入场区上方）
+        _vsl = max(sl_for_vip, _vsl_liq) if _vsl_liq > _e_hi else _vsl_liq
         _tp1  = tp1; _tp2 = tp2
         _wait_mode = True   # 等价格到达清算位才入场
-        # RR验证：在清算位附近入场的RR
-        _rr_at_liq = (_e_lo - tp1) / (_vsl - _e_lo) if _vsl > _e_lo > tp1 > 0 else 0
+        # RR验证（基于liq_up入场）
+        _rr_at_liq = round((_e_lo - _tp1) / (_vsl - _e_lo), 2) if _vsl > _e_lo > _tp1 > 0 else 0
     elif direction == 'LONG':
         _scan_target = liq_dn if liq_dn and liq_dn < px else round(px * 0.985, 1)
         _e_hi = round(_scan_target * 1.006, 1)
