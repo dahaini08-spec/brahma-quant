@@ -329,7 +329,8 @@ def fetch_all(sym: str) -> dict:
                 # 记录state降级
                 sd['_state_stale'] = True
                 sd['_state_age_min'] = round(state_age_min, 1)
-        except: pass
+        except Exception:
+            pass  # state字段清理失败不阻断
 
     # 量能检测用K线（24根，含成交量）
     candles_vol = []
@@ -1369,7 +1370,38 @@ def format_vip(d: dict, reasoning: dict) -> str:
             f"🚫 {bust}",
             f"🌿 姓赵不宣 | 不是建议",
         ]
-    return '\n'.join(lines)
+    vip_output = '\n'.join(lines)
+
+    # [封印 2026-10-26 苏摩111] prediction_ledger接入 — 自我进化闭环起点
+    # 每次VIP输出自动记录预测，4H后由prediction_settler结算
+    if direction in ('LONG', 'SHORT'):
+        try:
+            sys.path.insert(0, str(BASE / 'scripts'))
+            from prediction_ledger import record_prediction
+            record_prediction(
+                symbol=d.get('sym', '?') + 'USDT',
+                direction=direction,
+                entry_lo=float(d.get('step11_entry_lo', 0) or 0),
+                entry_hi=float(d.get('step11_entry_hi', 0) or 0),
+                sl=float(reasoning.get('step11_sl', 0)),
+                tp1=float(reasoning.get('step11_tp1', 0)),
+                tp2=float(reasoning.get('step11_tp2', 0)),
+                rr=float(reasoning.get('rr', 0)),
+                regime=str(d.get('regime', '')),
+                signals={
+                    'lsr_retail': d.get('lsr_g', 0),
+                    'lsr_top': d.get('lsr_a', 0),
+                    'oi_8h': d.get('oi_8h', 0),
+                    'taker': d.get('taker_now', 1.0),
+                    'bb_squeeze': d.get('bb_width', 2.0) < 1.5,
+                    'confluence': d.get('confluence_score', 0),
+                    'bias': reasoning.get('bias', 0),
+                }
+            )
+        except Exception:
+            pass  # 记录失败不影响主流程
+
+    return vip_output
 
 
 # ── 主入口 ────────────────────────────────────────────────────────────────
@@ -1497,12 +1529,14 @@ if __name__ == '__main__':
         try:
             _age = (_t.time() - _j.loads(_sf.read_text()).get('price_ts',0)) / 60
             if _age > 60: _needs = True; break
-        except: _needs = True; break
+        except Exception:
+            _needs = True; break
     if _needs:
         try:
             _base = _os.path.dirname(_os.path.abspath(__file__))
             _sp.run(['python3', _os.path.join(_base,'brahma_state_refresh.py')] + syms,
                     capture_output=True, timeout=28, cwd=_os.path.join(_base,'..'))
-        except: pass
+        except Exception:
+            pass  # state_refresh失败不阻断分析
 
     print(run_deep_analysis(args.symbols))
