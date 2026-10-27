@@ -221,7 +221,7 @@ _patch_module_interface('smc_engine', {'analyze': 'analyze_smc', 'analyze_multi'
 # _patch_module_interface('divergence_engine', ...)  # → 空壳
 
 # confluence_by_tf: analyze() already patched above
-# anti_manipulation_engine: detect() → check_manipulation()
+# anti_manipulation_engine: [已归档 2026-10-27]
 _patch_module_interface('anti_manipulation_engine', {'detect': 'check_manipulation'})
 # chop_breakout_detector: detect() → detect_breakout()
 _patch_module_interface('chop_breakout_detector', {'detect': 'detect_breakout'})

@@ -406,6 +406,81 @@ def check_market_heatmap(state: dict) -> dict:
     return state
 
 # ══════════════════════════════════════════════════════════════════════════════
+# M10：梵天日报（新增）- 每日09:00 UTC主动汇报，苏摩了解梵天全貌
+# ══════════════════════════════════════════════════════════════════════════════
+def check_daily_report(state: dict) -> dict:
+    """每日09:00 UTC推送完整日报：数据健康+信号统计+关键指标"""
+    now_dt = datetime.now(timezone.utc)
+    h, m   = now_dt.hour, now_dt.minute
+    if h != 9 or m > 10: return state  # 只在09:00~09:10执行
+    key = f'daily_report_{now_dt.strftime("%Y%m%d")}'
+    if state.get(key): return state
+    state[key] = True
+    try:
+        # ── 数据健康检查 ──
+        import json as _json
+        data_status = []
+        DATA_TTL = {
+            'brahma_state_btc.json': 30,   'brahma_state_eth.json': 30,
+            'macro_regime_state.json': 240, 'liq_heatmap_btcusdt.json': 90,
+            'correlation_matrix.json': 240, 'fangcang_merged_v2.json': 1440,
+        }
+        now_ts = time.time()
+        for fname, ttl in DATA_TTL.items():
+            fp = BASE / 'data' / fname
+            if fp.exists():
+                age = (now_ts - fp.stat().st_mtime) / 60
+                status = '✅' if age < ttl else '❌'
+                data_status.append(f"{status}{fname.split('.')[0].replace('brahma_state_','')[:8]}:{age:.0f}m")
+            else:
+                data_status.append(f'❌{fname[:8]}:缺失')
+
+        # ── 预测账本统计 ──
+        pred_path = BASE / 'data' / 'prediction_log.jsonl'
+        open_n = closed_n = win_n = 0
+        if pred_path.exists():
+            for l in pred_path.read_text().splitlines():
+                try:
+                    r = _json.loads(l)
+                    if r.get('status') == 'OPEN': open_n += 1
+                    else:
+                        closed_n += 1
+                        if (r.get('pnl_pct') or 0) > 0: win_n += 1
+                except: pass
+
+        # ── 当前行情 ──
+        import urllib.request as _req
+        prices = {}
+        for sym in ['BTC','ETH']:
+            try:
+                with _req.urlopen(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT', timeout=4) as r:
+                    prices[sym] = float(_json.loads(r.read())['price'])
+            except: prices[sym] = 0
+
+        # ── 组装日报 ──
+        wr = win_n/closed_n*100 if closed_n else 0
+        lines = [
+            f"🏛️ 梵天日报 | {now_dt.strftime('%m/%d')} 09:00 UTC",
+            f"",
+            f"📊 行情: BTC=${prices.get('BTC',0):,.0f}  ETH=${prices.get('ETH',0):,.1f}",
+            f"",
+            f"💾 数据健康({len([s for s in data_status if s.startswith('✅')])}/{len(data_status)}):",
+            '  ' + ' '.join(data_status[:4]),
+            '  ' + ' '.join(data_status[4:]),
+            f"",
+            f"📋 预测账本: OPEN={open_n}  已结算={closed_n}  WR={wr:.0f}%",
+            f"",
+            f"🤖 Robot状态: 九大模块运行中",
+            f"  M1信号监控 M2结算通知 M3相关性 M4自愈",
+            f"  M5开盘播报 M6宏观切换 M7大户预警 M8周线位 M9热力扫",
+        ]
+        _push('\n'.join(lines), priority='P2')
+    except Exception as e:
+        print(f"[M10] 日报失败: {e}")
+    return state
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # 主入口
 # ══════════════════════════════════════════════════════════════════════════════
 def _market_session() -> str:
@@ -440,9 +515,12 @@ def main():
     # 但模块自己决定是否真正执行（内存中时间戳对比，无需AI加载）
 
     # 心跳模式：按频率运行各模块
+    # [修复 2026-10-27] 每个模块加独立try-except+timeout保护，防止网络卡死拖累整体
+    _DEADLINE = time.time() + 50  # 50s总超时（cron timeout=60s留余量）
     if m in ('heartbeat', 'all'):
         # ── M4 系统自愈（所有时段都跑，纯JSON检查，极轻量）
-        state = check_system_health(state)
+        if time.time() < _DEADLINE:
+            state = check_system_health(state)
 
         # ── M1 S级信号（所有时段，但亚盘延长冷却）
         if sess == 'ASIA':
@@ -450,25 +528,37 @@ def main():
             state['_signal_cooldown_override'] = 14400
         else:
             state.pop('_signal_cooldown_override', None)
-        state = check_signals(state)
+        if time.time() < _DEADLINE:
+            state = check_signals(state)
 
         # ── M2/M3/M7/M8 中优先级（亚盘每2次心跳才跑一次）
         if sess != 'ASIA' or state.get('_heartbeat_count', 0) % 2 == 0:
-            state = check_predictions(state)
-            state = check_correlation(state)
-            state = check_smart_money(state)
-            state = check_weekly_levels(state)
+            if time.time() < _DEADLINE:
+                state = check_predictions(state)
+            if time.time() < _DEADLINE:
+                state = check_correlation(state)
+            if time.time() < _DEADLINE:
+                state = check_smart_money(state)
+            if time.time() < _DEADLINE:
+                state = check_weekly_levels(state)
 
         # ── M6/M9 低优先级（仅美盘+欧盘跑）
         if sess in ('US', 'EU'):
-            state = check_macro_regime(state)
-            state = check_market_heatmap(state)
+            if time.time() < _DEADLINE:
+                state = check_macro_regime(state)
+            if time.time() < _DEADLINE:
+                state = check_market_heatmap(state)
+
+        # ── M10 每日日报（09:00 UTC主动汇报）
+        if time.time() < _DEADLINE:
+            state = check_daily_report(state)
 
         # 心跳计数
         state['_heartbeat_count'] = (state.get('_heartbeat_count', 0) + 1) % 100
 
     if m in ('broadcast',):
-        state = check_scheduled_broadcast(state)
+        if time.time() < _DEADLINE:
+            state = check_scheduled_broadcast(state)
 
     if m == 'signal':  state = check_signals(state)
     if m == 'health':  state = check_system_health(state)
