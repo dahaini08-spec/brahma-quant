@@ -378,3 +378,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [封印 2026-10-27 苏摩111] 先行信号独立执行通道（每15min，绕过CHOP门控）
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 50 python3 scripts/leading_signal_executor.py --symbols BTC ETH >> logs/leading_executor.log 2>&1
+
+# [封印 2026-10-27 苏摩111] 体制切换预判维度（每10min）
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/regime_transition_detector.py --no-push --quiet >> logs/regime_transition.log 2>&1

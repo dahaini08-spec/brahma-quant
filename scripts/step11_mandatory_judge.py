@@ -186,8 +186,8 @@ class Step11Judge:
         fc_short = float(self.d.get('fc_short_pct', 0) or 0)
         fc_long  = float(self.d.get('fc_long_pct', 0) or 0)
 
-        if fc_n < 15:
-            self.reason.append(f'⚪ G2b方仓n={fc_n}<15，样本不足，跳过锚定')
+        if fc_n < 8:  # [P1-D 2026-10-27 苏摩111] 15→8，方仓激活更多案例
+            self.reason.append(f'⚪ G2b方仓n={fc_n}<8，样本不足，跳过锚定')
             return True
 
         dominant_pct = max(fc_short, fc_long)
@@ -294,12 +294,44 @@ class Step11Judge:
         self.reason.append(f'✅ G4共振{self.align}/7 ≥ {self.MIN_ALIGN}')
         return True
 
+    def gate4b_transition_exempt(self) -> bool:
+        """Gate4.5: 体制切换预判豁免（transition_score>=65时绕过CHOP门控）
+        [封印 2026-10-27 苏摩111] P1-C 预判型升级
+
+        OI骤增+FR转向+清算密度激增三合一 → transition_score>=65
+        → 豁免Gate5 CHOP_MID阻断（体制正在切换中，不应拒绝信号）
+        """
+        if 'CHOP' not in self.regime:
+            self.reason.append('✅ G4.5 非CHOP体制，跳过体制切换检查')
+            return True
+        try:
+            import sys as _sys
+            from pathlib import Path as _Path
+            _sys.path.insert(0, str(_Path(__file__).parent))
+            from regime_transition_detector import check_gate4b_exemption
+            exempt, note = check_gate4b_exemption(self.sym.replace('USDT',''))
+            if exempt:
+                self.reason.append(f'✅ G4.5 体制切换豁免: {note}')
+                # 豁免时直接跳过Gate5
+                self._transition_exempt = True
+            else:
+                self.reason.append(f'⏳ G4.5 体制切换未达阈值: {note}')
+                self._transition_exempt = False
+        except Exception as _e:
+            self.reason.append(f'⚪ G4.5 体制切换检测异常: {_e}')
+            self._transition_exempt = False
+        return True  # Gate4.5永远不阻断，只设置_transition_exempt标志
+
     def gate5_chop_score(self) -> bool:
         """Gate5: CHOP体制需更高分数（Hurst>0.6时旁路——趋势区不应锁死）
         [P1修复 2026-10-01 苏摩111]
         根因：Hurst=0.622已进趋势区，但CHOP门槛一刀切导致WAIT锁死
         修正：Hurst>0.6时门槛从110降到85（趋势信号优先，CHOP只是滞后标签）
         """
+        # [封印 2026-10-27 苏摩111] Gate4.5豁免：体制切换中直接通过Gate5
+        if getattr(self, '_transition_exempt', False):
+            self.reason.append('✅ G5 Gate4.5体制切换豁免，跳过CHOP门槛')
+            return True
         if 'CHOP' in self.regime:
             # Hurst>0.6 = 趋势性隐现，降低门槛
             if self.hurst >= HURST_TREND:
@@ -476,6 +508,7 @@ class Step11Judge:
             self.gate2b_macro_lock,        # [封印 2026-10-27 苏摩111] CHOP+宏观方向硬锁
             self.gate3_dead_combo,
             self.gate4_resonance,
+            self.gate4b_transition_exempt,  # [封印 2026-10-27 苏摩111] 体制切换预判豁免
             self.gate5_chop_score,
             self.gate6_entry_valid,
             self.gate7_sl_atr,
