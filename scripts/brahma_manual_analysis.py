@@ -266,6 +266,13 @@ def step0_fetch_all(sym: str) -> dict:
         _has_confluence = bool(_candidate.get('confluence',{}))
         if _has_confluence:
             bs = _candidate
+            # [P0-C修复 2026-10-27 苏摩111] score统一：用confluence.score覆盖state_refresh的简化score
+            # 根因：state_refresh算的score≈10（CHOP降权后），brahma_core confluence算的score=165
+            # Step11读bs['score_final']→得10→G5阻断；应该读confluence.score=165
+            _conf_score = float(bs.get('confluence', {}).get('score', 0) if isinstance(bs.get('confluence'), dict) else 0)
+            if _conf_score > bs.get('score_final', 0):
+                bs['score_final'] = _conf_score
+                bs['score'] = _conf_score
             # [2026-10-06 苏摩111] 缓存命中时，轻量级获取analyze().signal_dir
             # analyze_signal_dir已保存时直接用，否则5s超时运行analyze()
             _analyze_signal_from_cache = str(_candidate.get('analyze_signal_dir','') or '')

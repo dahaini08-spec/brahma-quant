@@ -11,7 +11,7 @@ from pathlib import Path
 BASE = Path(__file__).parent.parent
 LEDGER  = BASE / 'data' / 'prediction_log.jsonl'
 SETTLED = BASE / 'data' / 'prediction_settled.jsonl'
-EXPIRE_HOURS = 24   # 超过24H未触发 → EXPIRED
+EXPIRE_HOURS = 16   # [P1-A 2026-10-27 苏摩111] 24H→16H，加快WR积累
 
 def _price(symbol: str) -> float:
     try:
@@ -35,12 +35,35 @@ def _settle_one(record: dict, price: float) -> dict:
     tp1       = r.get('tp1', 0)
     tp2       = r.get('tp2', 0)
 
-    # 超时：24H未触发 → EXPIRED
+    # 超时：16H未触发 → EXPIRED
     if age_h > EXPIRE_HOURS:
         r['status'] = 'EXPIRED'
         r['settle_ts'] = now
         r['pnl_pct'] = 0.0
         return r
+
+    # [P1-A 2026-10-27 苏摩111] MISS判断：价格已穿越入场区但未入场
+    # SHORT: 价格跌破entry_lo且低于tp1 → 实际空单应该盈利，记录为MISS_WIN
+    # SHORT: 价格涨过entry_hi且高于sl → 应止损，记录为MISS_LOSS
+    if entry_lo > 0 and entry_hi > 0:
+        if direction == 'SHORT':
+            if price < entry_lo and tp1 > 0 and price <= tp1:
+                r['status'] = 'MISS_WIN'; r['settle_ts'] = now
+                r['pnl_pct'] = round((entry_lo - price) / entry_lo * 100, 3)
+                return r
+            elif price > entry_hi and sl > 0 and price >= sl:
+                r['status'] = 'MISS_LOSS'; r['settle_ts'] = now
+                r['pnl_pct'] = round((entry_hi - sl) / entry_hi * 100, 3)
+                return r
+        elif direction == 'LONG':
+            if price > entry_hi and tp1 > 0 and price >= tp1:
+                r['status'] = 'MISS_WIN'; r['settle_ts'] = now
+                r['pnl_pct'] = round((price - entry_hi) / entry_hi * 100, 3)
+                return r
+            elif price < entry_lo and sl > 0 and price <= sl:
+                r['status'] = 'MISS_LOSS'; r['settle_ts'] = now
+                r['pnl_pct'] = round((sl - entry_lo) / entry_lo * 100, 3)
+                return r
 
     # 价格在入场区间内 → 已入场，检查SL/TP
     if entry_lo <= price <= entry_hi or entry_lo == 0:
