@@ -1,7 +1,21 @@
 {
-  "last_health_check": 1793020908.3718524,
+  "last_health_check": 1793067703.6527107,
   "last_health_alerts": [
-    "🚨 supercronic未运行！cron全停 → 已尝试重启"
+    "⚠️ BTC state过期625min",
+    "⚠️ ETH state过期625min",
+    "🚨 supercronic未运行→已尝试重启"
   ],
-  "last_btc_eth_corr": 0.936
+  "last_btc_eth_corr": 0.936,
+  "macro_BTC": "BULL_EARLY",
+  "macro_ETH": "BULL_EARLY",
+  "eth_btc_rel": -8.4,
+  "smart_BTC_div": 0.18046378519422585,
+  "smart_ETH_div": 0.3990871535181236,
+  "above_wema_BTC": true,
+  "near_wsupp_BTC": false,
+  "above_wema_ETH": true,
+  "near_wsupp_ETH": false,
+  "last_macro_check": 1793066172.4575415,
+  "last_smart_check": 1793066172.4591415,
+  "last_weekly_check": 1793066172.742698
 }
