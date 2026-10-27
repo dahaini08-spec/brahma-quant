@@ -255,6 +255,13 @@ def main():
             all_states[sym] = cleaned
 
             regime    = cleaned.get('regime', '')
+            # [P0-C v2 2026-10-27 苏摩111] confluence.score覆盖score_final（根治双引擎分叉）
+            # state_refresh的score_final=CHOP降权后(40)，confluence.score=94维完整评分(165)
+            # Step11必须用confluence.score，否则G5永远被40阻断
+            _conf = cleaned.get('confluence', {})
+            _conf_score = float(_conf.get('score', 0) if isinstance(_conf, dict) else 0)
+            if _conf_score > float(cleaned.get('score_final', 0) or 0):
+                cleaned['score_final'] = _conf_score
             score     = float(cleaned.get('score_final') or cleaned.get('score') or 0)
             grade_raw = cleaned.get('effective_grade') or cleaned.get('grade') or 100
             try:

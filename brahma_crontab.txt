@@ -372,3 +372,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [Phase 1 接入 2026-10-27 苏摩111] 账户感知（余额+持仓写入account_state.json）
 5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/account_gateway.py --mode sense >> logs/account_gateway.log 2>&1
+
+# [P0-B 封印 2026-10-27 苏摩111] 数据自愈守护（每5分钟）
+*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/data_self_heal.py >> logs/data_self_heal.log 2>&1
