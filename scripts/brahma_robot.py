@@ -182,6 +182,19 @@ def check_system_health(state: dict) -> dict:
         if not (BASE / 'data' / fname).exists():
             alerts.append(f"❌ 缺失: {fname}")
 
+    # [接入 2026-10-27 苏摩111] brahma_health深度检查（每6H一次，仅US/EU时段）
+    sess = _market_session()
+    if sess in ('US','EU') and now - state.get('last_deep_health', 0) > 21600:
+        state['last_deep_health'] = now
+        try:
+            from brahma_health import run_health_check
+            hresult = run_health_check() if callable(run_health_check := __import__('brahma_health', fromlist=['run_health_check']).run_health_check) else {}
+            failed = [k for k, v in hresult.items() if isinstance(v, dict) and not v.get('ok', True)]
+            if failed:
+                alerts.append(f"🏥 梵天深度健康异常: {', '.join(failed[:3])}")
+        except Exception:
+            pass
+
     last = set(state.get('last_health_alerts', []))
     new  = [a for a in alerts if a not in last]
     if new:

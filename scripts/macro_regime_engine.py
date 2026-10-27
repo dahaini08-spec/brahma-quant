@@ -153,6 +153,26 @@ def run_macro_regime(force: bool = False) -> dict:
                 'NEUTRAL'
             )
 
+    # [接入 2026-10-27 苏摩111] weekly_monthly_anchor HTF锚定增强
+    # 补充52W区间、HTF共振分数等字段，避免macro_regime重复拉取周线数据
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent / 'brahma_brain'))
+        from weekly_monthly_anchor import get_anchor
+        for sym in ['BTC', 'ETH']:
+            if sym not in result: continue
+            ticker = sym + 'USDT'
+            px_now = float(result[sym].get('weekly_support', 0))  # 粗略用支撑位做占位
+            try:
+                anchor   = get_anchor(ticker)
+                features = anchor.get_features(current_price=0)
+                result[sym]['htf_resonance']   = round(features.get('htf_resonance', 0), 3)
+                result[sym]['weekly_position'] = round(features.get('weekly_position', 0), 3)
+                result[sym]['ema20_weekly_htf'] = features.get('ema20_weekly', result[sym].get('weekly_ema20', 0))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
     CACHE_PATH.write_text(json.dumps(result, ensure_ascii=False, indent=2))
     return result
 
