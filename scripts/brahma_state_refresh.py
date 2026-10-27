@@ -143,7 +143,7 @@ def main():
         sys.exit(1)
 
     try:
-        from brahma_brain.brahma_decision_engine import decide as _decide
+        from brahma_core import decide as _decide  # [修复 2026-10-27] 旧名已归档
         _decision_ok = True
     except Exception as e:
         print(f'[state_refresh] ⚠️  decision_engine导入失败: {e}，跳过信号生成')

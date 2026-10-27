@@ -74,11 +74,12 @@ def check_signals(state: dict) -> dict:
             sd = json.loads(sf.read_text())
         except Exception:
             continue
-        conf_raw  = sd.get('confluence', 0)
-        confluence = conf_raw.get('score', 0) if isinstance(conf_raw, dict) else float(conf_raw or 0)
+        # [修复 2026-10-27 苏摩111] 正确读取confluence.score（94维总分）
         price_ts  = sd.get('price_ts', 0)
         if now - price_ts > 3600: continue
-        if confluence < 160: continue
+        conf_raw   = sd.get('confluence', {})
+        confluence = conf_raw.get('score', 0) if isinstance(conf_raw, dict) else float(conf_raw or 0)
+        if confluence < 150: continue  # S级阈值150（原160，略降以匹配实际分布）
         key = f'last_signal_push_{sym}'
         if now - state.get(key, 0) < 7200: continue
         try:
