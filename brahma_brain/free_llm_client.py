@@ -51,6 +51,22 @@ OR_MODEL_2 = 'google/gemma-4-26b-a4b-it:free'      # 备选1: 1.1s 标准输出
 OR_MODEL_3 = 'nvidia/nemotron-3.5-lightning:free'  # 备选2: 0.5s但需关键词提取
 OR_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
+# Cerebras: llama-3.3-70b 第三备用（900 tokens/s，极速，免费）
+# [接入 2026-10-27 苏摩111] Groq WAF封锁时的高质量备用链
+CEREBRAS_MODEL   = 'llama-3.3-70b'
+CEREBRAS_API_URL = 'https://api.cerebras.ai/v1/chat/completions'
+
+def _load_cerebras_key() -> str:
+    for ep in [Path(__file__).parent.parent / 'alerts' / '.env',
+               Path(__file__).parent.parent / '.env']:
+        if ep.exists():
+            for line in ep.read_text().splitlines():
+                if line.startswith('CEREBRAS_API_KEY='):
+                    return line.split('=', 1)[1].strip()
+    return os.environ.get('CEREBRAS_API_KEY', '')
+
+CEREBRAS_KEY = _load_cerebras_key()
+
 # Groq退避（429时）
 _groq_backoff_until = 0.0
 
@@ -157,6 +173,51 @@ def _or_chat(messages: list, max_tokens: int = 200, timeout: int = 25) -> str:
     print('[or] 全模型失败 backoff 30s', file=sys.stderr)
     return ''
 
+# ── Cerebras备用 ─────────────────────────────────────────────────────────
+# [接入 2026-10-27 苏摩111] 900 tokens/s，llama-3.3-70b免费层
+# 注册地址: https://cloud.cerebras.ai
+
+_cerebras_backoff_until = 0.0
+
+def _cerebras_chat(messages: list, max_tokens: int = 200, timeout: int = 15) -> str:
+    """Cerebras备用通道：llama-3.3-70b，900 tokens/s，极速"""
+    global _cerebras_backoff_until
+    if not CEREBRAS_KEY:
+        return ''
+    if time.time() < _cerebras_backoff_until:
+        return ''
+    try:
+        payload = json.dumps({
+            'model': CEREBRAS_MODEL,
+            'messages': messages,
+            'max_tokens': max_tokens,
+            'temperature': 0.2,
+        }).encode()
+        req = urllib.request.Request(CEREBRAS_API_URL, data=payload, headers={
+            'Authorization': f'Bearer {CEREBRAS_KEY}',
+            'Content-Type': 'application/json',
+        })
+        kw = {'timeout': timeout}
+        if _ctx: kw['context'] = _ctx
+        with urllib.request.urlopen(req, **kw) as r:
+            resp = json.loads(r.read())
+        choices = resp.get('choices') or []
+        if not choices:
+            return ''
+        raw = (choices[0].get('message') or {}).get('content') or ''
+        return raw.strip()
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            _cerebras_backoff_until = time.time() + 60
+            print('[cerebras] 429 backoff 60s', file=sys.stderr)
+        elif e.code in (401, 403):
+            print(f'[cerebras] {e.code} key问题', file=sys.stderr)
+        return ''
+    except Exception as e:
+        print(f'[cerebras] error: {e}', file=sys.stderr)
+        return ''
+
+
 # ── 主AI兜底 ─────────────────────────────────────────────────────────────
 
 def _master_chat(messages: list, max_tokens: int, timeout: int) -> str:
@@ -179,7 +240,7 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
          timeout: int = 20, task: str = 'default') -> str:
     """
     梵天LLM统一入口。
-    三层路由: Groq(0.24s) → OR备用 → 主AI兜底
+    四层路由: Groq(0.24s) → OR:free → Cerebras(900t/s) → 主AI兜底
     task参数保留兼容性，当前全部走同一模型。
     """
     # 轻量任务省略宪法，节省tokens
@@ -204,7 +265,15 @@ def chat(prompt: str, system: str = '', max_tokens: int = 200,
     if result:
         return result
 
-    # 3. 主AI兜底（强制执行，OR backoff不阻断）
+    # 3. Cerebras备用（900 tokens/s，llama-3.3-70b）
+    # [接入 2026-10-27 苏摩111] OR全灭时的高质量快速备用
+    if CEREBRAS_KEY:
+        result = _cerebras_chat(messages, max_tokens, timeout)
+        if result:
+            print(f'[llm] Cerebras接管 task={task}', file=sys.stderr)
+            return result
+
+    # 4. 主AI兜底（强制执行，OR backoff不阻断）
     print(f'[llm] 免费池全灭，主AI接管 task={task}', file=sys.stderr)
     result = _master_chat(messages, max_tokens, timeout)
     if result:
