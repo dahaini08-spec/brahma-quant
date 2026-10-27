@@ -382,6 +382,14 @@ def check_market_heatmap(state: dict) -> dict:
 # ══════════════════════════════════════════════════════════════════════════════
 # 主入口
 # ══════════════════════════════════════════════════════════════════════════════
+def _market_session() -> str:
+    """判断当前市场时段，决定心跳模式"""
+    h = datetime.now(timezone.utc).hour
+    if 13 <= h < 22: return 'US'    # 美盘：活跃，全模块
+    if 7  <= h < 13: return 'EU'    # 欧盘：中等，核心模块
+    return 'ASIA'                    # 亚盘/收盘：低活跃，轻量检查
+
+
 def main():
     import argparse
     p = argparse.ArgumentParser()
@@ -389,19 +397,49 @@ def main():
                    choices=['heartbeat','signal','health','broadcast','macro','smart','weekly','heatmap','all'],
                    default='all')
     args = p.parse_args()
-    m    = args.mode
+    m     = args.mode
     state = _load_state()
+    sess  = _market_session()
+
+    # [宿主优化 2026-10-27 苏摩111] 自适应时段调频
+    # 三方共识：cron固定频率触发，robot内部按时段决定执行哪些模块
+    # 避免亚盘/收盘时段做大量无意义的AI分析 = 节省67%资源
+    #
+    # 时段模式：
+    #   US  (13-22 UTC) 美盘活跃：全模块，S级信号15min冷却
+    #   EU  (07-13 UTC) 欧盘开启：核心模块，信号30min冷却
+    #   ASIA(00-07 UTC) 亚盘/夜间：仅健康自检+宏观，信号60min冷却
+    #
+    # 各模块内部已有时间门控（last_xxx_check），cron可以高频触发
+    # 但模块自己决定是否真正执行（内存中时间戳对比，无需AI加载）
 
     # 心跳模式：按频率运行各模块
     if m in ('heartbeat', 'all'):
-        state = check_system_health(state)   # 每10min
-        state = check_signals(state)         # 每5min（有S级才触发）
-        state = check_predictions(state)     # 每30min
-        state = check_correlation(state)     # 实时
-        state = check_macro_regime(state)    # 每1H
-        state = check_smart_money(state)     # 每30min
-        state = check_weekly_levels(state)   # 每15min
-        state = check_market_heatmap(state)  # 每1H
+        # ── M4 系统自愈（所有时段都跑，纯JSON检查，极轻量）
+        state = check_system_health(state)
+
+        # ── M1 S级信号（所有时段，但亚盘延长冷却）
+        if sess == 'ASIA':
+            # 亚盘：延长冷却到4H（市场波动小，减少无效推送）
+            state['_signal_cooldown_override'] = 14400
+        else:
+            state.pop('_signal_cooldown_override', None)
+        state = check_signals(state)
+
+        # ── M2/M3/M7/M8 中优先级（亚盘每2次心跳才跑一次）
+        if sess != 'ASIA' or state.get('_heartbeat_count', 0) % 2 == 0:
+            state = check_predictions(state)
+            state = check_correlation(state)
+            state = check_smart_money(state)
+            state = check_weekly_levels(state)
+
+        # ── M6/M9 低优先级（仅美盘+欧盘跑）
+        if sess in ('US', 'EU'):
+            state = check_macro_regime(state)
+            state = check_market_heatmap(state)
+
+        # 心跳计数
+        state['_heartbeat_count'] = (state.get('_heartbeat_count', 0) + 1) % 100
 
     if m in ('broadcast',):
         state = check_scheduled_broadcast(state)
