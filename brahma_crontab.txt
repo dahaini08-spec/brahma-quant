@@ -369,3 +369,6 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/macro_regime_engine.py >> logs/macro_regime.log 2>&1
 # [接入 2026-10-27 苏摩111] 每周一次冒烟测试，确保主链健康
 0 3 * * 1 cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_smoke_test.py >> logs/smoke_test.log 2>&1
+
+# [Phase 1 接入 2026-10-27 苏摩111] 账户感知（余额+持仓写入account_state.json）
+5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/account_gateway.py --mode sense >> logs/account_gateway.log 2>&1

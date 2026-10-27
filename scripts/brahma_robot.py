@@ -95,6 +95,24 @@ def check_signals(state: dict) -> dict:
             msg  = f"⚡ 梵天S级信号 | {sym.upper()} Confluence={confluence:.0f}\n\n{vip}\n{pt}"
             if _push(msg, priority='P1'):
                 state[key] = now
+            # [Phase 2 接入 2026-10-27 苏摩111] S级信号同步生成订单草案
+            try:
+                from account_gateway import generate_draft
+                vip_ctx = d.get('_vip_context', {})
+                if vip_ctx.get('entry_lo', 0) > 0 and r.get('direction') != 'WAIT':
+                    generate_draft(
+                        symbol=sym.upper(),
+                        direction=r['direction'],
+                        entry_lo=float(vip_ctx.get('entry_lo', 0)),
+                        entry_hi=float(vip_ctx.get('entry_hi', 0)),
+                        sl=float(vip_ctx.get('sl', 0)),
+                        tp1=float(vip_ctx.get('tp1', 0)),
+                        tp2=float(vip_ctx.get('tp2', 0)),
+                        rr=float(vip_ctx.get('rr', 1.5)),
+                        confluence_score=confluence,
+                    )
+            except Exception as _de:
+                print(f'[M1] 草案生成失败: {_de}')
         except Exception as e:
             print(f"[M1] {sym} 失败: {e}")
     return state
@@ -182,6 +200,20 @@ def check_system_health(state: dict) -> dict:
     for fname in ['fangcang_merged_v2.json', 'fangcang_experience_matrix_v2.json', 'fangcang_cases_tradfi.json']:
         if not (BASE / 'data' / fname).exists():
             alerts.append(f"❌ 缺失: {fname}")
+
+    # [Phase 1 接入 2026-10-27 苏摩111] 账户感知（每1H拉一次余额+持仓）
+    if now - state.get('last_account_sense', 0) > 3600:
+        state['last_account_sense'] = now
+        try:
+            from account_gateway import sense_account
+            acct = sense_account()
+            nav = acct.get('nav_usdt', 0)
+            pos = acct.get('position_count', 0)
+            if nav > 0:
+                state['last_nav'] = nav
+                state['last_pos_count'] = pos
+        except Exception as _ae:
+            pass  # 账户感知失败不影响主流程
 
     # [接入 2026-10-27 苏摩111] brahma_health深度检查（每6H一次，仅US/EU时段）
     sess = _market_session()
@@ -457,12 +489,26 @@ def check_daily_report(state: dict) -> dict:
                     prices[sym] = float(_json.loads(r.read())['price'])
             except: prices[sym] = 0
 
+        # ── 账户状态 ──
+        acct_str = ''
+        acct_path = BASE / 'data' / 'account_state.json'
+        if acct_path.exists():
+            try:
+                _ac = _json.loads(acct_path.read_text())
+                _nav = _ac.get('nav_usdt', _ac.get('pm_equity', 0))
+                _pos = _ac.get('positions', []) + _ac.get('pm_positions', [])
+                _pm  = '✅' if _ac.get('has_pm_access') else '❌待审批'
+                acct_str = f"💰 NAV≈${_nav:,.2f} USDT  持仓={len(_pos)}个  PM={_pm}"
+            except Exception:
+                pass
+
         # ── 组装日报 ──
         wr = win_n/closed_n*100 if closed_n else 0
         lines = [
             f"🏛️ 梵天日报 | {now_dt.strftime('%m/%d')} 09:00 UTC",
             f"",
             f"📊 行情: BTC=${prices.get('BTC',0):,.0f}  ETH=${prices.get('ETH',0):,.1f}",
+            acct_str,
             f"",
             f"💾 数据健康({len([s for s in data_status if s.startswith('✅')])}/{len(data_status)}):",
             '  ' + ' '.join(data_status[:4]),
