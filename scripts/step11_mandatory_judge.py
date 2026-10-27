@@ -114,6 +114,9 @@ class Step11Judge:
         _gex_raw = d.get('gex', 0) or vol.get('gex', 0) or 0
         self.gex      = float(_gex_raw) if isinstance(_gex_raw, (int, float)) else 0.0
         self.oi_signal = str((oi or {}).get('signal', '') or (oi or {}).get('main_signal', '') or '')
+        # [修复 2026-10-27 苏摩111] oi=None时从d顶层降级读取oi_signal
+        if not self.oi_signal:
+            self.oi_signal = str(d.get('oi_signal','') or d.get('oi_direction','') or '')
         # [封印 2026-10-17 苏摩111] RSI先行信号注入：Gate5豁免判断需要
         _bs = d.get('bs', {})
         self.rsi_1h   = float(d.get('rsi_1h', _bs.get('rsi_1h', 50)) or 50)
@@ -121,12 +124,14 @@ class Step11Judge:
         self.rsi_1d   = float(d.get('rsi_1d', _bs.get('rsi_1d', 50)) or 50)
         self.lsr_retail = float(d.get('lsr_retail', 0) or 0)
         self.zero_flip  = float(d.get('zero_flip', 0) or 0)
-        self.entry_lo = float(tb_result.get('entry_lo', 0) or 0)
-        self.entry_hi = float(tb_result.get('entry_hi', 0) or 0)
-        self.sl       = float(tb_result.get('stop_loss', 0) or 0)
-        self.tp1      = float(tb_result.get('tp1', 0) or 0)
-        self.tp2      = float(tb_result.get('tp2', 0) or 0)
-        self.rr       = float(tb_result.get('rr1', 0) or 0)
+        # [修复 2026-10-27 苏摩111] tb_result字段优先，=0时从bs/d降级补充
+        _bs2 = d.get('bs', d)  # bs不存在时用d本身
+        self.entry_lo = float(tb_result.get('entry_lo',0) or _bs2.get('entry_lo',0) or 0)
+        self.entry_hi = float(tb_result.get('entry_hi',0) or _bs2.get('entry_hi',0) or 0)
+        self.sl       = float(tb_result.get('stop_loss',0) or _bs2.get('stop_loss',0) or _bs2.get('sl',0) or 0)
+        self.tp1      = float(tb_result.get('tp1',0) or _bs2.get('tp1',0) or 0)
+        self.tp2      = float(tb_result.get('tp2',0) or _bs2.get('tp2',0) or 0)
+        self.rr       = float(tb_result.get('rr1',0) or tb_result.get('rr',0) or _bs2.get('rr',0) or 0)
 
     # ──────────────────────────────────────────────────────────
     # 11道闸门（每道返回 True=通过 / False=阻断）

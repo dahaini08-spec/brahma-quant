@@ -3327,7 +3327,9 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             _s11_obs = [k for k,v in ob.items() if isinstance(v,dict) and v.get('valid')] if isinstance(ob,dict) else []
             _s11_ob_bull = sum(1 for k in _s11_obs if 'BULL' in k)
             _s11_ob_bear = sum(1 for k in _s11_obs if 'BEAR' in k)
-            _s11_oi_sig = (oi or {}).get('signal','')
+            # [修复 2026-10-27 苏摩111] oi=None时从d顶层降级读oi_signal
+            _s11_oi_sig = (str((oi or {}).get('signal','') or (oi or {}).get('main_signal','')
+                           or d.get('oi_signal','') or d.get('oi_direction','') or ''))
             _s11_oi_bull = _s11_oi_sig in ('LONG_BUILD','SHORT_SQUEEZE')
             _s11_oi_bear = _s11_oi_sig in ('SHORT_BUILD',)
             _s11_gex = (vol or {}).get('gex_score',0)
