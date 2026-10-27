@@ -196,6 +196,18 @@ def check_system_health(state: dict) -> dict:
         except Exception:
             pass
 
+    # [接入 2026-10-27 苏摩111] self_heal_daemon.run_once() 接入M4
+    # 自愈数据新鲜度+进程检查，每30min一次
+    if now - state.get('last_self_heal', 0) > 1800:
+        state['last_self_heal'] = now
+        try:
+            from self_heal_daemon import run_once as _heal_once
+            n = _heal_once()
+            if n and n > 0:
+                alerts.append(f"🔧 self_heal触发{n}项修复")
+        except Exception:
+            pass
+
     last = set(state.get('last_health_alerts', []))
     new  = [a for a in alerts if a not in last]
     if new:

@@ -439,6 +439,7 @@ def fetch_all(sym: str) -> dict:
         'lsr_big_pct':   sd.get('lsr_big', 50),
         'lsr_retail_pct':sd.get('lsr_retail', 50),
         'confluence_score': sd.get('confluence', {}).get('score', 0) if isinstance(sd.get('confluence'), dict) else 0,
+        'confluence': sd.get('confluence', {}) if isinstance(sd.get('confluence'), dict) else {},  # [修复 2026-10-27] fetch_all注入完整confluence dict
         'oi_direction':  sd.get('oi_direction', 'FLAT'),
         'session':       sd.get('session', 'UNKNOWN'),
         # [升级 2026-10-20] BTC-ETH动态相关（24H实时计算，替换0.85硬编码）
@@ -1605,7 +1606,7 @@ def format_vip(d: dict, reasoning: dict) -> str:
                     'oi_8h': d.get('oi_8h', 0),
                     'taker': d.get('taker_now', 1.0),
                     'bb_squeeze': d.get('bb_width', 2.0) < 1.5,
-                    'confluence': d.get('confluence_score', 0),
+                    'confluence': sd.get('confluence', {}) if isinstance(sd.get('confluence'), dict) else {},  # [修复 2026-10-27] 注入完整confluence dict（含score字段）
                     'bias': reasoning.get('bias', 0),
                 }
             )
