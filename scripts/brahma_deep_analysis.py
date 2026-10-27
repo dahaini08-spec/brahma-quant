@@ -1437,22 +1437,40 @@ def format_vip(d: dict, reasoning: dict) -> str:
         liq_entry_lo = round(liq_up_val * 0.994, 1)   # 清算位下方0.6%
         rr_at_liq = ((liq_entry_lo - tp1_now) / (sl_for_vip - liq_entry_lo)
                      if sl_for_vip > liq_entry_lo > tp1_now > 0 else 0)
-        if rr_now >= 1.5:
-            # 当前即可入场（价格已在合理位置）
-            if zf > px * 0.998:
-                entry_str = f"等ZF阻力区 ${px*1.001:,.1f}~${zf*0.999:,.1f}"
-            else:
-                entry_str = f"${px*1.001:,.1f}~${px*1.003:,.1f}"
-            entry_note = f"RR={rr_now:.2f}✅直接挂单"
+        # [修复 2026-10-27 苏摩111] 统一入场逻辑：始终使用liq_up清算位入场
+        # 铁律：空单入场区必须在SL下方，SL在入场区上方
+        # ZF阻力区宽达100点，SL必然落在区间内部 → 永久废弃ZF区间入场
+        # 唯一正确入场：liq_up附近（清算位），SL=liq_up×1.003+ATR1H
+        if rr_at_liq >= 1.5:
+            # 清算位入场RR满足要求
+            entry_str  = f"等清算位 ${liq_entry_lo:,.1f}~${liq_entry_hi:,.1f}"
+            entry_note = f"RR={rr_at_liq:.2f}✅等价格到${liq_up_val:,.0f}清算位"
+        elif rr_now >= 1.5 and abs(px - sl_for_vip) / px > 0.015:
+            # 当前价附近入场，但必须确保SL在入场区上方（距离>1.5%）
+            # 入场区：当前价±0.3%（窄区间，SL在入场区上方有保障）
+            e_lo = round(px * 0.997, 1)
+            e_hi = round(px * 1.003, 1)
+            entry_str  = f"${e_lo:,.1f}~${e_hi:,.1f}"
+            entry_note = f"RR={rr_now:.2f}✅当前价挂单（SL在区间上方✅）"
         else:
-            # 等价格到达止损清算位（liq_up）时入场
-            # = 路线A路径：价格扫多头止损池 → 在清算位挂空单
-            entry_str = f"等清算位 ${liq_entry_lo:,.1f}~${liq_entry_hi:,.1f}"
+            # RR不足，等待更好入场点
+            entry_str  = f"等清算位 ${liq_entry_lo:,.1f}~${liq_entry_hi:,.1f}"
             entry_note = f"等价格到${liq_up_val:,.0f}清算位附近入空 RR={rr_at_liq:.2f}"
         rr_str = f"{rr:.2f}" if rr > 0 else "计算中"
+        # [修复 2026-10-27 苏摩111] VIP卡片完全对齐_vip_context（唯一数据源）
+        _ctx_lo  = round(liq_up_val * 0.994, 1)
+        _ctx_hi  = round(liq_up_val * 0.998, 1)
+        _ctx_sl  = round(liq_up_val * 1.003 + d.get('atr_1h', 30), 1)
+        if liq_up_val > px * 1.005:  # 清算位在当前价5%以上 → 等待模式
+            entry_str  = f"等清算位 ${_ctx_lo:,.1f}~${_ctx_hi:,.1f}"
+            _rr_show = rr_at_liq if rr_at_liq > 0 else round(
+                abs(liq_up_val * 0.994 - float(d.get('tp1_now', d.get('step11_tp1', liq_up_val*0.96)))) /
+                max(0.001, abs(liq_up_val * 1.003 - liq_up_val * 0.994)), 1)
+            entry_note = f"RR={_rr_show:.1f}  等价格到${liq_up_val:,.0f}"
+            sl_for_vip = _ctx_sl  # SL统一用liq_up+ATR1H，与_vip_context完全一致
         long_line  = "🟢 暂无多单｜等待结构"
         short_line = f"🔴 空单｜{entry_str}"
-        # sl_for_vip已在上方初始化（liq_up+ATR1H或sl_short）
+        # sl_for_vip已对齐_vip_context
         short_sl   = f"止损${sl_for_vip:,.1f}｜目标${tp1:,.1f}→${tp2:,.1f}"
         long_sl    = short_sl   # [bugfix 2026-10-21] 空单时long_sl显示空单信息
         # [封印 2026-10-23] warn显示插针等待状态+SL清算区警告
