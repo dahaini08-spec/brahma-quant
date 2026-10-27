@@ -3344,6 +3344,14 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
             ])
             res['align_count'] = _s11_align
             print(f'[{sym}] G4预计算: dir={_s11_dir} align={_s11_align}/7', flush=True)
+        # [P0-C v4 2026-10-27 苏摩111] Step11前最后一道保障：强制d['bs']['score_final']=confluence.score
+        _bs_ref = d.get('bs', {})
+        _cf_s11 = float(_bs_ref.get('confluence', {}).get('score', 0)
+                        if isinstance(_bs_ref.get('confluence'), dict) else 0)
+        if _cf_s11 > float(_bs_ref.get('score_final', 0) or 0):
+            _bs_ref['score_final'] = _cf_s11
+            _bs_ref['score'] = _cf_s11
+            d['bs'] = _bs_ref
         _s11_result = _s11(sym, d, fvg, ob, liq, res, oi, sm, vol, mac, risk, _tb_for_s11)
         d['_step11'] = _s11_result  # 供后续formatter读取
         _s11_verdict = _s11_result['verdict']

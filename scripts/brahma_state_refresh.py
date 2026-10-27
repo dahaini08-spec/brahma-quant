@@ -670,6 +670,10 @@ def _inject_gex_to_state():
                 state['gex_net'] = float(ng)
                 changed = True
             if changed:
+                # [P0-C v3 2026-10-27 苏摩111] 写入前确保score_final=confluence.score
+                _cs = float(state.get('confluence',{}).get('score',0) if isinstance(state.get('confluence'),dict) else 0)
+                if _cs > float(state.get('score_final',0) or 0):
+                    state['score_final'] = _cs
                 tmp = state_f.with_suffix('.tmp')
                 tmp.write_text(_j.dumps(state, ensure_ascii=False))
                 tmp.replace(state_f)
@@ -743,6 +747,10 @@ def _inject_fangcang_to_state():
                 state['fc_confidence'] = str(_result.get('confidence', ''))
                 state['fc_n_similar']  = int(_result.get('n_similar', 0))
                 state['fc_note']   = f"n={_result.get('n_similar',0)} conf={_result.get('confidence','')} burst={_result.get('avg_burst_atr_mult',0):.1f}x"[:100]
+                # [P0-C v3 2026-10-27 苏摩111] 写入前确保score_final=confluence.score
+                _cs2 = float(state.get('confluence',{}).get('score',0) if isinstance(state.get('confluence'),dict) else 0)
+                if _cs2 > float(state.get('score_final',0) or 0):
+                    state['score_final'] = _cs2
                 tmp = state_f.with_suffix('.tmp')
                 tmp.write_text(_j.dumps(state, ensure_ascii=False))
                 tmp.replace(state_f)
