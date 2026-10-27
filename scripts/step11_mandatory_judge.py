@@ -220,6 +220,48 @@ class Step11Judge:
         self.reason.append(f'⚪ G2b方仓{anchor_dir} {dominant_pct*100:.0f}%（n={fc_n}），置信不足，不锚定')
         return True
 
+    def gate2b_macro_lock(self) -> bool:
+        """Gate2.5: 宏观方向硬锁（CHOP_MID场景专用）
+        [封印 2026-10-27 苏摩111] 预判型升级P0
+
+        逻辑：
+          BULL_EARLY/MID/LATE + CHOP_MID + 做空 → 硬拒
+          BEAR_EARLY/DEEP + CHOP_MID + 做多 → 硬拒
+          非CHOP体制保留原有软降权（不在此拦截）
+
+        目的：宏观BULL时，即使4H是CHOP，也不做空
+              08/17那周宏观=BULL_EARLY，所有空单在此被拦截
+        """
+        if 'CHOP' not in self.regime:
+            self.reason.append('✅ G2.5 非CHOP体制，跳过宏观硬锁')
+            return True
+
+        # 读宏观体制
+        _mac_d = self.mac or {}
+        _sym_upper = self.sym.upper().replace('USDT','')
+        _mac_sym = _mac_d.get(_sym_upper, _mac_d)
+        _macro = str(_mac_sym.get('macro_regime','') or _mac_d.get('macro_regime','') or '')
+
+        # ETH_WEAK铁律⑤豁免：ETH相对弱时BULL_EARLY允许做空
+        _eth_rel = float(_mac_d.get('ETH_BTC_rel_4w', 0) or 0)
+        _eth_weak = (_sym_upper == 'ETH') and (_eth_rel < -0.05)
+
+        if 'BULL' in _macro and self.direction == 'SHORT' and not _eth_weak:
+            self.blocked_by = f'Gate2b_宏观锁:CHOP+{_macro}禁空'
+            self.reason.append(f'❌ G2.5 CHOP_MID+{_macro}→禁止做空（应做多或等待）')
+            return False
+
+        if 'BEAR' in _macro and self.direction == 'LONG':
+            self.blocked_by = f'Gate2b_宏观锁:CHOP+{_macro}禁多'
+            self.reason.append(f'❌ G2.5 CHOP_MID+{_macro}→禁止做多（应做空或等待）')
+            return False
+
+        _note = f'CHOP+{_macro}+{self.direction}方向一致' if _macro else 'CHOP宏观未知，跳过'
+        if _eth_weak and 'BULL' in _macro:
+            _note += ' (ETH_WEAK铁律⑤豁免)'
+        self.reason.append(f'✅ G2.5 {_note}')
+        return True
+
     def gate3_dead_combo(self) -> bool:
         """Gate3: 高证据标准检查（对齐系统9.17实际语义，非硬封禁）"""
         key = f'{self.regime}:{self.direction}'
@@ -300,6 +342,21 @@ class Step11Judge:
                 self._rsi_override_pos_scale = 0.33  # 仓位系数，下游vip读取
             else:
                 self._rsi_override_pos_scale = 1.0
+            # [封印 2026-10-27 苏摩111] 周线宏观豁免：周线BULL+4H CHOP → 允许做多
+            _mac_d2 = self.mac or {}
+            _sym2 = self.sym.upper().replace('USDT','')
+            _mac2 = str((_mac_d2.get(_sym2,{}) or {}).get('macro_regime','') or '')
+            _weekly_exempt = False
+            if 'BULL' in _mac2 and self.direction == 'LONG':
+                _weekly_exempt = True
+                _note = _note + f' | 周线{_mac2}+做多→豁免CHOP门槛✅'
+            elif 'BEAR' in _mac2 and self.direction == 'SHORT':
+                _weekly_exempt = True
+                _note = _note + f' | 周线{_mac2}+做空→豁免CHOP门槛✅'
+            if _weekly_exempt:
+                self.reason.append(f'✅ G5周线豁免 {_note}')
+                return True
+
             if self.score < effective_threshold:
                 self.blocked_by = f'Gate5_CHOP门槛:{self.score:.0f}<{effective_threshold}'
                 self.reason.append(f'❌ G5 {_note} score={self.score:.0f} < {effective_threshold}')
@@ -416,6 +473,7 @@ class Step11Judge:
             self.gate1b_vol_price_truth,   # [2026-10-16 苏摩111封印] P0 量价真实性
             self.gate2_direction,
             self.gate2b_fangcang_anchor,   # [2026-10-16 苏摩111封印] P0 方仓锚定
+            self.gate2b_macro_lock,        # [封印 2026-10-27 苏摩111] CHOP+宏观方向硬锁
             self.gate3_dead_combo,
             self.gate4_resonance,
             self.gate5_chop_score,
