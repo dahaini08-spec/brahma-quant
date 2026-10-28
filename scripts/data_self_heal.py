@@ -211,7 +211,7 @@ def heal_macro() -> bool:
     log(f'macro过期{age:.0f}min → 刷新')
     try:
         result = subprocess.run(
-            [sys.executable, str(BASE / 'scripts' / 'macro_real_engine.py')],
+            [sys.executable, str(BASE / 'scripts' / 'macro_regime_engine.py')],
             capture_output=True, text=True, timeout=20
         )
         if result.returncode == 0:
