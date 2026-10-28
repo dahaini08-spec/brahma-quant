@@ -1,21 +1,28 @@
 {
-  "last_health_check": 1793067703.6527107,
+  "last_health_check": 1793189400.103475,
   "last_health_alerts": [
-    "⚠️ BTC state过期625min",
-    "⚠️ ETH state过期625min",
-    "🚨 supercronic未运行→已尝试重启"
+    "🔧 self_heal触发2项修复"
   ],
   "last_btc_eth_corr": 0.936,
   "macro_BTC": "BULL_EARLY",
   "macro_ETH": "BULL_EARLY",
-  "eth_btc_rel": -8.4,
-  "smart_BTC_div": 0.18046378519422585,
-  "smart_ETH_div": 0.3990871535181236,
+  "eth_btc_rel": -8.38,
+  "smart_BTC_div": 0.07601791106945753,
+  "smart_ETH_div": 0.2906957663275353,
   "above_wema_BTC": true,
   "near_wsupp_BTC": false,
   "above_wema_ETH": true,
   "near_wsupp_ETH": false,
-  "last_macro_check": 1793066172.4575415,
-  "last_smart_check": 1793066172.4591415,
-  "last_weekly_check": 1793066172.742698
+  "last_macro_check": 1793189446.6947894,
+  "last_smart_check": 1793189446.576961,
+  "last_weekly_check": 1793189446.659848,
+  "_test_write": 1793086601.7767353,
+  "last_account_sense": 1793189400.103475,
+  "last_self_heal": 1793189400.103475,
+  "last_signal_push_btc": 1793189443.4458294,
+  "last_pred_check": 1793189446.5622795,
+  "_heartbeat_count": 3,
+  "last_heatmap": 1793189446.6949327,
+  "last_deep_health": 1793189400.103475,
+  "last_signal_push_eth": 1793189443.4458294
 }

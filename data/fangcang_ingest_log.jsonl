@@ -4,3 +4,10 @@
 {"ts": 1793018676.1116383, "pid": "225d7857", "symbol": "BTC", "direction": "UP", "pnl": 1.433, "status": "HIT_SL", "regime": "CHOP_MID"}
 {"ts": 1793018676.111823, "pid": "15645626", "symbol": "BTC", "direction": "UP", "pnl": 1.433, "status": "HIT_SL", "regime": "CHOP_MID"}
 {"ts": 1793018676.112637, "pid": "e1068b07", "symbol": "BTC", "direction": "UP", "pnl": 1.433, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793030040.8814466, "pid": "7a2ee06a", "symbol": "ETH", "direction": "UP", "pnl": 1.131, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793030065.784819, "pid": "52b2595a", "symbol": "ETH", "direction": "UP", "pnl": 1.131, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793030232.5751376, "pid": "66ecdfdc", "symbol": "BTC", "direction": "UP", "pnl": 1.652, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793030233.6397283, "pid": "b76f913a", "symbol": "ETH", "direction": "UP", "pnl": 1.226, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793030246.0649288, "pid": "3f571319", "symbol": "BTC", "direction": "UP", "pnl": 1.652, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793030247.1072507, "pid": "3c482b2d", "symbol": "ETH", "direction": "UP", "pnl": 1.226, "status": "HIT_SL", "regime": "CHOP_MID"}
+{"ts": 1793066171.213176, "pid": "b96a92f0", "symbol": "ETH", "direction": "UP", "pnl": 1.226, "status": "HIT_SL", "regime": "CHOP_MID"}
