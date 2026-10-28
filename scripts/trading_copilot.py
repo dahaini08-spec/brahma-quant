@@ -98,9 +98,25 @@ def get_price(sym):
         return 0.0
 
 def get_liq(sym):
+    """[P0修复 2026-10-28 苏摩111] nearest_short/long_liq键不存在→$0/$900/$0
+    改从buy_walls/sell_walls提取最近清算位
+    sell_walls = 做空止损集中（空头被猎杀位）→ 价格上方最近 = short_liq（阻力）
+    buy_walls  = 做多止损集中（多头被猎杀位）→ 价格下方最近 = long_liq（支撑）
+    """
     try:
         d = json.loads((WORKDIR/'data'/f'liq_heatmap_{sym.lower()}usdt.json').read_text())
-        return float(d.get('nearest_short_liq',0)), float(d.get('nearest_long_liq',0))
+        cur = float(d.get('current_px', 0))
+        # sell_walls（空头止损）= 上方阻力/清算区
+        sell_walls = d.get('sell_walls', [])
+        # buy_walls（多头止损）= 下方支撑/清算区
+        buy_walls = d.get('buy_walls', [])
+        # 上方最近的sell_wall（空单SL区，反弹入空目标）
+        above_sell = [w['price'] for w in sell_walls if w['price'] > cur]
+        # 下方最近的buy_wall（多单SL区，回调入多目标）
+        below_buy  = [w['price'] for w in buy_walls  if w['price'] < cur]
+        liq_s = min(above_sell) if above_sell else 0.0  # 上方最近空头清算位
+        liq_l = max(below_buy)  if below_buy  else 0.0  # 下方最近多头清算位
+        return liq_s, liq_l
     except Exception:
         return 0.0, 0.0
 
@@ -431,7 +447,9 @@ def m5_hunt_and_position(state, alerts):
             fr_data = fetch(f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={sym}USDT&limit=2')
             fr_now = float(fr_data[-1]['fundingRate'])*100
 
-            # 5a. 猎杀门槛
+            # 5a. 猎杀门槛 [推送治理 2026-10-28 苏摩111] M5不推送，由M7统一负责
+            # 原因：M5参数来自get_liq（$0时输出$0/$900/$0），M7有完整vip_config参数
+            # M5保留检测逻辑用于日志，但alerts不append
             sk_hunt = f'{sym}_M5_hunt'
             if lsr_now >= hunt_thresh and \
                (time.time() - state.get(sk_hunt, 0)) > COOLDOWN['lsr_hunt']:
@@ -452,7 +470,7 @@ def m5_hunt_and_position(state, alerts):
                     f'⚠️ 如果有多单：考虑止盈或上移止损！\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 )
-                alerts.append((sk_hunt, msg))
+                print(f'[M5-LSR-日志only] {sym} LSR={lsr_now:.1f}% 已触发，由M7推送')  # M5不推送
 
             # 5b. 仓位反向检查（苏摩有持仓时）
             pos_key = sym.upper()
