@@ -42,7 +42,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 轻量(<3s)，只读已有state，满足条件自动推送VIP触发通知
 # 不重跑80维分析，不增加大CPU负担
 # [TRIM2 2026-10-04] 结构哨兵合并到autonomous_loop || 2,17,32,47 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/structure_sentinel.py >> logs/structure_sentinel.log 2>&1
-5,20,35,50 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/breakout_watch.py >> logs/breakout_watch.log 2>&1  # [2.0 果蝇独立巡检 15min]
+5,35 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/breakout_watch.py >> logs/breakout_watch.log 2>&1  # [2.0 果蝇独立巡检 15min]
 # ============================================================
 # 候选池生成 — :05和:35
 # [TRIM 2026-10-04 苏摩111 精简至40任务 候选列表低频足够，降到每日1次] 07 * * * * cd /root/.openclaw/workspace/trading-system && timeout 15 python3 scripts/battlefield_candidates.py  # [2.0降频 30min→1h] >> logs/battlefield_candidates.log 2>&1
@@ -194,7 +194,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # GEX刷新 — 每4小时, 用gex_unified.scan_gex写gex_state.json
 # [9.15苏摩111 P1修复] 扩展到tier1标的
 # [9.18苏摩111 顶层修复] GEX从10标的→BTC+ETH防OOM
-4 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "from brahma_brain.gex_unified import scan_gex; [scan_gex(s,force=True) for s in ['BTC','ETH']]" >> logs/gex_cron.log 2>&1  # [P1-F 2026-10-10] 4H→1H ZeroFlip感知及时
+4 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "from brahma_brain.gex_unified import scan_gex; [scan_gex(s,force=True) for s in ['BTC','ETH']]" >> logs/gex_cron.log 2>&1  # [P1-F 2026-10-10] 4H→1H ZeroFlip感知及时
 # vol_beta刷新 — 每4小时
 # [9.18 修复] vol_beta从:00移到:04错峰
 4 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "from brahma_brain.vol_beta_engine import run; run('BTC'); run('ETH')" >> logs/vol_beta_cron.log 2>&1
@@ -257,7 +257,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [TRIM 2026-10-04 苏摩111 精简至40任务 已由process_resurrect覆盖] */5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 bash scripts/independent_watchdog.sh >> logs/watchdog.log 2>&1  # [2.0 去nohup&]
 
 # [9.23苏摩111 P0] 每分钟拉起核心进程（带单实例锁，进程死了自动复活）
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh >> logs/resurrect.log 2>&1  # [频率优化 2026-10-10] 1min→5min，trading_copilot会感知异常+推送
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && bash scripts/process_resurrect.sh  # [降频 2026-10-28 苏摩111] M0守护已接管supercronic >> logs/resurrect.log 2>&1  # [频率优化 2026-10-10] 1min→5min，trading_copilot会感知异常+推送
 47 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_autonomous_loop.py >> logs/autonomous_loop.log 2>&1  # [频率优化 2026-10-10] 30min→60min，heal/health/evolve 1H足够
 # [TRIM2 2026-10-04] 宿主健康合并到autonomous_loop || */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/host_health_sentinel.py >> logs/host_health.log 2>&1  # [降频优化 2026-10-04] 降频83%:宿主资源变化慢,30min足够
 # [TRIM2 2026-10-04] 数据质量合并到autonomous_loop || */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/state_quality_sentinel.py --no-push >> logs/state_quality.log 2>&1  # [降频优化 2026-10-04] 降频50%:数据质量问题持续性高
@@ -302,16 +302,16 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 15 1,9,17 * * * cd /root/.openclaw/workspace/trading-system && timeout 240 python3 scripts/brahma_manual_analysis.py --symbols BTC ETH >> logs/auto_analysis.log 2>&1  # [2026-10-07 苏摩111] 01:00→01:05错开gateway重启
 
 # [封印修复④ 2026-10-05 苏摩111] LSR实时拉取每15min，猎杀信号接入
-*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/lsr_patch.py >> logs/state_quality.log 2>&1  # [频率优化 2026-10-10] 15min→30min，LSR 8H结算，30min更新足够
+# [降频 2026-10-28 苏摩111] lsr_patch删除（state_refresh已覆盖LSR） >> logs/state_quality.log 2>&1  # [频率优化 2026-10-10] 15min→30min，LSR 8H结算，30min更新足够
 # [封印 2026-10-06 苏摩111] VIP策略即时推送哨兵——解决CHOP_MID体制永远不推VIP更新的根本问题
 # 每30min独立巡检，brahma_manual_analysis分析完成后也会内联调用
 # [2026-10-07 苏摩111 停用] */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/vip_strategy_watcher.py >> logs/vip_watcher.log 2>&1
 # [封印 2026-10-06 苏摩111] signal_change_detector去除RSI门控，独立每15min运行
 # 原：RSI触发依赖导致60min内信号变化检测不到；新：hash扩展entry/sl维度
 7 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/signal_change_detector.py  # [优化 2026-10-21] >> logs/signal_change.log 2>&1  # [频率优化 2026-10-10] →60min，brahma_state每小时更新，score变化感知1H足够
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/price_alert_monitor.py >> logs/price_alert.log 2>&1  # [频率优化 2026-10-10] 1min→5min，M7已覆盖FR/LSR，price_alert专注价位+冲突检查
-* * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_copilot.lock timeout 90 python3 scripts/trading_copilot.py >> logs/copilot.log 2>&1
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/price_alert_monitor.py  # [降频 2026-10-28 苏摩111] >> logs/price_alert.log 2>&1  # [频率优化 2026-10-10] 1min→5min，M7已覆盖FR/LSR，price_alert专注价位+冲突检查
+*/2 * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_copilot.lock timeout 55 python3 scripts/trading_copilot.py  # [降频 2026-10-28 苏摩111] 1min→2min >> logs/copilot.log 2>&1
+*/60 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/neuron_dashboard.py >> logs/neuron_dashboard.log 2>&1  # [频率优化 2026-10-10] 15min→30min，仪表盘读取copilot已有数据
 
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/signal_early_alert.py >> logs/early_alert.log 2>&1  # [封印 2026-10-17 苏摩111] 先行信号预警层: RSI55~75/LSR>72%/OI急变/GEX穿越 每15min
@@ -332,16 +332,16 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 20 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 -c "import sys,json,time; sys.path.insert(0,'brahma_brain'); from brahma_deep_analysis import run_deep_analysis; from pathlib import Path; r=run_deep_analysis(['BTC','ETH']); Path('data/deep_analysis_latest.json').write_text(json.dumps({'ts':time.time(),'output':r})); print('[deep_analysis] done', time.strftime('%H:%M'))" >> logs/deep_analysis.log 2>&1
 
 # ── [封印 2026-10-19 苏摩111] 神经感知VIP监控 ──────────────────────────────
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/brahma_vip_watcher.py >> logs/vip_watcher.log 2>&1
+*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 45 python3 scripts/brahma_vip_watcher.py >> logs/vip_watcher.log 2>&1
 
 # ── [封印 2026-10-19 苏摩111] 先行信号层 每15分钟预判 ──────────────────────
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/brahma_signal_early_alert.py >> logs/early_alert.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/brahma_signal_early_alert.py >> logs/early_alert.log 2>&1
 
 # ── [封印 2026-10-20 苏摩111] 42标的轻量监控 分层架构 ─────────────────────
 # L1快扫: 每15分钟，零AI，全42标的
-*/15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 35 python3 scripts/brahma_42_monitor.py --mode quick >> logs/monitor_42.log 2>&1
+*/20 * * * * cd /root/.openclaw/workspace/trading-system && timeout 35 python3 scripts/brahma_42_monitor.py  # [降频 2026-10-28 苏摩111] --mode quick >> logs/monitor_42.log 2>&1
 # L2深度: 每30分钟，含方仓匹配，有信号推送
-*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 40 python3 scripts/brahma_42_monitor.py --mode signal >> logs/monitor_42.log 2>&1
+# [降频 2026-10-28 苏摩111] 30min版42_monitor删除（15min版已覆盖） --mode signal >> logs/monitor_42.log 2>&1
 # [封印 2026-10-20 苏摩111] ①state_refresh两档刷新：43分=轻量（只GEX价格），13分=完整（含fangcang）
 43 * * * * cd /root/.openclaw/workspace/trading-system && BRAHMA_NO_LLM=1 timeout 60 python3 -c "import sys; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain'); from brahma_state_refresh import _inject_gex_to_state; _inject_gex_to_state(); print('[quick_refresh] GEX done')" >> logs/state_refresh.log 2>&1
 # prediction_settler — 梵天3.0预测结算 [封印 2026-10-26 苏摩111]
@@ -374,10 +374,10 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/account_gateway.py --mode sense >> logs/account_gateway.log 2>&1
 
 # [P0-B 封印 2026-10-27 苏摩111] 数据自愈守护（每5分钟）
-*/5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/data_self_heal.py >> logs/data_self_heal.log 2>&1
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 55 python3 scripts/data_self_heal.py  # [降频 2026-10-28 苏摩111] CVD TTL=5min，10min触发仍可自愈 >> logs/data_self_heal.log 2>&1
 
 # [封印 2026-10-27 苏摩111] 先行信号独立执行通道（每15min，绕过CHOP门控）
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 50 python3 scripts/leading_signal_executor.py --symbols BTC ETH >> logs/leading_executor.log 2>&1
 
 # [封印 2026-10-27 苏摩111] 体制切换预判维度（每10min）
-*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/regime_transition_detector.py --no-push --quiet >> logs/regime_transition.log 2>&1
+*/30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/regime_transition_detector.py --no-push --quiet >> logs/regime_transition.log 2>&1
