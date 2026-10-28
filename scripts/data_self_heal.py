@@ -33,7 +33,7 @@ def _should_skip():
         (DATA / 'gex_state.json', 60*60),
         (DATA / 'vol_beta_state.json', 60*60),
         (DATA / 'circuit_breaker_state.json', 2*60*60),
-        (DATA / 'macro_real.json', 300*60),
+        (DATA / 'macro_regime_state.json', 300*60)  # [修复 2026-10-28] 正确文件名,
     ]
     expired = sum(1 for p,ttl in ttl_checks
                   if not p.exists() or (now - p.stat().st_mtime) > ttl)
@@ -222,7 +222,7 @@ def heal_circuit_breaker() -> bool:
 # ══════════════════════════════════════════════════════
 
 def heal_macro() -> bool:
-    age = _age_min(DATA / 'macro_real.json')
+    age = _age_min(DATA / 'macro_regime_state.json')  # [修复 2026-10-28]
     if age < 200:
         return True
 
