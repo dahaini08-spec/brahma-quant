@@ -98,24 +98,30 @@ def get_price(sym):
         return 0.0
 
 def get_liq(sym):
-    """[P0修复 2026-10-28 苏摩111] nearest_short/long_liq键不存在→$0/$900/$0
-    改从buy_walls/sell_walls提取最近清算位
-    sell_walls = 做空止损集中（空头被猎杀位）→ 价格上方最近 = short_liq（阻力）
-    buy_walls  = 做多止损集中（多头被猎杀位）→ 价格下方最近 = long_liq（支撑）
+    """[P0修复 2026-10-28 苏摩111] 清算位读取+asset_config双重fallback
+    优先从liq_heatmap读buy_walls/sell_walls
+    heatmap为空或数据缺失时，fallback到asset_config.liq_short/liq_long
     """
     try:
         d = json.loads((WORKDIR/'data'/f'liq_heatmap_{sym.lower()}usdt.json').read_text())
-        cur = float(d.get('current_px', 0))
-        # sell_walls（空头止损）= 上方阻力/清算区
-        sell_walls = d.get('sell_walls', [])
-        # buy_walls（多头止损）= 下方支撑/清算区
-        buy_walls = d.get('buy_walls', [])
-        # 上方最近的sell_wall（空单SL区，反弹入空目标）
-        above_sell = [w['price'] for w in sell_walls if w['price'] > cur]
-        # 下方最近的buy_wall（多单SL区，回调入多目标）
-        below_buy  = [w['price'] for w in buy_walls  if w['price'] < cur]
-        liq_s = min(above_sell) if above_sell else 0.0  # 上方最近空头清算位
-        liq_l = max(below_buy)  if below_buy  else 0.0  # 下方最近多头清算位
+        cur = float(d.get('current_px') or 0)
+        sell_walls = d.get('sell_walls') or []
+        buy_walls  = d.get('buy_walls')  or []
+        above_sell = [w['price'] for w in sell_walls if w.get('price',0) > cur]
+        below_buy  = [w['price'] for w in buy_walls  if w.get('price',0) < cur]
+        liq_s = min(above_sell) if above_sell else 0.0
+        liq_l = max(below_buy)  if below_buy  else 0.0
+        # fallback到asset_config（liq_heatmap数据为空时）
+        if liq_s == 0.0 or liq_l == 0.0:
+            try:
+                cfg = json.loads((WORKDIR/'data'/'asset_config.json').read_text())
+                sym_cfg = cfg.get(sym.upper(), {})
+                if liq_s == 0.0: liq_s = float(sym_cfg.get('liq_short', 0))
+                if liq_l == 0.0: liq_l = float(sym_cfg.get('liq_long',  0))
+                if liq_s or liq_l:
+                    print(f'[get_liq] {sym} heatmap为空，使用asset_config fallback: liq_s=${liq_s:,.0f} liq_l=${liq_l:,.0f}')
+            except Exception:
+                pass
         return liq_s, liq_l
     except Exception:
         return 0.0, 0.0

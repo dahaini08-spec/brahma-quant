@@ -442,8 +442,12 @@ def check_all() -> list:
         # ══════════════════════════════════════
         # ⑤ VIP作废条件触发
         # ══════════════════════════════════════
+        # [修复 2026-10-28 苏摩111] inv_price必须合理：
+        # 须高于liq_long（下方清算位）才有意义，防止过期固定值误报
         inv_price = cfg.get('invalidate_long', 0)
-        if inv_price and price < inv_price:
+        liq_l_cfg = cfg.get('liq_long', 0)
+        _inv_valid = inv_price and inv_price > liq_l_cfg * 1.005  # inv_price须高于liq_long
+        if _inv_valid and price < inv_price:
             k = f'm7_invalidate_{sym}'
             if now - state.get(k, 0) > COOLDOWN:
                 alerts.append((k,
