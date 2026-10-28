@@ -849,11 +849,12 @@ def main():
 
     # M7: VIP策略状态监控 [P1修复 2026-10-10 苏摩111: importlib→直接import]
     # [推送治理 2026-10-28 苏摩111] 加30min时间门控，防止每2min都触发M7
+    _m7_now = time.time()
     _m7_last = state.get('_m7_last_run', 0)
-    if now - _m7_last < 1800:  # 30min才调用一次
+    if _m7_now - _m7_last < 1800:  # 30min才调用一次
         pass  # M7冷却中，跳过
     else:
-      state['_m7_last_run'] = now
+      state['_m7_last_run'] = _m7_now
       try:
         import sys as _sys7
         if str(WORKDIR / 'scripts') not in _sys7.path:
