@@ -52,7 +52,7 @@ def _load_symbols():
         _ac = _srj.loads(_f.read_text())
         return [v['full_symbol'] for k,v in _ac.items()
                 if not k.startswith('_') and v.get('tier','L2')=='L1']
-    except:
+    except Exception:
         return ['BTCUSDT', 'ETHUSDT']
 SYMBOLS = _load_symbols()
 
@@ -582,7 +582,7 @@ def _update_asset_config_liq_gex():
     AC_FILE = BASE / 'data' / 'asset_config.json'
     try:
         ac = _j.loads(AC_FILE.read_text())
-    except:
+    except Exception:
         return
 
     updated = []
@@ -643,7 +643,7 @@ def _inject_gex_to_state():
         return
     try:
         gex_all = _j.loads(gex_f.read_text())
-    except:
+    except Exception:
         return
 
     for sym_key in ('BTC', 'ETH'):
