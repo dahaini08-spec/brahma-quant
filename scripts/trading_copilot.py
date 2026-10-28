@@ -246,11 +246,27 @@ def m1_price_proximity(state, alerts):
                         f'{extra}\n'
                         f'今日最高优先级价位'))
 
+        # [推送治理 2026-10-28 苏摩111] 同标的同轮次只推一个方向，取最近者
+        # 防止liq_s和liq_l同时在±0.3%内 → 多空并列推送
+        _triggered = []
         for level_key, target, msg in levels:
+            if near(p, target):
+                dist = abs(p - target) / target
+                _triggered.append((dist, level_key, target, msg))
+        # 按距离排序，只取最近的且方向一致
+        _triggered.sort(key=lambda x: x[0])
+        _pushed_dir = None  # 本轮已推方向
+        for _dist, level_key, target, msg in _triggered:
+            # 方向：liq_short/gex系 = 空方向，liq_long = 多方向
+            _dir = 'short' if 'short' in level_key else 'long'
+            if _pushed_dir and _pushed_dir != _dir:
+                print(f'[M1-去重] {sym} {level_key} 方向={_dir}与已推{_pushed_dir}矛盾，跳过')
+                continue
             sk = f'{sym}_M1_{level_key}'
-            if near(p, target) and (time.time() - state.get(sk, 0)) > COOLDOWN['price']:
+            if (time.time() - state.get(sk, 0)) > COOLDOWN['price']:
                 full = f'🏛️ 梵天副驾·价位警报 [{sym}]\n{msg}\n\n🌿 姓赵不宣 | 不是建议'
                 alerts.append((sk, full))
+                _pushed_dir = _dir
 
 
 # ══════════════════════════════════════════
