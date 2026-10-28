@@ -46,7 +46,9 @@ def get_signal_snapshot(sym: str) -> dict:
             'k15m':   ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=15m&limit=8'),
             'k1h':    ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=1h&limit=6'),
             'oi_h':   ex.submit(fetch, f'https://fapi.binance.com/futures/data/openInterestHist?symbol={s}&period=15m&limit=4'),
-            'taker':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=4'),
+            # [封印 2026-10-28 苏摩111] Taker升级: 15m主信号+1h权威确认
+            'taker':    ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=15m&limit=4'),
+            'taker_1h': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1h&limit=3'),
             'lsr':    ex.submit(fetch, f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={s}&period=5m&limit=3'),
             'depth':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/depth?symbol={s}&limit=10'),
         }

@@ -53,7 +53,9 @@ def l1_quick_scan(sym: str) -> dict:
         futs = {
             'price': ex.submit(_fetch, f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={s}'),
             'stats': ex.submit(_fetch, f'https://fapi.binance.com/fapi/v1/ticker/24hr?symbol={s}'),
-            'taker': ex.submit(_fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=3'),
+            # [封印 2026-10-28 苏摩111] Taker升级: 主信号15m(降噪)+1h趋势确认，5m仅极端值
+            'taker':    ex.submit(_fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=15m&limit=4'),
+            'taker_1h': ex.submit(_fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1h&limit=3'),
             'lsr':   ex.submit(_fetch, f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={s}&period=5m&limit=1'),
             'oi_h':  ex.submit(_fetch, f'https://fapi.binance.com/futures/data/openInterestHist?symbol={s}&period=1h&limit=3'),
         }
@@ -69,9 +71,14 @@ def l1_quick_scan(sym: str) -> dict:
 
     # Taker
     tak_list = raw['taker'] if isinstance(raw['taker'], list) else []
+    # [封印 2026-10-28 苏摩111] 主信号15m降噪 + 1h趋势确认
     tak_now  = round(float(tak_list[-1].get('buySellRatio', 1)), 3) if tak_list else 1.0
     tak_avg  = round(sum(float(x.get('buySellRatio',1)) for x in tak_list)/len(tak_list), 3) if tak_list else 1.0
     tak_trend = round(float(tak_list[-1].get('buySellRatio',1)) - float(tak_list[0].get('buySellRatio',1)), 3) if len(tak_list)>=2 else 0
+    # 1h Taker趋势确认（权威方向）
+    _tak1h = d.get('taker_1h') or []
+    tak_1h_avg = round(sum(float(x.get('buySellRatio',1)) for x in _tak1h)/len(_tak1h), 3) if _tak1h else tak_avg
+    tak_confirmed = (tak_avg > 1.05 and tak_1h_avg > 0.95) or (tak_avg < 0.95 and tak_1h_avg < 1.05)  # 15m+1h共振
 
     # LSR
     lsr_list = raw['lsr'] if isinstance(raw['lsr'], list) else []

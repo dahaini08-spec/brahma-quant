@@ -176,8 +176,10 @@ def fetch_all(sym: str) -> dict:
             'lsr_g':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={s}&period=5m&limit=288'),
             'lsr_t':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol={s}&period=5m&limit=3'),
             'lsr_p':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol={s}&period=5m&limit=3'),
-            'taker':  ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=6'),
-            'taker1m': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1m&limit=3'),
+            # [封印 2026-10-28 苏摩111] Taker三周期架构: 1h权威方向+15m主信号+5m极端预警
+            'taker':    ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=15m&limit=6'),
+            'taker_1h': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=1h&limit=4'),
+            'taker_5m': ex.submit(fetch, f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=3'),
             'kl_4h':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=4h&limit=100'),
             'depth':  ex.submit(fetch, f'https://fapi.binance.com/fapi/v1/depth?symbol={s}&limit=20'),
         }

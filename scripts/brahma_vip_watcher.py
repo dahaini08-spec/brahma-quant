@@ -56,7 +56,8 @@ def get_current_snapshot(sym: str) -> dict:
     k1h    = fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={s}&interval=1h&limit=8')
     oi_h   = fetch(f'https://fapi.binance.com/futures/data/openInterestHist?symbol={s}&period=1h&limit=3')
     lsr    = fetch(f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={s}&period=5m&limit=1')
-    taker  = fetch(f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=5m&limit=1')
+    # [封印 2026-10-28 苏摩111] Taker升级15m主信号
+    taker  = fetch(f'https://fapi.binance.com/futures/data/takerlongshortRatio?symbol={s}&period=15m&limit=3')
 
     px  = float(price.get('price', 0))
     lsr_v = float(lsr[0]['longShortRatio']) if isinstance(lsr, list) and lsr else 1

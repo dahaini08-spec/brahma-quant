@@ -249,12 +249,21 @@ class Step11Judge:
 
         # ETH_WEAK铁律⑤豁免：ETH相对弱时BULL_EARLY允许做空
         _eth_rel = float(_mac_d.get('ETH_BTC_rel_4w', 0) or 0)
-        _eth_weak = (_sym_upper == 'ETH') and (_eth_rel < -0.05)
+        # [封印 2026-10-28 苏摩111] ETH_WEAK动态门槛
+        # -3%软降权(×0.7)，-5%完全豁免，原-5%过严导致ETH空单被全锁
+        _eth_weak_soft = (_sym_upper == 'ETH') and (_eth_rel < -0.03)   # -3%: 软降权
+        _eth_weak      = (_sym_upper == 'ETH') and (_eth_rel < -0.05)   # -5%: 完全豁免
+        _eth_weak_mult = 0.7 if (_eth_weak_soft and not _eth_weak) else 1.0
 
         if 'BULL' in _macro and self.direction == 'SHORT' and not _eth_weak:
-            self.blocked_by = f'Gate2b_宏观锁:CHOP+{_macro}禁空'
-            self.reason.append(f'❌ G2.5 CHOP_MID+{_macro}→禁止做空（应做多或等待）')
-            return False
+            # ETH_WEAK软降权：-3%~-5%时不硬拒，降权通过
+            if _eth_weak_soft:
+                self.reason.append(f'⚠️ G2.5 ETH_WEAK软降权({_eth_rel:.2%})，空单EV×0.7通过')
+                self._eth_weak_mult = 0.7  # 传递降权系数
+            else:
+                self.blocked_by = f'Gate2b_宏观锁:CHOP+{_macro}禁空'
+                self.reason.append(f'❌ G2.5 CHOP_MID+{_macro}→禁止做空（应做多或等待）')
+                return False
 
         if 'BEAR' in _macro and self.direction == 'LONG':
             self.blocked_by = f'Gate2b_宏观锁:CHOP+{_macro}禁多'
