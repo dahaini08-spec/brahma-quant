@@ -30,7 +30,11 @@ def _cli(*args, timeout=10) -> dict | list | None:
             capture_output=True, text=True, timeout=timeout
         )
         if r.stdout.strip():
-            return json.loads(r.stdout)
+            try:
+                return json.loads(r.stdout)
+            except json.JSONDecodeError:
+                # [修复 2026-10-28 苏摩111] binance-cli偶发非JSON输出（帮助文本等）
+                pass
     except Exception as e:
         print(f'[account_gateway] binance-cli error: {e}', file=sys.stderr)
     return None

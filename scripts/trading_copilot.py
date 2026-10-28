@@ -867,6 +867,41 @@ def main():
             except ProcessLookupError: _lf.unlink(missing_ok=True)
     except Exception as _le: print(f'[lock] flock检查错误(无害): {_le}', file=__import__('sys').stderr)
 
+    # [修复 2026-10-28 苏摩111] M0守护：supercronic独立于cron的自检
+    # 根因：supercronic挂了→所有cron停→process_resurrect也停→自举悖论
+    # 解法：trading_copilot每1min由OpenClaw驱动，独立于supercronic
+    try:
+        import subprocess as _sp0
+        _sc_alive = int(_sp0.run(
+            ['pgrep','-fc','supercronic.*brahma_crontab'],
+            capture_output=True, text=True).stdout.strip() or 0) > 0
+        if not _sc_alive:
+            import pathlib as _pl0, os as _os0
+            _base0 = _pl0.Path(__file__).parent.parent
+            _sp0.Popen(
+                ['bash', str(_base0 / 'start_supercronic.sh')],
+                stdout=open(str(_base0/'logs/supercronic.log'),'a'),
+                stderr=open(str(_base0/'logs/supercronic.log'),'a'),
+                cwd=str(_base0),
+                start_new_session=True,
+            )
+            print('[M0守护] supercronic已死 → 已拉起重启')
+        _cvd_alive = int(_sp0.run(
+            ['pgrep','-fc','cvd_ws_collector'],
+            capture_output=True, text=True).stdout.strip() or 0) > 0
+        if not _cvd_alive:
+            import pathlib as _pl1
+            _base1 = _pl1.Path(__file__).parent.parent
+            _sp0.Popen(
+                ['python3', str(_base1/'scripts/cvd_ws_collector.py')],
+                stdout=open(str(_base1/'logs/cvd_ws.log'),'a'),
+                stderr=open(str(_base1/'logs/cvd_ws.log'),'a'),
+                start_new_session=True,
+            )
+            print('[M0守护] CVD采集器已死 → 已拉起重启')
+    except Exception as _g0e:
+        pass  # 守护不影响主路径
+
     if alerts:
         for sk, msg in alerts:
             push(msg, sk)
