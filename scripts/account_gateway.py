@@ -62,7 +62,8 @@ def sense_account() -> dict:
     # ── 1. futures-usds 余额（普通合约账户）──
     bal = _cli('futures-usds', 'futures-account-balance-v3')
     if isinstance(bal, list):
-        usdt = next((b for b in bal if b.get('asset') == 'USDT'), {})
+        # [修复 2026-10-28 苏摩111] 兼容资产名'U'（Portfolio Margin账户）
+        usdt = next((b for b in bal if b.get('asset') in ('USDT','U')), {})
         state['futures_usdt_balance']   = float(usdt.get('balance', 0))
         state['futures_usdt_available'] = float(usdt.get('availableBalance', 0))
 
