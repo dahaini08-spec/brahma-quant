@@ -830,17 +830,23 @@ def main():
         print(f'[M6.5 ERR] {e}')
 
     # M7: VIP策略状态监控 [P1修复 2026-10-10 苏摩111: importlib→直接import]
-    try:
+    # [推送治理 2026-10-28 苏摩111] 加30min时间门控，防止每2min都触发M7
+    _m7_last = state.get('_m7_last_run', 0)
+    if now - _m7_last < 1800:  # 30min才调用一次
+        pass  # M7冷却中，跳过
+    else:
+      state['_m7_last_run'] = now
+      try:
         import sys as _sys7
         if str(WORKDIR / 'scripts') not in _sys7.path:
             _sys7.path.insert(0, str(WORKDIR / 'scripts'))
         from m7_vip_monitor import check_all as _m7_check_all
         _m7_result = _m7_check_all()
         for sk, msg in _m7_result:
-            alerts.append((sk, msg))
+                alerts.append((sk, msg))
         if _m7_result:
-            print(f'[M7] {len(_m7_result)}条VIP策略变更警报')
-    except Exception as e:
+                print(f'[M7] {len(_m7_result)}条VIP策略变更警报')
+      except Exception as e:
         print(f'[M7 ERR] {e}')
 
     # [封印 2026-10-18 苏摩111] M7.5 模拟账本SL/TP实时检查

@@ -343,7 +343,8 @@ def check_all() -> list:
         elif dist <= 1.5:
             k = f'm7_lsr_near_{sym}'
             # [P0-② 2026-10-10 苏摩111] LSR最后1%区间冷却改为5min，防止漏推关键信号
-            _near_cooldown = 300 if dist <= 0.5 else (600 if dist <= 1.0 else COOLDOWN)
+            # [推送治理 2026-10-28 苏摩111] 逼近预警冷却 300s→1800s，防止5min刷屏
+            _near_cooldown = 1800 if dist <= 0.5 else (3600 if dist <= 1.0 else COOLDOWN)
             if now - state.get(k, 0) > _near_cooldown:
                 alerts.append((k,
                     f'⚠️ 梵天VIP预警 | {sym} 猎杀门槛逼近\n\n'

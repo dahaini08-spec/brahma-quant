@@ -152,7 +152,10 @@ def detect_changes(prev: dict, curr: dict) -> list:
 
 def run_watcher():
     """主监控循环（单次执行，由cron每5分钟调用）"""
+    # [推送治理 2026-10-28 苏摩111] 全局冷却：30min内同一标的不重复推送神经感知
     state = load_state()
+    _now = time.time()
+    _global_cd = 1800  # 30min冷却
     now_str = time.strftime('%H:%M UTC')
     changed_syms = []
 
@@ -172,6 +175,15 @@ def run_watcher():
     save_state(state)
 
     if changed_syms:
+        # 冷却过滤：30min内推过的标的跳过
+        changed_syms = [(sym, triggers, curr) for sym, triggers, curr in changed_syms
+                        if _now - state.get(f'_last_push_{sym}', 0) > _global_cd]
+        if not changed_syms:
+            print('[watcher] 所有变化标的在冷却期内，跳过推送')
+            return
+        for sym, _, _ in changed_syms:
+            state[f'_last_push_{sym}'] = _now
+        save_state(state)
         # 重新运行深度分析
         print(f'[watcher] {len(changed_syms)}个标的变化 → 重新分析')
         from brahma_deep_analysis import run_deep_analysis
