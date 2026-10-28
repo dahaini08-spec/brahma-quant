@@ -77,7 +77,7 @@ def push(msg, key=''):
 def load_state():
     try:
         return json.loads(STATE_FILE.read_text())
-    except:
+    except Exception:
         return {}
 
 def save_state(s):
@@ -88,27 +88,27 @@ def load_positions():
     """加载苏摩当前持仓"""
     try:
         return json.loads(POSITIONS_FILE.read_text())
-    except:
+    except Exception:
         return {}
 
 def get_price(sym):
     try:
         return float(fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT')['price'])
-    except:
+    except Exception:
         return 0.0
 
 def get_liq(sym):
     try:
         d = json.loads((WORKDIR/'data'/f'liq_heatmap_{sym.lower()}usdt.json').read_text())
         return float(d.get('nearest_short_liq',0)), float(d.get('nearest_long_liq',0))
-    except:
+    except Exception:
         return 0.0, 0.0
 
 def get_gex_strikes(sym):
     try:
         g = json.loads((WORKDIR/'data'/'gex_state.json').read_text())
         return g.get(sym.upper(),{}).get('top_strikes',{})
-    except:
+    except Exception:
         return {}
 
 def get_cvd(sym):
@@ -125,13 +125,13 @@ def get_cvd(sym):
             f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}USDT&interval=1h&limit=8',
             timeout=4, context=_ctx).read())
         return sum((float(k[5]) if float(k[4])>float(k[1]) else -float(k[5])) for k in _kl)
-    except:
+    except Exception:
         # : 从cvd_realtime dir字段判断方向
         try:
             d = json.loads((WORKDIR/'data'/f'cvd_realtime_{sym.lower()}usdt.json').read_text())
             _dir = str(d.get('dir_1h', d.get('dir_4h', '')))
             return -10000 if 'SELL' in _dir else (10000 if 'BUY' in _dir else 0)
-        except:
+        except Exception:
             return 0.0
 
 def near(price, target, pct=PROX_PCT):

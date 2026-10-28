@@ -158,7 +158,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [2026-09-28 苏摩111 A线] 快照帖只管盘面，旗舰帖管当周叙事；发布需苏摩111批准（enqueue→flush）
 30 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 600 python3 scripts/square_deep_post.py >> logs/deep_post.log 2>&1  # [降频 每日1次]
 # spot strategy square — 03:00
-30 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py  # [2.0错峰] --symbols BTC ETH 2>&1 >> logs/syscron.log  # [降频 每日1次]
+30 3 * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/spot_strategy_square.py >> logs/spot_strategy_square.log 2>&1  # [2.0错峰] --symbols BTC ETH 2>&1 >> logs/syscron.log  # [降频 每日1次]
 # data baseline refresh — 00:00 + 12:00
 # [TRIM 2026-10-04 苏摩111 精简至40任务 基线数据每周1次足够] 0 0,12 * * * cd /root/.openclaw/workspace/trading-system && bash scripts/data_baseline_refresh.sh >> logs/baseline_refresh.log 2>&1
 
