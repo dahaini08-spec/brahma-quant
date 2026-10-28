@@ -252,7 +252,7 @@ def check_all() -> list:
             fr_v = float(fetch_json(
                 f'https://fapi.binance.com/fapi/v1/fundingRate?symbol={sf}&limit=1'
             )[0]['fundingRate']) * 100
-        except:
+        except Exception:
             fr_v = 0.0
 
         # ── 拉LSR ─────────────────────────────────────
@@ -261,14 +261,14 @@ def check_all() -> list:
                 f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio'
                 f'?symbol={sf}&period=5m&limit=1'
             )[0]['longAccount']) * 100
-        except:
+        except Exception:
             lsr_v = 50.0
 
         # ── 拉CVD ─────────────────────────────────────
         try:
             cvd_d = json.loads((DATA / f'cvd_realtime_{sym.lower()}usdt.json').read_text())
             cvd_v = float(cvd_d.get('cvd_1h', cvd_d.get('delta_1h', cvd_d.get('cvd', 0))) or 0)
-        except:
+        except Exception:
             cvd_v = 0.0
 
         # ── 拉OI ──────────────────────────────────────
@@ -280,7 +280,7 @@ def check_all() -> list:
             oi_vals = [float(o['sumOpenInterest']) for o in oi_data]
             oi_chg  = (oi_vals[-1] - oi_vals[0]) / oi_vals[0] * 100 if oi_vals[0] > 0 else 0
             oi_dir  = 'UNWIND' if oi_chg < -0.5 else ('BUILD' if oi_chg > 0.5 else 'NEUTRAL')
-        except:
+        except Exception:
             oi_dir = 'NEUTRAL'; oi_chg = 0.0
 
         hunt = cfg['hunt_lsr']

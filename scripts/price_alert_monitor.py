@@ -145,7 +145,7 @@ def check_and_alert(state):
                         f'止损 ${_sl:,} | 目标 ${_tp:,}\n\n'
                         f'🌿 姓赵不宣 | 不是建议'
                     )
-                    alerts.append((_key_hunt, _msg))
+                    print(f'[price_alert-LSR-日志only] {_sym} LSR={_lsr_v:.1f}% 猎杀触发，由m7统一推送')
 
                 # 门槛逼近预警
                 _key_near = f'{_sym}_lsr_near'
@@ -156,7 +156,7 @@ def check_and_alert(state):
                         f'空单挂好准备，等FR转正+1H收阴确认\n\n'
                         f'🌿 姓赵不宣 | 不是建议'
                     )
-                    alerts.append((_key_near, _msg_near))
+                    print(f'[price_alert-LSR-日志only] {_sym} LSR={_lsr_v:.1f}% 门槛逼近，由m7统一推送')
 
             except Exception as _le:
                 import sys as _ls; print(f'[price_alert] {_sym} LSR err: {_le}', file=_ls.stderr)

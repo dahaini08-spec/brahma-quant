@@ -99,7 +99,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # [9.18 修复] whale_monitor从:30移到:33错峰避免与oi_advanced重叠
 # [TRIM 2026-10-04 苏摩111 精简至40任务 鲸鱼监控低价值，OI+LSR已覆盖] 33 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/whale_monitor.py >> logs/whale_monitor.log 2>&1
 # liq heatmap — :45 每4h
-5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/liq_heatmap.py >> logs/liq_heatmap.log 2>&1  # [频率优化 2026-10-10] 30min→60min，liq结构1~2H才变，state_refresh已同步
+5 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/oi_heatmap_builder.py --symbols BTC ETH >> logs/heatmap.log 2>&1  # [修复 2026-10-28 苏摩111] liq_heatmap.py→oi_heatmap_builder（无需binance-cli凭证）
 # brahma autocheck — :50 每6h
 # [TRIM 2026-10-04 苏摩111 精简至40任务 系统自检由autonomous_loop覆盖] 50 */6 * * * cd /root/.openclaw/workspace/trading-system && timeout 300 python3 scripts/brahma_autocheck.py --push >> logs/syscron.log  # [2.0 timeout] 2>&1
 # log rotation — :55 每6h
