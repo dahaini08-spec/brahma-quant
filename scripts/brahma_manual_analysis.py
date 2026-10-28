@@ -4868,7 +4868,18 @@ def main():
             import subprocess as _sp3, os as _os3
             from pathlib import Path as _P3
             _abs_png = str(_P3(__file__).parent.parent / _png_path)
-            _thread_id = '01a0f312-7e0c-7ae0-ae95-f66915d1d13c'
+            # [修复 2026-10-28 苏摩111] 线程ID从alerts/.env读取SSOT
+            try:
+                import os as _os3
+                _env_path3 = _P(__file__).parent.parent / 'alerts' / '.env'
+                _thread_id = '01a12e17-726c-78da-9857-4edab995522b'  # 当前正确ID
+                if _env_path3.exists():
+                    for _el in _env_path3.read_text().splitlines():
+                        if _el.startswith('JARVIS_THREAD_ID='):
+                            _thread_id = _el.split('=',1)[1].strip().strip('"')
+                            break
+            except Exception:
+                _thread_id = '01a12e17-726c-78da-9857-4edab995522b'
             _target    = f'73295708:thread:{_thread_id}'
             _caption   = (f'\U0001f3db\ufe0f \u68b5\u5929\u8bbe\u8ba1\u9662\u00b7\u4e09\u65b9\u8054\u5408\u5206\u6790 | '
                           + _t2.strftime('%m/%d %H:%M HKT'))
