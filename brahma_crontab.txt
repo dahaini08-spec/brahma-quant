@@ -311,7 +311,7 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 7 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/signal_change_detector.py  # [优化 2026-10-21] >> logs/signal_change.log 2>&1  # [频率优化 2026-10-10] →60min，brahma_state每小时更新，score变化感知1H足够
 */10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 20 python3 scripts/price_alert_monitor.py  # [降频 2026-10-28 苏摩111] >> logs/price_alert.log 2>&1  # [频率优化 2026-10-10] 1min→5min，M7已覆盖FR/LSR，price_alert专注价位+冲突检查
 */2 * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_copilot.lock timeout 55 python3 scripts/trading_copilot.py  # [降频 2026-10-28 苏摩111] 1min→2min >> logs/copilot.log 2>&1
-*/60 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
+0 * * * * cd /root/.openclaw/workspace/trading-system && timeout 25 python3 scripts/brahma_strategy_validator.py check >> logs/strategy_validator.log 2>&1
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/neuron_dashboard.py >> logs/neuron_dashboard.log 2>&1  # [频率优化 2026-10-10] 15min→30min，仪表盘读取copilot已有数据
 
 */15 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/signal_early_alert.py >> logs/early_alert.log 2>&1  # [封印 2026-10-17 苏摩111] 先行信号预警层: RSI55~75/LSR>72%/OI急变/GEX穿越 每15min
