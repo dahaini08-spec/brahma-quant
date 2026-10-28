@@ -327,6 +327,27 @@ def main(symbols=('BTC', 'ETH'), push=True, quiet=False):
 
 
 if __name__ == '__main__':
+    # [触发优化 2026-10-28 苏摩111] 快速预检：分数远低于阈值时跳过
+    import json, time as _t
+    from pathlib import Path as _P
+    _DATA = _P('/root/.openclaw/workspace/trading-system/data')
+    _skip = True
+    for _sym in ['btc','eth']:
+        _sf = _DATA / f'brahma_state_{_sym}.json'
+        if not _sf.exists(): _skip = False; break
+        try:
+            _d = json.loads(_sf.read_text())
+            _age = (_t.time() - _d.get('price_ts',0))/60
+            if _age > 25: _skip = False; break  # 数据过期=需要检查
+            # 用state里的transition_score判断（如有）
+            _ts = _d.get('transition_score', 0)
+            if _ts >= 30:  # 阈值是45，>30说明接近，需要完整计算
+                _skip = False; break
+        except Exception: _skip = False; break
+    if _skip:
+        print('[regime_transition] 所有标的远离阈值，跳过')
+        import sys; sys.exit(0)
+
     import argparse
     p = argparse.ArgumentParser()
     p.add_argument('--symbols', nargs='+', default=['BTC', 'ETH'])

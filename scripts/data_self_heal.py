@@ -22,6 +22,24 @@ from pathlib import Path
 
 BASE = Path(__file__).parent.parent
 DATA = BASE / 'data'
+
+# [触发优化 2026-10-28 苏摩111] 空跑保护：全部数据新鲜时跳过
+def _should_skip():
+    import time
+    from pathlib import Path
+    now = time.time()
+    ttl_checks = [
+        (DATA / 'cvd_realtime_btcusdt.json', 5*60),
+        (DATA / 'gex_state.json', 60*60),
+        (DATA / 'vol_beta_state.json', 60*60),
+        (DATA / 'circuit_breaker_state.json', 2*60*60),
+        (DATA / 'macro_real.json', 300*60),
+    ]
+    expired = sum(1 for p,ttl in ttl_checks
+                  if not p.exists() or (now - p.stat().st_mtime) > ttl)
+    return expired == 0  # 全部新鲜=跳过
+
+
 LOGS = BASE / 'logs'
 sys.path.insert(0, str(BASE / 'scripts'))
 sys.path.insert(0, str(BASE / 'brahma_brain'))
@@ -266,4 +284,5 @@ def main():
     return 0 if passed == total else 1
 
 if __name__ == '__main__':
+    if _should_skip(): print("[data_self_heal] 全部数据新鲜，跳过"); import sys; sys.exit(0)
     sys.exit(main())

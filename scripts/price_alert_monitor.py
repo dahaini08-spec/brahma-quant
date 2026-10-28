@@ -248,6 +248,24 @@ def _check_state_age():
                 dedup_ttl=5400
             )
 
+
+def _quick_gate():
+    """快速预检：价格远离关键位时直接跳过（节省网络IO）"""
+    try:
+        import json, time
+        from pathlib import Path
+        DATA = Path('/root/.openclaw/workspace/trading-system/data')
+        for sym in ['btc', 'eth']:
+            sf = DATA / f'brahma_state_{sym}.json'
+            if not sf.exists(): return True  # 数据不存在=需要检查
+            d = json.loads(sf.read_text())
+            age = (time.time() - d.get('price_ts', 0)) / 60
+            if age > 30: return True  # 数据过期=需要检查
+        return False  # 数据新鲜，但不预判价格（让main自己判断）
+    except Exception:
+        return True  # 异常=需要检查
+
 if __name__ == '__main__':
+    # [触发优化 2026-10-28 苏摩111] 数据过期才进行完整检查
     _check_state_age()
     main()

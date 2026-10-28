@@ -563,6 +563,15 @@ def main():
 
     # 心跳模式：按频率运行各模块
     # [修复 2026-10-27] 每个模块加独立try-except+timeout保护，防止网络卡死拖累整体
+    # [触发优化 2026-10-28 苏摩111] state数据过期保护
+    # state>20min未刷新=数据不可信，robot推送没有意义
+    _btc_sf = BASE / 'data' / 'brahma_state_btc.json'
+    _state_age = (time.time() - _btc_sf.stat().st_mtime) / 60 if _btc_sf.exists() else 999
+    if m == 'heartbeat' and _state_age > 20:
+        print(f'[brahma_robot] state过期{_state_age:.0f}min>20min，跳过推送（数据不可信）')
+        _save_state(state)
+        return
+
     _DEADLINE = time.time() + 50  # 50s总超时（cron timeout=60s留余量）
     if m in ('heartbeat', 'all'):
         # ── M4 系统自愈（所有时段都跑，纯JSON检查，极轻量）
