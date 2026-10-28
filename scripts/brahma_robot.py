@@ -87,7 +87,8 @@ def check_signals(state: dict) -> dict:
             from brahma_prob_tree import calc_prob_tree, format_prob_tree
             raw = fetch_all(sym.upper())
             d   = enrich(raw); r = reason_40yr(d)
-            if r.get('direction', 'WAIT') == 'WAIT': continue
+            # [修复 2026-10-28 苏摩111] WATCH也允许推送，只有NONE/WAIT才跳过
+            if r.get('direction', 'WAIT') in ('WAIT', 'NONE'): continue
             vip  = format_vip(d, r)
             ctx  = d.get('_vip_context', {})
             tree = calc_prob_tree(d, r, vip_context=ctx)

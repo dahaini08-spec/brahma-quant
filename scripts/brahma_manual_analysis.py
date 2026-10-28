@@ -4884,6 +4884,39 @@ def main():
             print(f'[auto_analysis] PNG推送失败(不阻断): {_png_e}', file=sys.stderr)
         # ── PNG推送结束 ─────────────────────────────────────────────────────────
 
+        # [修复 2026-10-28 苏摩111] 分析完成→自动生成草案并推送
+        # 死结根因：generate_draft只在robot cron里调用，manual_analysis完成后不触发
+        # 修复：manual_analysis完成后直接生成草案，无需等robot
+        try:
+            import sys as _sys2
+            _sys2.path.insert(0, str(_P(__file__).parent))
+            from account_gateway import generate_draft as _gen_draft
+            from pathlib import Path as _P3
+            for _sym_d in ['btc', 'eth']:
+                _sd2 = _j2.loads((_P3(__file__).parent.parent / 'data' / f'brahma_state_{_sym_d}.json').read_text())
+                _ctx2   = _sd2.get('_vip_context') or {}
+                _dir2   = _sd2.get('signal_dir', '')
+                _score2 = float((_sd2.get('confluence') or {}).get('score', 0)
+                                if isinstance(_sd2.get('confluence'), dict) else 0)
+                _elo2   = float(_ctx2.get('entry_lo') or _sd2.get('entry_lo') or 0)
+                _ehi2   = float(_ctx2.get('entry_hi') or _sd2.get('entry_hi') or 0)
+                _sl2    = float(_ctx2.get('sl') or _sd2.get('stop_loss') or 0)
+                _tp12   = float(_ctx2.get('tp1') or _sd2.get('tp1') or 0)
+                _tp22   = float(_ctx2.get('tp2') or _sd2.get('tp2') or 0)
+                _rr2    = float(_ctx2.get('rr') or _sd2.get('rr') or 1.5)
+                # 触发条件：score>=150 + direction明确 + entry区间有效
+                if _score2 >= 150 and _dir2 not in ('WAIT','NONE','') and _elo2 > 0 and _sl2 > 0:
+                    _gen_draft(
+                        symbol=_sym_d.upper(),
+                        direction=_dir2,
+                        entry_lo=_elo2, entry_hi=_ehi2,
+                        sl=_sl2, tp1=_tp12, tp2=_tp22,
+                        rr=_rr2, confluence_score=_score2,
+                    )
+                    print(f'[auto_analysis] {_sym_d.upper()} 草案已生成并推送 ✅', file=sys.stderr)
+        except Exception as _draft_e:
+            print(f'[auto_analysis] 草案生成失败(不阻断): {_draft_e}', file=sys.stderr)
+
     except Exception as _e:
         print(f'[WARN] auto_analysis_latest写入失败: {_e}', file=sys.stderr)
 

@@ -34,10 +34,10 @@ sys.path.insert(0, str(BASE / 'brahma_brain'))
 
 # ── 先行信号触发阈值 ──────────────────────────────────────────
 BB_SQUEEZE_CRIT   = 0.6    # BB宽度<0.6 = 极度压缩
-LSR_CROWD_CRIT    = 75.0   # 散户>75% = 猎杀条件
-LSR_RATIO_CRIT    = 3.0    # 大户/散户比>3.0
+LSR_CROWD_CRIT    = 68.0   # [修复 2026-10-28 苏摩111] 75→68（BTC=67%触发）
+LSR_RATIO_CRIT    = 2.3    # [修复 2026-10-28 苏摩111] 3.0→2.3（BTC ratio≈2.3）
 OI_SURGE_PCT      = 3.0    # 15min内OI变化>3%
-GEX_ZF_DIST_MAX   = 0.008  # 价格距ZeroFlip<0.8% = 穿越临近
+GEX_ZF_DIST_MAX   = 0.015  # [修复 2026-10-28 苏摩111] 0.8%→1.5%
 FR_EXTREME        = 0.012  # FR绝对值>0.012% = 极端
 
 # ── SL计算铁律 ─────────────────────────────────────────────
@@ -47,7 +47,7 @@ MIN_RR            = 1.5    # RR≥1.5
 # ── 仓位 ───────────────────────────────────────────────────
 LEADING_POS_PCT   = 1.0    # 先行通道固定1%NAV
 
-COOLDOWN_MIN      = 120    # 同标的2H冷却（避免连续触发）
+COOLDOWN_MIN      = 60     # [修复 2026-10-28 苏摩111] 2H→1H冷却
 
 # ══════════════════════════════════════════════════════════
 # 先行信号读取
@@ -80,13 +80,14 @@ def _check_leading_signals(sym: str, state: dict) -> dict:
     # OI骤增：从state的OI序列推断
     oi_sig = str((state.get('oi') or {}).get('main_signal', '') or
                  state.get('oi_signal', '') or '')
-    oi_surge = 'BUILD' in oi_sig and 'SHORT_BUILD' not in oi_sig  # LONG_BUILD
+    oi_surge = 'BUILD' in oi_sig  # [修复 2026-10-28] SHORT_BUILD+空单也是有效信号
 
     # GEX ZF穿越：价格距ZF距离
     gex_zf_cross = zf > 0 and abs(px - zf) / px < GEX_ZF_DIST_MAX
 
     signals = {
-        'BB_SQUEEZE': bb_w < BB_SQUEEZE_CRIT and bb_w > 0,
+        # [修复 2026-10-28 苏摩111] bb_w格式兼容: 小数(0.0087)×100=0.87%
+    'BB_SQUEEZE': (bb_w * (100 if bb_w < 0.1 else 1) < BB_SQUEEZE_CRIT) and bb_w > 0,
         'LSR_CROWD':  lsr > LSR_CROWD_CRIT or lsr_r > LSR_RATIO_CRIT,
         'OI_SURGE':   oi_surge,
         'GEX_ZF':     gex_zf_cross,
