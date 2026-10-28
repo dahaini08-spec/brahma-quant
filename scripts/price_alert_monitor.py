@@ -37,7 +37,7 @@ def push_jarvis(msg):
 def load_state():
     try:
         return json.loads(STATE_FILE.read_text())
-    except:
+    except Exception:
         return {}
 
 def save_state(s):
@@ -46,14 +46,14 @@ def save_state(s):
 def get_price(sym):
     try:
         return float(fetch(f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT')['price'])
-    except:
+    except Exception:
         return 0.0
 
 def get_liq(sym):
     try:
         d = json.loads((WORKDIR/'data'/f'liq_heatmap_{sym.lower()}usdt.json').read_text())
         return float(d.get('nearest_short_liq',0)), float(d.get('nearest_long_liq',0))
-    except:
+    except Exception:
         return 0.0, 0.0
 
 def get_gex_key(sym):
@@ -64,7 +64,7 @@ def get_gex_key(sym):
             return float(sg.get('80000',0)), float(sg.get('90000',0))
         else:
             return float(sg.get('2500',0)), 0.0
-    except:
+    except Exception:
         return 0.0, 0.0
 
 def near(price, target, pct=PROXIMITY_PCT):

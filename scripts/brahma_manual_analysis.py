@@ -4730,8 +4730,14 @@ def main():
                 _action_tag = f'[{_action}]' if _action not in ('WAIT','WATCH') else ''
                 _liq_str = f'墙${_liq_s:,.0f} 池${_liq_l:,.0f}' if _liq_s and _liq_l else ''
                 _lines.append(f'{_icon} {_s}: {_regime} score={_score:.0f} {_action_tag} {_liq_str}'.strip())
-            _lines.append(f'耗时{_elapsed_s:.0f}s | 下次: {symbols[0] if symbols else "BTC"} brahma_cpu :04')
-            _ph.push_jarvis('\n'.join(_lines), priority='P3',
+                _all_scores_v2 = _all_scores_v2 if '_all_scores_v2' in dir() else []
+                _all_scores_v2.append(_score)
+            # [P1修复 2026-10-28 苏摩111] score=0时跳过推送（数据未就绪）
+            if not _all_scores_v2 or max(_all_scores_v2) < 10:
+                print(f'[auto_analysis] score全部<10，跳过推送', file=sys.stderr)
+            else:
+              _lines.append(f'耗时{_elapsed_s:.0f}s | 下次: {symbols[0] if symbols else "BTC"} brahma_cpu :04')
+              _ph.push_jarvis('\n'.join(_lines), priority='P3',
                 dedup_key=f'auto_analysis_{_summary.get("ts_utc","")[:13]}',
                 dedup_ttl=3300)
             print(f'[auto_analysis] 摘要推送苏摩 ✅', file=sys.stderr)

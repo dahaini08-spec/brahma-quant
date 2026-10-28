@@ -492,6 +492,7 @@ def m5_hunt_and_position(state, alerts):
                     f'⚠️ 如果有多单：考虑止盈或上移止损！\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 )
+                state[sk_hunt] = time.time()  # 更新冷却时间，防止每次都触发日志
                 print(f'[M5-LSR-日志only] {sym} LSR={lsr_now:.1f}% 已触发，由M7推送')  # M5不推送
 
             # 5b. 仓位反向检查（苏摩有持仓时）
