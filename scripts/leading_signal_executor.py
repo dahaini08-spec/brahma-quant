@@ -323,7 +323,15 @@ def _push_draft(r: dict):
             f"\n"
             f"回复 111 确认执行（先行通道，绕过CHOP门控）"
         )
-        push_jarvis(msg, priority='P1')
+        _dir = r.get('direction','').lower()  # LONG/SHORT → long/short
+        _sym = r.get('sym')
+        _rr  = float(r.get('rr', 0) or 0)
+        _sl_dist = abs(float(r.get('entry_lo', r.get('price',0) or 0) - float(r.get('sl', 0) or 0)))
+        push_jarvis(msg, priority='P1',
+                    source='leading_signal', sym=_sym,
+                    direction=_dir if _dir in ('long','short') else 'neutral',
+                    rr=_rr if _rr > 0 else None,
+                    sl_dist=_sl_dist if _sl_dist > 0 else None)
     except Exception as e:
         print(f'[leading_executor] 推送失败: {e}')
 

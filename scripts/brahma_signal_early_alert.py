@@ -303,7 +303,9 @@ def _push_alerts(alerts: list, now_str: str):
             ph.push_jarvis(
                 '\n'.join(lines), priority=priority,
                 dedup_key=f'early_{sym}_{int(time.time()//900)}',
-                dedup_ttl=900)
+                dedup_ttl=900,
+                source='early_alert', sym=sym,
+                direction='neutral')  # early_alert是先行预警，不含明确入场方向
             print(f'[early_alert] {priority} 推送 {sym} {max_severity}级信号 ✅')
 
     except Exception as e:
