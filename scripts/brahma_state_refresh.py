@@ -660,6 +660,7 @@ def _inject_gex_to_state():
             if zf > 0:
                 state['gex_zero_flip'] = zf
                 state['zero_flip']     = zf
+                state['gex_zf']        = zf  # [修复 2026-10-29 苏摩111] 统一字段名
                 changed = True
             ts = gs.get('top_strikes', {})
             if ts:
@@ -674,6 +675,7 @@ def _inject_gex_to_state():
                 _cs = float(state.get('confluence',{}).get('score',0) if isinstance(state.get('confluence'),dict) else 0)
                 if _cs > float(state.get('score_final',0) or 0):
                     state['score_final'] = _cs
+                state['ts'] = __import__('time').time()
                 tmp = state_f.with_suffix('.tmp')
                 tmp.write_text(_j.dumps(state, ensure_ascii=False))
                 tmp.replace(state_f)
@@ -751,6 +753,7 @@ def _inject_fangcang_to_state():
                 _cs2 = float(state.get('confluence',{}).get('score',0) if isinstance(state.get('confluence'),dict) else 0)
                 if _cs2 > float(state.get('score_final',0) or 0):
                     state['score_final'] = _cs2
+                state['ts'] = __import__('time').time()
                 tmp = state_f.with_suffix('.tmp')
                 tmp.write_text(_j.dumps(state, ensure_ascii=False))
                 tmp.replace(state_f)
