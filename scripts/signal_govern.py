@@ -72,13 +72,30 @@ def _get_fangcang(sym: str) -> tuple[str | None, float]:
     从 brahma_state 读取方仓方向和 sim
     字段名: fc_signal(SHORT/LONG/NEUTRAL) + fc_sim
     由 brahma_state_refresh._inject_fangcang_to_state() 每1H写入
+    [保活 2026-10-29 苏摩111] 数据>90min自动触发重注入，防停机窗口失效
     """
     try:
+        import time as _t
         f = _BASE / f'data/brahma_state_{sym.lower()}.json'
         d = json.loads(f.read_text(encoding='utf-8'))
         raw = d.get('fc_signal') or ''
-        direction = raw.lower() if raw and raw.upper() in ('SHORT','LONG') else None
         sim = float(d.get('fc_sim') or 0)
+        # 保活检查：fc_sim为None或state超过90min → 触发重注入
+        _state_age = _t.time() - float(d.get('price_ts', 0) or 0)
+        if (sim == 0 or raw == '') and _state_age > 5400:  # 90min
+            _log(f'[fangcang] {sym} 数据{_state_age/60:.0f}min旧，触发重注入')
+            try:
+                import sys as _sys
+                _sys.path.insert(0, str(_BASE / 'scripts'))
+                import brahma_state_refresh as _bsr
+                _bsr._inject_fangcang_to_state()
+                d = json.loads(f.read_text(encoding='utf-8'))
+                raw = d.get('fc_signal') or ''
+                sim = float(d.get('fc_sim') or 0)
+                _log(f'[fangcang] {sym} 重注入完成: {raw} sim={sim:.3f}')
+            except Exception as _re:
+                _log(f'[fangcang] {sym} 重注入失败: {_re}')
+        direction = raw.lower() if raw and raw.upper() in ('SHORT','LONG') else None
         return direction, sim
     except Exception:
         return None, 0.0

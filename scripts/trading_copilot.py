@@ -174,6 +174,26 @@ def near(price, target, pct=PROX_PCT):
 # ══════════════════════════════════════════
 # M1. 价位接近监控
 # ══════════════════════════════════════════
+def _get_taker_trend(sym: str) -> str:
+    """
+    Taker连续性：拉4根5min，判断最近2根方向
+    返回: 'bull'(买方主导) / 'bear'(卖方主导) / 'mixed'(混乱)
+    """
+    try:
+        tk = fetch(f'https://fapi.binance.com/futures/data/takerlongshortRatio'
+                   f'?symbol={sym}USDT&period=5m&limit=4')
+        ratios = [float(t['buySellRatio']) for t in tk]
+        # 最近2根同向 = 连续性确认
+        r2, r1 = ratios[-2], ratios[-1]  # r1最新
+        if r1 > 1.0 and r2 > 1.0:
+            return 'bull'   # 连续2根买方主导
+        if r1 < 1.0 and r2 < 1.0:
+            return 'bear'   # 连续2根卖方主导
+        return 'mixed'      # 方向不一致
+    except Exception:
+        return 'mixed'      # 拉取失败→不拦截
+
+
 def m1_price_proximity(state, alerts):
     """价格进入关键结构位±0.3%时推送"""
     for sym in ['BTC','ETH']:
@@ -182,6 +202,17 @@ def m1_price_proximity(state, alerts):
         liq_s, liq_l = get_liq(sym)
         ts = get_gex_strikes(sym)
         cvd = get_cvd(sym)
+        # [P0 2026-10-29 苏摩111] Taker连续性：避免动能衰减时入场
+        _taker_trend = _get_taker_trend(sym)
+        # [P1 2026-10-29 苏摩111] SL动态ATR：1.5×ATR1H（最低保障不变）
+        try:
+            import json as _j; from pathlib import Path as _P
+            _bs = _j.loads(_P(WORKDIR/f'data/brahma_state_{sym.lower()}.json').read_text())
+            _atr1h = float(_bs.get('atr_1h') or _bs.get('atr') or 0)
+        except Exception:
+            _atr1h = 0.0
+        _sl_dynamic = max(60 if sym=='ETH' else 900,
+                          round(_atr1h * 1.5)) if _atr1h > 0 else (60 if sym=='ETH' else 900)
 
         levels = []
         if sym == 'BTC':
@@ -190,15 +221,15 @@ def m1_price_proximity(state, alerts):
                     f'🔴 BTC止损墙 ${liq_s:,.0f} 触及！\n'
                     f'当前价 ${p:,.0f}\n\n'
                     f'空单入场区：${liq_s:,.0f}~${liq_s+300:,.0f}\n'
-                    f'止损 ${liq_s+900:,.0f} | 目标 ${liq_l:,.0f}\n'
-                    f'触发条件：1H收阴 + CVD转负'))
+                    f'止损 ${liq_s+_sl_dynamic:,.0f} | 目标 ${liq_l:,.0f}  SL={_sl_dynamic}pt\n'
+                    f'触发条件：1H收阴 + CVD转负\n📊 Taker趋势：{_taker_trend}'))
             if liq_l > 0:
                 levels.append(('liq_long', liq_l,
                     f'🟢 BTC支撑池 ${liq_l:,.0f} 触及！\n'
                     f'当前价 ${p:,.0f}\n\n'
                     f'多单入场区：${liq_l:,.0f}~${liq_l+300:,.0f}\n'
-                    f'止损 ${liq_l-900:,.0f} | 目标 ${liq_s:,.0f}\n'
-                    f'GEX $80,000=-30.4M 做市商机械支撑'))
+                    f'止损 ${liq_l-_sl_dynamic:,.0f} | 目标 ${liq_s:,.0f}  SL={_sl_dynamic}pt\n'
+                    f'GEX $80,000=-30.4M 做市商机械支撑\n📊 Taker趋势：{_taker_trend}'))
             gex_80k = float(ts.get('80000', 0))
             if gex_80k < 0:
                 levels.append(('gex_80000', 80000.0,
@@ -216,14 +247,14 @@ def m1_price_proximity(state, alerts):
                         f'🔴 ETH止损墙 ${liq_s:,.0f} 触及！\n'
                         f'当前价 ${p:,.2f}\n\n'
                         f'空单入场区：${liq_s:,.0f}~${liq_s+20:,.0f}\n'
-                        f'止损 ${liq_s+60:,.0f} | 目标 ${liq_l:,.0f} RR≈{_rr_s:.1f}\n'
-                        f'散户77%极端=猎杀弹药充足'))
+                        f'止损 ${liq_s+_sl_dynamic:,.0f} | 目标 ${liq_l:,.0f} RR≈{(liq_s-liq_l)/_sl_dynamic:.1f}\n'
+                        f'散户77%极端=猎杀弹药充足\n📊 Taker趋势：{_taker_trend}'))
             if liq_l > 0:
                 levels.append(('liq_long', liq_l,
                     f'🟢 ETH支撑池 ${liq_l:,.0f} 触及！\n'
                     f'当前价 ${p:,.2f}\n\n'
                     f'多单入场区：${liq_l:,.0f}~${liq_l+20:,.0f}\n'
-                    f'止损 ${liq_l-60:,.0f} | 目标 ${liq_s:,.0f}\n'
+                    f'止损 ${liq_l-_sl_dynamic:,.0f} | 目标 ${liq_s:,.0f}\n'
                     f'RR≈3.5 ✅'))
             # [2026-10-09 苏摩111] GEX决战位：先查OI+CVD方向，再决定推送内容
             # 根因：无论空头/多头背景都发「两可」信号 → 与signal_conflict矛盾
@@ -284,7 +315,7 @@ def m1_price_proximity(state, alerts):
                 if liq_s > 0 and liq_l > 0 and _dir == 'short':
                     _sl_pts = 60 if sym == 'ETH' else 900
                     _rr_m1 = round((liq_s - liq_l) / _sl_pts, 2) if liq_l > 0 else None
-                _meta_m1 = {'direction': _dir, 'sym': sym, 'source': 'M1', 'rr': _rr_m1, 'sl_dist': 60 if sym == 'ETH' else 900}
+                _meta_m1 = {'direction': _dir, 'sym': sym, 'source': 'M1', 'rr': _rr_m1, 'sl_dist': _sl_dynamic, 'taker_trend': _taker_trend}
                 alerts.append((sk, full, _meta_m1))
                 _pushed_dir = _dir
 

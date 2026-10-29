@@ -382,3 +382,5 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # [封印 2026-10-27 苏摩111] 体制切换预判维度（每10min）
 */30 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 scripts/regime_transition_detector.py --no-push --quiet >> logs/regime_transition.log 2>&1
+
+0 9 * * * cd /root/.openclaw/workspace/trading-system && python3 scripts/signal_govern_report.py >> logs/signal_govern_report.log 2>&1  # [封印 2026-10-29 苏摩111] v3.0日报 每天09:00 UTC
