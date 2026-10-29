@@ -29,7 +29,7 @@ STATE_PATH = BASE / 'data' / 'robot_state.json'
 def _push(msg: str, priority: str = 'P2') -> bool:
     try:
         from push_hub import push_jarvis
-        return push_jarvis(msg, priority=priority)
+        return push_jarvis(msg, priority=priority, source='robot', direction='neutral')
     except Exception as e:
         print(f"[robot] 推送失败: {e}")
         return False

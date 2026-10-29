@@ -61,18 +61,29 @@ def fetch(url, timeout=8):
     with urllib.request.urlopen(req, context=ctx, timeout=timeout) as r:
         return json.loads(r.read())
 
-def push(msg, key=''):
-    """推送到苏摩Jarvis线程"""
-    target = f'{JARVIS_USER}:thread:{JARVIS_THREAD}'
-    cmd = ['openclaw','message','send','--channel',CHANNEL,'-t',target,'-m',msg]
+def push(msg, key='', meta: dict = None):
+    """推送到苏摩Jarvis线程 — 经过 signal_govern v3.0 四层过滤"""
+    meta = meta or {}
     try:
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-        if r.returncode == 0:
-            print(f'[PUSH OK] {key}: {msg[:60]}...')
-        else:
-            print(f'[PUSH FAIL] {r.stderr[:100]}')
+        import push_hub as _ph
+        return _ph.push_jarvis(
+            msg,
+            priority='P1',
+            direction=meta.get('direction'),
+            sym=meta.get('sym'),
+            source=meta.get('source', 'copilot'),
+            rr=meta.get('rr'),
+            sl_dist=meta.get('sl_dist'),
+        )
     except Exception as e:
         print(f'[PUSH ERR] {e}')
+        # 降级：直接CLI
+        target = f'{JARVIS_USER}:thread:{JARVIS_THREAD}'
+        cmd = ['openclaw','message','send','--channel',CHANNEL,'-t',target,'-m',msg]
+        try:
+            subprocess.run(cmd, capture_output=True, text=True, timeout=15)
+        except Exception:
+            pass
 
 def load_state():
     try:
@@ -268,7 +279,13 @@ def m1_price_proximity(state, alerts):
             sk = f'{sym}_M1_{level_key}'
             if (time.time() - state.get(sk, 0)) > COOLDOWN['price']:
                 full = f'🏛️ 梵天副驾·价位警报 [{sym}]\n{msg}\n\n🌿 姓赵不宣 | 不是建议'
-                alerts.append((sk, full))
+                # [v3.0 2026-10-29 苏摩111] 显式传入方向元数据给signal_govern
+                _rr_m1 = None
+                if liq_s > 0 and liq_l > 0 and _dir == 'short':
+                    _sl_pts = 60 if sym == 'ETH' else 900
+                    _rr_m1 = round((liq_s - liq_l) / _sl_pts, 2) if liq_l > 0 else None
+                _meta_m1 = {'direction': _dir, 'sym': sym, 'source': 'M1', 'rr': _rr_m1, 'sl_dist': 60 if sym == 'ETH' else 900}
+                alerts.append((sk, full, _meta_m1))
                 _pushed_dir = _dir
 
 
@@ -432,7 +449,8 @@ def m4_big_lsr_delta(state, alerts):
                     f'  入场区：${max(p-50,liq_l):,.0f}~${p:,.0f}\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 )
-                alerts.append((sk_up, msg))
+                # [v3.0] M4多单信号 — 方仓冲突时将被signal_govern拦截
+                alerts.append((sk_up, msg, {'direction': 'long', 'sym': sym, 'source': 'M4'}))
 
             # 大户单日大量减多（出货信号）
             if delta <= -LSR_BIG_DELTA and \
@@ -448,7 +466,7 @@ def m4_big_lsr_delta(state, alerts):
                     f'  BTC>65% / ETH>77% 触发猎杀\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 )
-                alerts.append((sk_down, msg))
+                alerts.append((sk_down, msg, {'direction': 'short', 'sym': sym, 'source': 'M4'}))
 
         except Exception as e:
             print(f'[M4 ERR {sym}] {e}')
@@ -893,7 +911,8 @@ def main():
         from m7_vip_monitor import check_all as _m7_check_all
         _m7_result = _m7_check_all()
         for sk, msg in _m7_result:
-                alerts.append((sk, msg))
+            # [v3.0] M7 VIP信号 — 最高优先级P3，方向由signal_govern文本解析
+            alerts.append((sk, msg, {'source': 'M7'}))
         if _m7_result:
                 print(f'[M7] {len(_m7_result)}条VIP策略变更警报')
       except Exception as e:
@@ -959,8 +978,11 @@ def main():
         pass  # 守护不影响主路径
 
     if alerts:
-        for sk, msg in alerts:
-            push(msg, sk)
+        for item in alerts:
+            # [v3.0] alerts可能是(sk, msg)或(sk, msg, meta)
+            sk, msg = item[0], item[1]
+            meta = item[2] if len(item) > 2 else {}
+            push(msg, sk, meta=meta)
             state[sk] = time.time()
         save_state(state)
         print(f'[副驾] 推送 {len(alerts)} 条警报')
