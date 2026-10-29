@@ -1368,7 +1368,9 @@ def step5_oi(d: dict) -> dict:
         'trend_1h':     [round(v,0) for v in oi_1h_vals] if oi_1h_vals else [],
         'trend_4h':     [round(v,0) for v in oi_4h_vals] if oi_4h_vals else [],
         'cvd_1h':       cvd_data.get('cvd_1h', 0),
+        'cvd_4h':       cvd_data.get('cvd_4h', 0),
         'cvd_note':     cvd_note,
+        'cvd_dir_1h':   cvd_data.get('dir_1h', ('BUY_DOMINANT' if cvd_data.get('cvd_1h',0)>0 else ('SELL_DOMINANT' if cvd_data.get('cvd_1h',0)<0 else 'NEUTRAL'))),
     }
 
 def step5b_lsr_trigger(d: dict, res: dict) -> dict:
@@ -3480,7 +3482,7 @@ def run_analysis(sym: str, push_jarvis: bool = True) -> str:  # noqa: 返回str�
         f'  {vol.get("fr_note","")}',   # [P1] FR展示
         f'  β⁺={vol.get("beta_p",0):.3f} β⁻={vol.get("beta_m",0):.3f}  IV分位={vol.get("iv_rank",0)}',  # [P2] β展示
         f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}  合约SL参考=${vol.get("atr_sl_ref",0):.0f}({vol.get("atr_sl_ref",0)/p*100:.2f}%)' if p > 0 else f'  ATR1H=${vol.get("atr_1h",0):.0f} ATR4H=${vol.get("atr_4h",0):.0f} ATR1D=${vol.get("atr_1d",0):.0f}',
-        f'  RSI全周期: 15M={d.get("bs",{}).get("momentum",{}).get("rsi_15m",0):.1f} / 1H={d.get("bs",{}).get("momentum",{}).get("rsi_1h",0):.1f} / 4H={d.get("bs",{}).get("momentum",{}).get("rsi_4h",0):.1f} / 1D={d.get("bs",{}).get("momentum",{}).get("rsi_1d",0):.1f}',  # P1修复: RSI全周期展示
+        (lambda bs=d.get('bs',{}): f'  RSI全周期: 15M={bs.get("rsi_15m") or bs.get("momentum",{}).get("rsi_15m",0):.1f} / 1H={bs.get("rsi_1h") or bs.get("momentum",{}).get("rsi_1h",0):.1f} / 4H={bs.get("rsi_4h") or bs.get("momentum",{}).get("rsi_4h",0):.1f} / 1D={bs.get("rsi_1d") or bs.get("momentum",{}).get("rsi_1d",0):.1f}')(),  # P1修复: RSI全周期展示
     ]
     # P2: IC归因展示
     _ic = vol.get("ic_attribution", {})
