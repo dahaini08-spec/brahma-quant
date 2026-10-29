@@ -645,6 +645,33 @@ def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
     fc = bs.get('fangcang', {}) if isinstance(bs, dict) else {}
     price = d.get('price', 0)
 
+    # [修复 2026-10-29 苏摩111] 兼容新架构：fangcang数据在顶层 fc_* 字段
+    # 旧架构：bs['fangcang'] 嵌套字典（现在为空{}）
+    # 新架构：state_refresh 直接写 fc_sim/fc_signal/fc_n_similar 等顶层字段
+    _fc_n = int(bs.get('fc_n_similar', 0) or 0)
+    if (not fc or not isinstance(fc, dict)) and _fc_n > 0:
+        # 用顶层 fc_* 字段构造兼容字典
+        _lp = float(bs.get('fc_long_pct', 0) or 0)
+        _sp = float(bs.get('fc_short_pct', 0) or 0)
+        _sig = bs.get('fc_signal', '')
+        _sim = float(bs.get('fc_sim', 0) or 0)
+        _conf = str(bs.get('fc_confidence', ''))
+        _note = str(bs.get('fc_note', ''))
+        fc = {
+            'top_similar':         [],  # fangcang_engine不暴露top5到state，需要专项查询
+            'hcme_wr_adj':         _sim,
+            'hcme_context':        _note,
+            'signal_hint':         _sig,
+            'current_regime':      str(bs.get('regime', '')),
+            'similar_cases_count': _fc_n,
+            'long_prob':           _lp,
+            'short_prob':          _sp,
+            'chop_prob':           max(0, 1.0 - _lp - _sp),
+            'confidence_level':    _conf,
+            'market_bias':         _sig,
+            'trap_alert':          '',
+        }
+
     if not fc or not isinstance(fc, dict):
         return {'top5': [], 'wr_adj': 0, 'context': '方仓无数据',
                 'signal_hint': '', 'regime': '', 'n_cases': 0}
