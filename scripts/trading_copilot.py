@@ -198,12 +198,15 @@ def m1_price_proximity(state, alerts):
                     f'RR≈3.3 ✅'))
         else:  # ETH
             if liq_s > 0:
-                levels.append(('liq_short', liq_s,
-                    f'🔴 ETH止损墙 ${liq_s:,.0f} 触及！\n'
-                    f'当前价 ${p:,.2f}\n\n'
-                    f'空单入场区：${liq_s:,.0f}~${liq_s+20:,.0f}\n'
-                    f'止损 ${liq_s+60:,.0f} | 目标 ${liq_l:,.0f}\n'
-                    f'散户77%极端=猎杀弹药充足'))
+                # [RR门控 2026-10-29 苏摩111] RR<0.8时不推送（liq_s/liq_l间距太小）
+                _rr_s = (liq_s - liq_l) / 60 if liq_l > 0 else 0
+                if _rr_s >= 0.8:
+                    levels.append(('liq_short', liq_s,
+                        f'🔴 ETH止损墙 ${liq_s:,.0f} 触及！\n'
+                        f'当前价 ${p:,.2f}\n\n'
+                        f'空单入场区：${liq_s:,.0f}~${liq_s+20:,.0f}\n'
+                        f'止损 ${liq_s+60:,.0f} | 目标 ${liq_l:,.0f} RR≈{_rr_s:.1f}\n'
+                        f'散户77%极端=猎杀弹药充足'))
             if liq_l > 0:
                 levels.append(('liq_long', liq_l,
                     f'🟢 ETH支撑池 ${liq_l:,.0f} 触及！\n'
@@ -409,8 +412,13 @@ def m4_big_lsr_delta(state, alerts):
             sk_down = f'{sym}_M4_big_down'
 
             # 大户单日大量追多（底部建仓信号）
+            # [方向冲突检查 2026-10-29 苏摩111] M1已推空单时，M4多单信号强制跳过
+            _m1_short_key = f'{sym}_M1_liq_short'
+            _m1_short_age = time.time() - state.get(_m1_short_key, 0)
+            _m1_just_pushed_short = _m1_short_age < COOLDOWN['price']  # M1刚推过空单
             if delta >= LSR_BIG_DELTA and \
-               (time.time() - state.get(sk_up, 0)) > COOLDOWN['lsr_big']:
+               (time.time() - state.get(sk_up, 0)) > COOLDOWN['lsr_big'] and \
+               not _m1_just_pushed_short:  # M1未推空单才允许M4推多
                 msg = (
                     f'🟢 梵天副驾·大户接货警报 [{sym}]\n'
                     f'当前价 ${p:,.1f}\n\n'
