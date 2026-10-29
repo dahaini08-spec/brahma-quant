@@ -68,12 +68,18 @@ def _get_regime_score(sym: str) -> tuple[str, float]:
 
 
 def _get_fangcang(sym: str) -> tuple[str | None, float]:
-    """从 brahma_state 读取方仓方向和 sim"""
+    """
+    从 brahma_state 读取方仓方向和 sim
+    字段名: fc_signal(SHORT/LONG/NEUTRAL) + fc_sim
+    由 brahma_state_refresh._inject_fangcang_to_state() 每1H写入
+    """
     try:
         f = _BASE / f'data/brahma_state_{sym.lower()}.json'
         d = json.loads(f.read_text(encoding='utf-8'))
-        fc = d.get('fangcang', {})
-        return fc.get('signal'), float(fc.get('sim', 0))
+        raw = d.get('fc_signal') or ''
+        direction = raw.lower() if raw and raw.upper() in ('SHORT','LONG') else None
+        sim = float(d.get('fc_sim') or 0)
+        return direction, sim
     except Exception:
         return None, 0.0
 
