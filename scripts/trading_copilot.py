@@ -412,7 +412,7 @@ def m3_fr_extreme(state, alerts):
                     f'目标：liq_long（支撑池）\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 )
-                alerts.append((sk_high, msg))
+                alerts.append((sk_high, msg, {'source': 'M3', 'direction': 'neutral'}))
 
             # FR极端低（空头过度拥挤=底部反转信号）
             if fr_now < FR_LOW * 100 and \
@@ -427,7 +427,7 @@ def m3_fr_extreme(state, alerts):
                     f'  当前已转负，等OI止跌+1H收阳确认\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 )
-                alerts.append((sk_low, msg))
+                alerts.append((sk_low, msg, {'source': 'M3', 'direction': 'neutral'}))
 
         except Exception as e:
             print(f'[M3 ERR {sym}] {e}')
@@ -604,7 +604,7 @@ def m5_hunt_and_position(state, alerts):
                         f'此警报是为了避免重演\n\n'
                         f'🌿 姓赵不宣 | 不是建议'
                     )
-                    alerts.append((sk_pos, msg))
+                    alerts.append((sk_pos, msg, {'source': 'M5', 'direction': 'neutral'}))
 
         except Exception as e:
             print(f'[M5 ERR {sym}] {e}')

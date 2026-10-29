@@ -279,7 +279,7 @@ def run_sym(sym: str, state: dict, now: float) -> dict:
 
     if should_push:
         msg = build_push_msg(sym, params, changes, trigger)
-        push(msg)
+        push(msg, sym=sym, direction=params.get("direction"))
         return {
             'params':       params,
             'last_push_ts': now,
