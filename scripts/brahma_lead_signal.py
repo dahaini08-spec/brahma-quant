@@ -33,15 +33,21 @@ def fetch(url, timeout=8):
         return json.loads(r.read())
 
 def push(msg, key='lead'):
-    import subprocess
-    target = f'{JARVIS_USER}:thread:{JARVIS_THREAD}'
+    # [修复 2026-10-29 苏摩111] 改走push_hub经signal_govern仲裁
+    import sys as _sys_ls
+    _sys_ls.path.insert(0, str(BASE / 'scripts'))
     try:
-        subprocess.run(
-            ['openclaw', 'message', 'send', '--channel', 'jarvis', '-t', target, '-m', msg],
-            capture_output=True, text=True, timeout=15, check=True
-        )
+        from push_hub import push_jarvis as _pj
+        _pj(msg, priority='P2', source='lead_signal', direction='neutral')
         print(f'[lead_signal] push OK: {key}')
     except Exception as e:
+        import subprocess
+        target = f'{JARVIS_USER}:thread:{JARVIS_THREAD}'
+        try:
+            subprocess.run(['openclaw','message','send','--channel','jarvis',
+                '-t',target,'-m',msg], capture_output=True,text=True,timeout=15)
+        except Exception:
+            pass
         print(f'[lead_signal] push ERR: {e}', file=sys.stderr)
 
 def load_state():

@@ -250,11 +250,23 @@ def gate(
     # [P0 2026-10-29 苏摩111] 推送时有效但到达时入场区已过期
     # 根因：leading_signal在$78,500触发，苏摩收到时价格已$80,154
     if entry_lo is not None and entry_hi is not None and direction in ('long', 'short'):
+        # [修复 2026-10-29 苏摩111] 优先读brahma_state缓存价格，不依赖网络
+        # 原方案：urllib实时拉取，失败→except→pass→漏过时效检查
+        _cur_px = 0.0
         try:
-            _cur_px = float(json.loads(
-                __import__('urllib.request', fromlist=['urlopen']).urlopen(
+            _sf = _BASE / f'data/brahma_state_{sym.lower()}.json'
+            _cur_px = float(json.loads(_sf.read_text(encoding='utf-8')).get('price', 0) or 0)
+        except Exception:
+            pass
+        if _cur_px <= 0:  # state读取失败时才用网络
+            try:
+                import urllib.request as _ur
+                _cur_px = float(json.loads(_ur.urlopen(
                     f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT',
                     timeout=3).read())['price'])
+            except Exception:
+                _cur_px = 0.0
+        if _cur_px > 0:
             if direction == 'long' and _cur_px > entry_hi * 1.005:
                 reason = f'L1.5: 入场区已过期 多单上沿${entry_hi:,.0f}<当前价${_cur_px:,.0f}(+{(_cur_px-entry_hi)/entry_hi*100:.1f}%)'
                 _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
@@ -263,8 +275,6 @@ def gate(
                 reason = f'L1.5: 入场区已过期 空单下沿${entry_lo:,.0f}>当前价${_cur_px:,.0f}(-{(entry_lo-_cur_px)/entry_lo*100:.1f}%)'
                 _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
                 return False, reason
-        except Exception:
-            pass  # 拉取失败不阻塞
 
     # ══ L2: 信号质量门 ══════════════════════════════════════
     if rr is not None and rr < 0.8:
