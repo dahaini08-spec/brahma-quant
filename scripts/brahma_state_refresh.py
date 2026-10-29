@@ -597,8 +597,16 @@ def _update_asset_config_liq_gex():
         if liq_f.exists():
             try:
                 liq = _j.loads(liq_f.read_text())
-                new_s = float(liq.get('nearest_short_liq', 0))
-                new_l = float(liq.get('nearest_long_liq',  0))
+                _cur_p = float(liq.get('current_px', 0) or 0)
+                # [修复 2026-10-29 苏摩111] nearest_short_liq=None时降级到sell_walls
+                new_s = float(liq.get('nearest_short_liq', 0) or 0)
+                if not new_s and _cur_p > 0:
+                    _sw = sorted([w['price'] for w in liq.get('sell_walls',[]) if w['price']>_cur_p])
+                    new_s = float(_sw[0]) if _sw else 0
+                new_l = float(liq.get('nearest_long_liq', 0) or 0)
+                if not new_l and _cur_p > 0:
+                    _bw = sorted([w['price'] for w in liq.get('buy_walls',[]) if w['price']<_cur_p],reverse=True)
+                    new_l = float(_bw[0]) if _bw else 0
                 if new_s > 0 and new_s != cfg.get('liq_short', 0):
                     ac[sym_key]['liq_short'] = new_s; changed = True
                 if new_l > 0 and new_l != cfg.get('liq_long', 0):

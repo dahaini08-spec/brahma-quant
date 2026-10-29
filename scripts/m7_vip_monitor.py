@@ -328,14 +328,19 @@ def check_all() -> list:
         # ══════════════════════════════════════
         if dist <= 0:
             k = f'm7_lsr_hunt_{sym}'
-            # [P0-② 2026-10-10] 猎杀触发冷却5min（极紧急信号）
-            if now - state.get(k, 0) > 300:
+            # [修复 2026-10-29 苏摩111] 入场区时效检查：距当前价>3%=价格已偏离=不推
+            # 根因：liq_short缓存旧值（高点），价格大跌后仍推高位空单=严重滞后
+            _s_lo = cfg["short_entry"][0]; _s_hi = cfg["short_entry"][1]
+            _entry_lag_pct = (_s_lo - price) / price * 100 if price > 0 else 99
+            if _entry_lag_pct > 3.0:
+                print(f'[M7 LSR] {sym} 空单入场区${_s_lo:,}距当前${price:,.0f}={_entry_lag_pct:.1f}%>3%，滞后跳过')
+            elif now - state.get(k, 0) > 300:
                 alerts.append((k,
                     f'🔴 梵天VIP警报 | {sym} 散户猎杀触发！\n\n'
                     f'散户LSR={lsr_v:.1f}% ≥ 门槛{hunt:.0f}%\n'
                     f'当前价 ${price:,.2f}\n\n'
                     f'📌 VIP空单立即准备：\n'
-                    f'入场 ${cfg["short_entry"][0]:,}~${cfg["short_entry"][1]:,}\n'
+                    f'入场 ${_s_lo:,}~${_s_hi:,}\n'
                     f'止损 ${cfg["short_sl"]:,} | 目标 ${cfg["short_tp"]:,}\n'
                     f'等FR同步转正 + 1H收阴最终确认\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
