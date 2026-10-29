@@ -705,10 +705,17 @@ def write_trigger(sym, events, data):
                         f"{ev_lines}\n"
                         f"→ 梵天扫描链已启动"
                     )
-                    _sp.Popen(
-                        ['openclaw', 'message', 'send', '--to', JARVIS_TARGET, '--channel', 'jarvis', '--message', msg],
-                        stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
-                    )
+                    # [v3.0 2026-10-29 苏摩111] 改走push_hub，经signal_govern仲裁
+                    try:
+                        import sys as _sys2
+                        _sys2.path.insert(0, str(BASE / 'scripts'))
+                        from push_hub import push_jarvis as _pj
+                        _pj(msg, priority='P1', source='rsi_watcher', sym=sym, direction='neutral')
+                    except Exception as _pe:
+                        _sp.Popen(  # 降级
+                            ['openclaw', 'message', 'send', '--to', JARVIS_TARGET, '--channel', 'jarvis', '--message', msg],
+                            stdout=_sp.DEVNULL, stderr=_sp.DEVNULL
+                        )
                     # 写入去重记录
                     for e in _new_events:
                         _dedup[f"{sym}_{e.get('event','?')}"] = _now
@@ -816,10 +823,17 @@ def run():
             if _zone_touch:
                 _zone_msg = _zone_touch['msg']
                 import subprocess as _sp2
-                _sp2.Popen(
-                    ['openclaw','message','send','--to', JARVIS_TARGET,
-                     '--channel','jarvis','--message', _zone_msg],
-                    stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL
+                # [v3.0 2026-10-29 苏摩111] 改走push_hub
+                try:
+                    import sys as _sys3
+                    _sys3.path.insert(0, str(BASE / 'scripts'))
+                    from push_hub import push_jarvis as _pj2
+                    _pj2(_zone_msg, priority='P2', source='rsi_watcher', sym=sym, direction='neutral')
+                except Exception:
+                    _sp2.Popen(
+                        ['openclaw','message','send','--to', JARVIS_TARGET,
+                         '--channel','jarvis','--message', _zone_msg],
+                        stdout=_sp2.DEVNULL, stderr=_sp2.DEVNULL
                 )
                 # [设计院 2026-08-25 苏摩111] P1: price_zone触及→CPU大脑直通
                 # 不再只推消息，直接让CPU决策要不要执行
