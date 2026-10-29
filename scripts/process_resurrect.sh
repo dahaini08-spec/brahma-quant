@@ -9,12 +9,10 @@
 
 cd /root/.openclaw/workspace/trading-system
 
-# 1. supercronic
-if ! pgrep -f "supercronic.*brahma_crontab" > /dev/null; then
-    echo "[$(date -u '+%H:%M')] supercronic死 → 拉起(setsid)"
-    setsid ./start_supercronic.sh >> logs/supercronic.log 2>&1 < /dev/null &
-    sleep 2
-fi
+# 1. supercronic [修复 2026-10-29 苏摩111] 改用supercronic_watchdog.sh直接验证
+# 原因：start_supercronic.sh有重操作(lightgbm/jesse检查)，2s内未必完成
+# watchdog.sh: readlink验证真实二进制 + setsid直接启动 + 验证成功
+bash /root/.openclaw/workspace/trading-system/scripts/supercronic_watchdog.sh >> logs/watchdog.log 2>&1
 
 # 2. CVD采集器
 if ! pgrep -f "cvd_ws_collector" > /dev/null; then
