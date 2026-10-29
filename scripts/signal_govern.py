@@ -187,6 +187,8 @@ def gate(
     rr: float | None = None,
     sl_dist: float | None = None,   # 止损距离（价格点数）
     liq_gap_pct: float | None = None,
+    entry_lo: float | None = None,  # [P0 2026-10-29 苏摩111] 入场区下沿（用于时效检查）
+    entry_hi: float | None = None,  # 入场区上沿
 ) -> tuple[bool, str]:
     """
     返回 (允许推送, 原因)
@@ -243,6 +245,26 @@ def gate(
         elif fc_sim >= 0.5:
             _log(f'[ARB-WARN]  {source} {sym} {direction} 方仓软锁 {fc_dir}(sim={fc_sim:.2f}) 降权但允许通过')
             # 软锁：记录警告但不拦截
+
+    # ══ L1.5: 入场区时效检查 ══════════════════════════════════
+    # [P0 2026-10-29 苏摩111] 推送时有效但到达时入场区已过期
+    # 根因：leading_signal在$78,500触发，苏摩收到时价格已$80,154
+    if entry_lo is not None and entry_hi is not None and direction in ('long', 'short'):
+        try:
+            _cur_px = float(json.loads(
+                __import__('urllib.request', fromlist=['urlopen']).urlopen(
+                    f'https://fapi.binance.com/fapi/v1/ticker/price?symbol={sym}USDT',
+                    timeout=3).read())['price'])
+            if direction == 'long' and _cur_px > entry_hi * 1.005:
+                reason = f'L1.5: 入场区已过期 多单上沿${entry_hi:,.0f}<当前价${_cur_px:,.0f}(+{(_cur_px-entry_hi)/entry_hi*100:.1f}%)'
+                _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
+                return False, reason
+            if direction == 'short' and _cur_px < entry_lo * 0.995:
+                reason = f'L1.5: 入场区已过期 空单下沿${entry_lo:,.0f}>当前价${_cur_px:,.0f}(-{(entry_lo-_cur_px)/entry_lo*100:.1f}%)'
+                _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
+                return False, reason
+        except Exception:
+            pass  # 拉取失败不阻塞
 
     # ══ L2: 信号质量门 ══════════════════════════════════════
     if rr is not None and rr < 0.8:

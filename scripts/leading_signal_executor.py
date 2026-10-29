@@ -238,6 +238,21 @@ def run(sym: str, push: bool = True) -> dict:
         return {'status': 'COOLDOWN', 'sym': sym,
                 'remaining_min': round((COOLDOWN_MIN*60-(time.time()-last))/60, 1)}
 
+    # 2.5 [P1 2026-10-29 苏摩111] CHOP_MID门控收紧
+    # 原设计：完全绕过CHOP门控；实际问题：CHOP体制下先行信号噪音过多
+    # 新规则：CHOP_MID+score≥120才允许（score<120=数据质量不足，不绕过）
+    try:
+        import json as _j2
+        _bs2 = _j2.loads((DATA / f'brahma_state_{sym.lower()}.json').read_text())
+        _regime2 = _bs2.get('regime','')
+        _score2  = float(_bs2.get('score_final',0) or _bs2.get('score',0) or 0)
+        if _regime2 == 'CHOP_MID' and _score2 < 120:
+            return {'status': 'CHOP_SCORE_LOW', 'sym': sym,
+                    'regime': _regime2, 'score': _score2,
+                    'reason': f'CHOP_MID+score={_score2:.0f}<120，先行信号质量不足'}
+    except Exception:
+        pass
+
     # 3. 宏观方向锚
     direction = _macro_direction(sym, macro)
     if direction == 'NONE':
@@ -323,15 +338,20 @@ def _push_draft(r: dict):
             f"\n"
             f"回复 111 确认执行（先行通道，绕过CHOP门控）"
         )
-        _dir = r.get('direction','').lower()  # LONG/SHORT → long/short
-        _sym = r.get('sym')
-        _rr  = float(r.get('rr', 0) or 0)
+        _dir     = r.get('direction','').lower()
+        _sym     = r.get('sym')
+        _rr      = float(r.get('rr', 0) or 0)
         _sl_dist = abs(float(r.get('entry_lo', r.get('price',0) or 0) - float(r.get('sl', 0) or 0)))
+        _elo     = float(r.get('entry_lo', 0) or 0)
+        _ehi     = float(r.get('entry_hi', 0) or 0)
+        # [P0 2026-10-29 苏摩111] 传入entry_lo/hi → signal_govern L1.5时效检查
         push_jarvis(msg, priority='P1',
                     source='leading_signal', sym=_sym,
                     direction=_dir if _dir in ('long','short') else 'neutral',
                     rr=_rr if _rr > 0 else None,
-                    sl_dist=_sl_dist if _sl_dist > 0 else None)
+                    sl_dist=_sl_dist if _sl_dist > 0 else None,
+                    entry_lo=_elo if _elo > 0 else None,
+                    entry_hi=_ehi if _ehi > 0 else None)
     except Exception as e:
         print(f'[leading_executor] 推送失败: {e}')
 
