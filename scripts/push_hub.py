@@ -54,14 +54,49 @@ _PRIORITY_THREADS = {
 def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P1',
                 dedup_key: str = None, dedup_ttl: int = 0,
                 groq_comment: str = None,  # [P1 2026-10-10 苏摩111] Groq
+                direction: str = None,     # [v3.0 2026-10-29 苏摩111] 显式方向（优先于文本解析）
+                sym: str = None,           # [v3.0] 显式标的
+                rr: float = None,          # [v3.0] Risk/Reward ratio
+                sl_dist: float = None,     # [v3.0] 止损距离（价格点数）
+                liq_gap_pct: float = None, # [v3.0] 清算位间距百分比
+                source: str = None,        # [v3.0] 信号源（M1/M4/M7等）
                 **kwargs) -> bool:
     """
     推送到Jarvis主线程（subprocess CLI非阻塞）。
+    V3.0: 接入梵天信号治理架构——所有推送经过4层漏斗仲裁。
     V2.1: 接受dedup_key/dedup_ttl等历史kwargs（原先TypeError静默丢消息）
     dedup_key非空时启用文件去重：TTL内同key只推一次。
     """
     if not msg or not msg.strip():
         return False
+
+    # ══ [V3.0 2026-10-29 苏摩111] 梵天信号治理4层漏斗 ══
+    # 接入位置：push_jarvis入口，所有M1/M4/M7/vip_watcher/M8统一经过
+    try:
+        import sys as _sys
+        import os as _os
+        _gov_dir = _os.path.dirname(_os.path.abspath(__file__))
+        if _gov_dir not in _sys.path:
+            _sys.path.insert(0, _gov_dir)
+        from signal_govern import gate as _sg_gate
+        _src = source or (dedup_key.split('_')[0] if dedup_key else 'unknown')
+        _ok, _reason = _sg_gate(
+            msg,
+            direction=direction,
+            sym=sym,
+            source=_src,
+            rr=rr,
+            sl_dist=sl_dist,
+            liq_gap_pct=liq_gap_pct,
+        )
+        if not _ok:
+            print(f'[govern] 拦截 {_src} {sym} {direction}: {_reason}', file=__import__("sys").stderr)
+            return False
+    except ImportError:
+        pass  # signal_govern未就绪时不阻塞推送（安全降级）
+    except Exception as _ge:
+        print(f'[govern] 仲裁异常(不阻塞): {_ge}', file=__import__("sys").stderr)
+    # ══ 仲裁结束 ══
     # [P1 2026-10-10] groq_comment
     if groq_comment and groq_comment.strip():
         msg = msg + f'\n💡 {groq_comment.strip()[:60]}'
