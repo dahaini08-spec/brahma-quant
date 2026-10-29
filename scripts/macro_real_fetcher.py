@@ -1,3 +1,4 @@
+import time
 #!/usr/bin/env python3
 """
 梵天系统 Step8 宏观数据采集器
@@ -225,6 +226,7 @@ def update_macro_real():
     # 写入
     output_path = DATA_DIR / 'macro_real.json'
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    data['ts'] = time.time()  # [修复 2026-10-29 苏摩111] 加ts供manual_analysis判断时效
     with open(output_path, 'w') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
     

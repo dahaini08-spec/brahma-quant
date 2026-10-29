@@ -719,7 +719,8 @@ def step1b_fangcang_hcme(d: dict, fvg: dict) -> dict:
     # [P3修复 2026-10-01 苏摩111] 低相似度降级：<0.25时方仓信号置NEUTRAL
     # 根因：相似度0.191时方仓信号无统计意义（随机匹配），穿透到G4制造噪音
     # 修复：相似度<0.25=降级为NEUTRAL，输出体制基准WR作为参考
-    _top_sim = top5_fmt[0]['similarity'] if top5_fmt else 0
+    # [修复 2026-10-29 苏摩111] top5为空时用wr_adj(=fc_sim)作为相似度
+    _top_sim = top5_fmt[0]['similarity'] if top5_fmt else float(wr_adj or 0)
     _SIM_THRESHOLD = FC_SIM_THRESHOLD
     fc_direction = 'NEUTRAL'
     if signal_hint and _top_sim >= _SIM_THRESHOLD:
