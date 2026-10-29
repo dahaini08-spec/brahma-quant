@@ -447,7 +447,13 @@ def check_all() -> list:
         inv_price = cfg.get('invalidate_long', 0)
         liq_l_cfg = cfg.get('liq_long', 0)
         _inv_valid = inv_price and inv_price > liq_l_cfg * 1.005  # inv_price须高于liq_long
-        if _inv_valid and price < inv_price:
+        # [修复 2026-10-29 苏摩111] 止损位必须低于入场区，旧config高于入场价=误报
+        # ETH inv=$2413 > entry=$2391 → 不是真止损，是旧数据污染
+        _entry_lo = cfg.get('long_entry_lo', cfg.get('entry_lo', 0))
+        if not _entry_lo and isinstance(cfg.get('long_entry'), (list,tuple)):
+            _entry_lo = cfg['long_entry'][0]
+        _inv_below_entry = (_entry_lo <= 0) or (inv_price < _entry_lo * 0.998)
+        if _inv_valid and _inv_below_entry and price < inv_price:
             k = f'm7_invalidate_{sym}'
             if now - state.get(k, 0) > COOLDOWN:
                 alerts.append((k,
