@@ -155,8 +155,8 @@ def _calc_entry(sym: str, direction: str, state: dict, sig: dict) -> dict:
         if liq_l > 0 and liq_l < px:
             entry_hi = round(liq_l * 1.003, 1)
             entry_lo = round(liq_l * 0.999, 1)
-            sl       = round(min(liq_l - atr1h * ATR_SL_MULT,
-                                 liq_l * 0.993), 1)
+            # [修复 2026-10-30] SL从entry_lo算，确保SL距离≥1.5×ATR（向下取整）
+            sl       = math.floor((entry_lo - atr1h * ATR_SL_MULT) * 10) / 10
         else:
             # 无清算位：用当前价×0.985
             entry_hi = round(px * 0.988, 1)
@@ -242,7 +242,7 @@ def run(sym: str, push: bool = True) -> dict:
     # 原设计：完全绕过CHOP门控；实际问题：CHOP体制下先行信号噪音过多
     # 新规则：CHOP_MID+score≥120才允许（score<120=数据质量不足，不绕过）
     try:
-        import json as _j2
+        import json, math as _j2
         _bs2 = _j2.loads((DATA / f'brahma_state_{sym.lower()}.json').read_text())
         _regime2 = _bs2.get('regime','')
         _score2  = float(_bs2.get('score_final',0) or _bs2.get('score',0) or 0)
