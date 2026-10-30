@@ -4704,14 +4704,41 @@ def main():
             print(f'[WARN] consensus_table BTC+ETH: {_ct_e}', file=sys.stderr)
 
         _summary = {
-            'ts': _time.time(),  # [封印修复①] Unix时间戳，AI判断数据时效必用
-            'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
-            'symbols': symbols,
-            'elapsed_s': round(elapsed, 1),
-            'output': '\n'.join(full_output),
-            'full_reports': _full_reports,  # D1-D10完整格式 — AI强制输出路径
-            'ssot_signals': _structured,  # [唯一裁判] ENTER系结构化信号
-        }
+                'ts': _time.time(),  # [封印修复①] Unix时间戳，AI判断数据时效必用
+                'timestamp': _time.strftime('%Y-%m-%d %H:%M:%S UTC', _time.gmtime()),
+                'symbols': symbols,
+                'elapsed_s': round(elapsed, 1),
+                'output': '\n'.join(full_output),
+                'full_reports': _full_reports,  # D1-D10完整格式 — AI强制输出路径
+                'ssot_signals': _structured,  # [唯一裁判] ENTER系结构化信号
+            }
+        # [修复 2026-10-30 苏摩111] 解析VIP入场区→vip_entry_triggers.json
+        try:
+            import re as _re2
+            _triggers = []
+            _vip_out = _summary.get('output', '')
+            for _sym in symbols:
+                _tag = f'{_sym}/USDT'
+                _si = _vip_out.find(_tag)
+                _ni = _vip_out.find('ETH/USDT') if _sym=='BTC' else len(_vip_out)
+                _seg = _vip_out[_si:_ni] if _si>=0 else ''
+                _bs = _P(__file__).parent.parent / 'data' / f'brahma_state_{_sym.lower()}.json'
+                _bs_d = _json.loads(_bs.read_text()) if _bs.exists() else {}
+                for _dir, _pat in [('short', r'空单[｜|]挂单区\s*\$?([\d,]+\.?\d*)~\$?([\d,]+\.?\d*)'),
+                                   ('long',  r'多单[｜|]挂单区\s*\$?([\d,]+\.?\d*)~\$?([\d,]+\.?\d*)')]:
+                    _m = _re2.search(_pat, _seg)
+                    if _m:
+                        _lo = float(_m.group(1).replace(',',''))
+                        _hi = float(_m.group(2).replace(',',''))
+                        _triggers.append({'sym':_sym,'direction':_dir,'entry_lo':_lo,'entry_hi':_hi,
+                            'sl': float(_bs_d.get('sl',0) or 0),
+                            'tp1': float(_bs_d.get('tp1',0) or 0),
+                            'ts': _time.time()})
+            if _triggers:
+                (_P(__file__).parent.parent/'data'/'vip_entry_triggers.json').write_text(
+                    _json.dumps(_triggers, ensure_ascii=False, indent=2))
+                print(f'[vip_entry_triggers] 写入{len(_triggers)}个入场区监控点', file=sys.stderr)
+        except Exception as _vte: pass
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
         _out_path.write_text(_json.dumps(_summary, ensure_ascii=False))
         print(f'[auto_analysis_latest] 已写入 {_out_path.name} ({len(symbols)}标的, SSOT信号{len(_structured)}条)', file=sys.stderr)
