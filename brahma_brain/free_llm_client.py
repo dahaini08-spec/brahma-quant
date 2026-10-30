@@ -46,8 +46,8 @@ GROQ_MODEL   = 'qwen/qwen3.8-27b'
 GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
 
 # OpenRouter: xing4.0-29b 备用（Groq故障时接管）
-OR_MODEL   = 'cohere/north-mini-code:free'          # [修复 2026-10-22 苏摩111 v2] cohere最快0.5s+标准输出
-OR_MODEL_2 = 'google/gemma-4-26b-a4b-it:free'      # 备选1: 1.1s 标准输出
+OR_MODEL   = 'google/gemma-4-26b-a4b-it:free'  # [更新 2026-10-30 苏摩111] 新key，0.9s验证可用          # [修复 2026-10-22 苏摩111 v2] cohere最快0.5s+标准输出
+OR_MODEL_2 = 'nvidia/nemotron-3.5-lightning:free'  # 备用1: 0.5s（thinking模型）      # 备选1: 1.1s 标准输出
 OR_MODEL_3 = 'nvidia/nemotron-3.5-lightning:free'  # 备选2: 0.5s但需关键词提取
 OR_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
