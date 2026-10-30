@@ -92,11 +92,17 @@ def _load_vip_cfg():
                     _gex_d = _j.loads((_data_dir/'gex_state.json').read_text())
                     _gex_zf = float(_gex_d.get(_sym,{}).get('zero_flip',0) or _gex_zf)
                 except Exception as _e2: pass  # gex_state.json不存在时使用默认值
+                # [修复 2026-10-30 苏摩111] short_tp须低于入场价
+                # liq_long>当前价时（价格已跌穿支撑池），TP改用下方liq或price×0.975
+                _raw_short_tp = round(_hl_l, 0)
+                if _raw_short_tp >= _short_lo and _pr > 0:
+                    # TP高于入场区=逻辑颠倒，改用价格×0.975作兜底
+                    _raw_short_tp = round(_pr * 0.975, 0)
                 _fb[_sym] = {
                     'long_entry': (_long_lo, _long_hi),
                     'long_sl': _long_sl, 'long_tp': round(_hl_s, 0),
                     'short_entry': (_short_lo, _short_hi),
-                    'short_sl': _short_sl, 'short_tp': round(_hl_l, 0),
+                    'short_sl': _short_sl, 'short_tp': _raw_short_tp,
                     'hunt_lsr': _hunt, 'lsr_near': 1.5,
                     'invalidate_long': _long_sl,
                     'gex_zf': _gex_zf, 'atr_1h': _atr,
@@ -332,8 +338,9 @@ def check_all() -> list:
             # 根因：liq_short缓存旧值（高点），价格大跌后仍推高位空单=严重滞后
             _s_lo = cfg["short_entry"][0]; _s_hi = cfg["short_entry"][1]
             _entry_lag_pct = (_s_lo - price) / price * 100 if price > 0 else 99
-            if _entry_lag_pct > 3.0:
-                print(f'[M7 LSR] {sym} 空单入场区${_s_lo:,}距当前${price:,.0f}={_entry_lag_pct:.1f}%>3%，滞后跳过')
+            # [修复 2026-10-30 苏摩111] 门控从3%收紧到2.5%（2.9%漏网案例）
+            if _entry_lag_pct > 2.5:
+                print(f'[M7 LSR] {sym} 空单入场区${_s_lo:,}距当前${price:,.0f}={_entry_lag_pct:.1f}%>2.5%，滞后跳过')
             elif now - state.get(k, 0) > 300:
                 alerts.append((k,
                     f'🔴 梵天VIP警报 | {sym} 散户猎杀触发！\n\n'

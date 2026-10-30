@@ -213,6 +213,11 @@ def _push_vip_update(changed_syms: list, analysis_result: str):
             if vip_f.exists():
                 try:
                     vip_data = json.load(open(vip_f))
+                    # [修复 2026-10-30 苏摩111] WAIT方向不推神经感知VIP
+                    # 根因：direction=WAIT时vip_card="暂无多单/空单"=空洞无意义推送
+                    if vip_data.get('direction','WAIT') in ('WAIT','NONE',''):
+                        print(f'[watcher] {sym} direction=WAIT，跳过神经感知推送')
+                        continue
                     vip_card = vip_data.get('vip', '')
                 except Exception:
                     pass
