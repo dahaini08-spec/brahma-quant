@@ -46,7 +46,10 @@ def _load_vip_cfg():
                 'long_tp':     int(cfg.get('liq_short', 0)),
                 'short_entry': (int(cfg.get('liq_short',0)*0.995), int(cfg.get('liq_short',0))),
                 'short_sl':    int(cfg.get('liq_short',0)*1.009),
-                'short_tp':    int(cfg.get('liq_long',0)),
+                'short_tp':    (lambda _sl=int(cfg.get('liq_short',0)*0.995),
+                                      _ll=int(cfg.get('liq_long',0)),
+                                      _pr=float(cfg.get('price',0) or 0):
+                               _ll if _ll < _sl else int(_pr * 0.975) if _pr > 0 else _ll)(),
                 'hunt_lsr':    float(cfg.get('lsr_hunt', 65.0)),
                 'lsr_near':    float(cfg.get('lsr_near', 1.5)),
                 'invalidate_long': float(cfg.get('invalidate_long', 0)),
@@ -116,7 +119,7 @@ def _load_vip_cfg():
             }
         return _fb
 
-VIP_CONFIG = _load_vip_cfg()  # 导入时初始值
+# VIP_CONFIG不再缓存，每次run_m7()调用时动态加载
 
 def _refresh_vip_config():
     """[2026-10-10 苏摩111] check_all每次更新最新liq/atr"""
@@ -242,7 +245,7 @@ def check_all() -> list:
 
     for sym in ['BTC', 'ETH']:
         sf  = f'{sym}USDT'
-        cfg = VIP_CONFIG[sym]
+        cfg = _load_vip_cfg()  # [修复 2026-10-30] 每次执行动态加载，不用缓存[sym]
 
         # ── 拉价格 ────────────────────────────────────
         try:
@@ -307,7 +310,7 @@ def check_all() -> list:
                     f'当前价 ${price:,.2f}\n\n'
                     f'📌 VIP空单准备：\n'
                     f'入场 ${cfg["short_entry"][0]:,}~${cfg["short_entry"][1]:,}\n'
-                    f'止损 ${cfg["short_sl"]:,} | 目标 ${cfg["short_tp"]:,}\n\n'
+                    f'止损 ${cfg["short_sl"]:,} | 目标 ${(cfg["short_tp"] if cfg["short_tp"]<cfg["short_entry"][0] else int(price*0.975)):,}\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
         elif not _in_p0_silence and fr_v > 0.003:
@@ -348,7 +351,7 @@ def check_all() -> list:
                     f'当前价 ${price:,.2f}\n\n'
                     f'📌 VIP空单立即准备：\n'
                     f'入场 ${_s_lo:,}~${_s_hi:,}\n'
-                    f'止损 ${cfg["short_sl"]:,} | 目标 ${cfg["short_tp"]:,}\n'
+                    f'止损 ${cfg["short_sl"]:,} | 目标 ${(cfg["short_tp"] if cfg["short_tp"]<cfg["short_entry"][0] else int(price*0.975)):,}\n'
                     f'等FR同步转正 + 1H收阴最终确认\n\n'
                     f'🌿 姓赵不宣 | 不是建议'
                 ))
