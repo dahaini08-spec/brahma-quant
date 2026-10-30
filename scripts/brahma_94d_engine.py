@@ -325,7 +325,16 @@ def analyze(sym):
         s_dir='LONG'
         anchor=fbe1h['lo'] if fbe1h else (ob_b1h[0]['hi'] if ob_b1h else bb1h_l)
         s_e=round(max(anchor,px*0.999),2); s_sl=round(s_e-min_sl1h,2)
-        s_t1=round(fb1h['mid'] if fb1h else bb1h_m,2); s_t2=round(bb1h_u*0.99,2)
+        # [修复 2026-10-30] TP1取 max(FVG中点, BB1H中轨, 入场价+0.5×SL距离)，确保RR有意义
+        _fvg_tp=fb1h['mid'] if fb1h and fb1h['mid']>s_e*1.003 else 0
+        _bb_tp=bb1h_m if bb1h_m>s_e*1.003 else 0
+        _min_tp=round(s_e+(s_e-s_sl)*0.8,2)  # 至少0.8×SL距离
+        s_t1=round(max(_fvg_tp,_bb_tp,_min_tp,liq_s*0.993 if liq_s and liq_s>s_e else 0),2)
+        # [修复] TP2必须>TP1，且取更高目标
+        _tp2_cands=[liq_s*0.993 if liq_s and liq_s>s_t1*1.002 else 0,
+                    bb1h_u*0.99 if bb1h_u>s_t1*1.002 else 0,
+                    s_t1+(s_t1-s_e)*0.5]  # TP2=TP1+0.5倍TP1距离
+        s_t2=round(max(c for c in _tp2_cands if c>s_t1),2)
         r=[];
         if is_ov: r.append('StochRSI1H=%s底部'%st1h)
         if is_sq: r.append('4H SHORT_SQUEEZE(%+.2f%%)'%oi4hc)
@@ -338,17 +347,25 @@ def analyze(sym):
         s_sl=round(s_e+min_sl1h,2); s_t1=round(bb1h_m,2); s_t2=round(bb1h_l*1.01,2)
         s_logic='StochRSI=%s超买+Taker=%s'%(st1h,tk_trend); s_trig='15M Taker连续2根<1.0'
     s_rr=round(abs(s_t1-s_e)/abs(s_e-s_sl),1) if s_sl and s_e and abs(s_e-s_sl)>0 else 0
+    # [修复 2026-10-30] RR<1.0时短线信号降级：找更好的入场点
+    if s_rr < 1.0 and s_dir!='WAIT':
+        s_dir='WAIT'; s_e=s_sl=s_t1=s_t2=0.0
+        s_trig='RR=%.1f<1.0，等更好入场点或Taker更强确认'%s_rr; s_logic='RR不达标'
 
     m_dir='WAIT'; m_e=m_sl=m_t1=m_t2=0.0; m_logic=m_note=''
     if '↑' in st4h_s:
         m_dir='LONG'; m_e=round(bb4h_l*1.001,2)
-        m_sl=round(max(m_e-min_sl4h, sl4h_c*0.99 if sl4h_c else m_e*0.985),2)
+        # [修复 2026-10-30] 多单SL必须在入场价下方
+        _sl_ref=sl4h_c*0.99 if sl4h_c and sl4h_c<m_e else m_e*0.985
+        m_sl=round(min(m_e-min_sl4h, _sl_ref),2)
         m_t1=round(bb4h_m,2); m_t2=round(sh4h_c*0.98 if sh4h_c else bb4h_u*0.98,2)
         m_logic='4H %s  fc=%s(%.2f)  EMA50_4H=$%s'%(st4h_s,fc,fcsim,'{:,.0f}'.format(ema50_4h))
         m_note='跌破BB4H下轨$%s=结构破坏→转观望'%'{:,.0f}'.format(bb4h_l)
     elif '↓' in st4h_s:
         m_dir='SHORT'; m_e=round(bb4h_u*0.999,2)
-        m_sl=round(min(m_e+min_sl4h, sh4h_c*1.01 if sh4h_c else m_e*1.015),2)
+        # [修复 2026-10-30] 空单SL必须在入场价上方且足够远
+        _sl_ref=sh4h_c*1.01 if sh4h_c and sh4h_c>m_e else m_e*1.015
+        m_sl=round(max(m_e+min_sl4h, _sl_ref),2)
         m_t1=round(bb4h_m,2); m_t2=round(sl4h_c*1.02 if sl4h_c else bb4h_l*1.02,2)
         m_logic='4H %s  OI=%s  EMA50_4H=$%s'%(st4h_s,oi_sig,'{:,.0f}'.format(ema50_4h))
         m_note='突破BB4H上轨$%s→止损'%'{:,.0f}'.format(bb4h_u)
