@@ -79,7 +79,7 @@ def push_jarvis(msg: str, timeout: int = 8, retries: int = 3, priority: str = 'P
         if _gov_dir not in _sys.path:
             _sys.path.insert(0, _gov_dir)
         from signal_govern import gate as _sg_gate
-        _src = source or (dedup_key.split('_')[0] if dedup_key else 'unknown')
+        _src = source or (dedup_key.split('_')[0] if dedup_key else 'auto')
         _ok, _reason = _sg_gate(
             msg,
             direction=direction,

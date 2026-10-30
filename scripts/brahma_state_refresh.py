@@ -568,7 +568,124 @@ def main():
     except Exception as _fe:
         print(f'[state_refresh] fangcang inject err: {_fe}')
 
+    # [P0① 2026-10-30 苏摩111] vip_snapshot实时化：每次state刷新同步更新
+    # 根因：deep_analysis每60min跑一次 → vip_snapshot最老45min → 神经感知推陈旧VIP
+    # 修复：直接从最新brahma_state生成轻量vip_snapshot（不调用LLM，只读state字段）
+    try:
+        _update_vip_snapshot_from_state()
+    except Exception as _vse:
+        print(f'[state_refresh] vip_snapshot update err: {_vse}')
+
     print(f'[state_refresh] 队列: 保留{len(active)}个有效 | 过期清理{expired_count}个 | 新增{len(new_signals)}个 | 合计{len(final_queue)}个')
+
+
+
+def _update_vip_snapshot_from_state():
+    """
+    [P0① 2026-10-30 苏摩111] vip_snapshot实时化
+    每次state_refresh运行后，从brahma_state直接生成vip_snapshot
+    不依赖deep_analysis(每60min)，与state同频更新(每2min)
+
+    direction判定规则（轻量版，不调LLM）：
+      RSI1H<20 + OI=SHORT_SQUEEZE → LONG_OVERSOLD（超卖反弹）
+      RSI1H>70 + OI=SHORT_BUILD   → SHORT_OVERBUY（超买做空）
+      fc_signal=LONG + score>=110  → LONG
+      fc_signal=SHORT + score>=110 → SHORT
+      其他                         → WAIT
+    """
+    import json as _j, time as _t
+    from pathlib import Path as _P
+    _base = _P(__file__).parent.parent
+
+    for sym in ('BTC', 'ETH'):
+        _sf = _base / 'data' / f'brahma_state_{sym.lower()}.json'
+        _vf = _base / 'data' / f'vip_snapshot_{sym.lower()}.json'
+        if not _sf.exists():
+            continue
+        try:
+            st = _j.loads(_sf.read_text())
+            px  = float(st.get('price', 0) or 0)
+            rsi1h= float(st.get('rsi_1h', 50) or 50)
+            rsi15= float(st.get('rsi_15m', 50) or 50)
+            fc  = st.get('fc_signal', 'NEUTRAL') or 'NEUTRAL'
+            score= float(st.get('score_final', 0) or 0)
+            regime= st.get('regime', 'CHOP_MID') or 'CHOP_MID'
+            oi_sig= st.get('oi_signal', '') or ''
+            gzf = float(st.get('gex_zf', 0) or 0)
+            atr1h= float(st.get('atr_1h', 0) or 0)
+            liq_s= float(st.get('liq_short', 0) or 0)
+            liq_l= float(st.get('liq_long', 0) or 0)
+            macro= st.get('macro_regime', '') or ''
+            macro_bull= 'BULL' in macro or 'RECOVERY' in macro
+
+            # direction判定
+            oversold = rsi1h < 20 or rsi15 < 15
+            overbought= rsi1h > 72
+            squeeze = 'SQUEEZE' in oi_sig
+            short_build = 'SHORT_BUILD' in oi_sig
+
+            if oversold and (squeeze or fc == 'LONG'):
+                direction = 'LONG_OVERSOLD'
+                bias = int(min(30, (20 - rsi1h) * 1.5))
+            elif overbought and short_build:
+                direction = 'SHORT_OVERBUY'
+                bias = int(-min(30, (rsi1h - 70) * 1.5))
+            elif fc == 'LONG' and score >= 110 and macro_bull:
+                direction = 'LONG'
+                bias = 15
+            elif fc == 'SHORT' and score >= 110:
+                direction = 'SHORT'
+                bias = -15
+            else:
+                direction = 'WAIT'
+                bias = 0
+
+            # 生成简洁VIP卡片（带方向信息）
+            if direction in ('LONG', 'LONG_OVERSOLD') and px > 0 and atr1h > 0:
+                sl = round(px - atr1h * 2.0, 1)
+                tp = round(liq_s * 0.998, 1) if liq_s > px * 1.005 else round(px + atr1h * 2.5, 1)
+                rr = round((tp - px) / (px - sl), 2) if px > sl else 0
+                vip = (f"📍 宏观:{macro or 'CHOP'}({regime}) | RSI1H={rsi1h:.0f}超卖\n"
+                       f"🌿 姓赵不宣 | {sym} 实时布局\n"
+                       f"——— {sym} ———\n"
+                       f"🟢 多单｜入场区 ${round(px-atr1h*0.3,1):,}~${round(px,1):,}\n"
+                       f"止损 ${sl:,}｜目标 ${tp:,}\n"
+                       f" 杠杆3x｜仓位1%\n"
+                       f"🔴 暂无空单｜等待结构\n"
+                       f"⚠️ RSI超卖反弹｜RR={rr}\n"
+                       f"🚫 GEX ZF=${gzf:,.0f}为关键位\n"
+                       f"🌿 姓赵不宣 | 不是建议")
+            elif direction in ('SHORT', 'SHORT_OVERBUY') and px > 0 and atr1h > 0:
+                sl = round(px + atr1h * 2.0, 1)
+                tp = round(liq_l * 1.002, 1) if 0 < liq_l < px * 0.995 else round(px - atr1h * 2.5, 1)
+                rr = round((px - tp) / (sl - px), 2) if sl > px else 0
+                vip = (f"📍 宏观:{macro or 'CHOP'}({regime}) | RSI1H={rsi1h:.0f}超卖\n"
+                       f"🌿 姓赵不宣 | {sym} 实时布局\n"
+                       f"——— {sym} ———\n"
+                       f"🔴 空单｜入场区 ${round(px,1):,}~${round(px+atr1h*0.3,1):,}\n"
+                       f"止损 ${sl:,}｜目标 ${tp:,}\n"
+                       f" 杠杆3x｜仓位1%\n"
+                       f"🟢 暂无多单｜等待结构\n"
+                       f"⚠️ RSI超买回落\n"
+                       f"🚫 GEX ZF=${gzf:,.0f}为关键位\n"
+                       f"🌿 姓赵不宣 | 不是建议")
+            else:
+                vip = (f"📍 宏观:{macro or 'CHOP'}({regime})\n"
+                       f"🌿 姓赵不宣 | {sym} 当前布局\n"
+                       f"——— {sym} ———\n"
+                       f"🟢 暂无多单｜等待结构\n"
+                       f" 杠杆3x｜仓位1.5%\n"
+                       f"🔴 暂无空单｜等待结构\n"
+                       f"⚠️ 双侧均在等待，无入场信号\n"
+                       f"🚫 GEX ZF=${gzf:,.0f}为关键位\n"
+                       f"🌿 姓赵不宣 | 不是建议")
+
+            snap = {'ts': _t.time(), 'sym': sym, 'px': px,
+                    'direction': direction, 'vip': vip, 'bias': bias}
+            _vf.write_text(_j.dumps(snap, ensure_ascii=False))
+            print(f'[vip_snapshot] {sym} direction={direction} RSI1H={rsi1h:.0f} fc={fc}')
+        except Exception as _e:
+            print(f'[vip_snapshot] {sym} err: {_e}')
 
 
 def _update_asset_config_liq_gex():
@@ -609,6 +726,13 @@ def _update_asset_config_liq_gex():
                     new_l = float(_bw[0]) if _bw else 0
                 if new_s > 0 and new_s != cfg.get('liq_short', 0):
                     ac[sym_key]['liq_short'] = new_s; changed = True
+                # [P1 2026-10-30 苏摩111] liq_long>current_px时强制从buy_walls刷新
+                # 根因：价格大幅下跌后liq_long仍停在历史高点（如$78,686>当前$77,088）
+                _stored_ll = float(cfg.get('liq_long', 0) or 0)
+                if _cur_p > 0 and _stored_ll > _cur_p * 1.005:
+                    # 存的liq_long比当前价还高0.5% → 已失效，从buy_walls重读
+                    _bw2 = sorted([w['price'] for w in liq.get('buy_walls',[]) if w['price'] < _cur_p], reverse=True)
+                    new_l = float(_bw2[0]) if _bw2 else new_l
                 if new_l > 0 and new_l != cfg.get('liq_long', 0):
                     ac[sym_key]['liq_long']  = new_l; changed = True
             except Exception as _e:

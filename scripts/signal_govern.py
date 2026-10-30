@@ -236,14 +236,26 @@ def gate(
         _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
         return False, reason
 
-    # ══ L1: 方仓先验锚 ══════════════════════════════════════
-    if fc_dir and fc_dir != direction:
+        # ══ L1: 方仓先验锚 ══════════════════════════════════════
+    # [修复 2026-10-30 苏摩111] RSI极端超卖豁免L1方仓拦截
+    # 根因：RSI1H=6/17极端超卖时，方仓SHORT仍拦截所有多单
+    # 豁免条件：RSI1H<20（历史超卖极值，方仓反转信号滞后于RSI）
+    _rsi1h_for_l1 = 50.0
+    try:
+        _sf_l1 = _BASE / f'data/brahma_state_{sym.lower()}.json'
+        _rsi1h_for_l1 = float(json.loads(_sf_l1.read_text()).get('rsi_1h', 50) or 50)
+    except Exception:
+        pass
+    _l1_oversold_exempt = (_rsi1h_for_l1 < 20 and direction in ('long', 'LONG'))
+    if _l1_oversold_exempt:
+        _log(f'[L1-EXEMPT] {source} {sym} RSI1H={_rsi1h_for_l1:.0f}<20 超卖豁免方仓L1拦截')
+    if fc_dir and fc_dir != direction and not _l1_oversold_exempt:
         if fc_sim >= 0.7:
             reason = f'L1: 方仓强锁 {fc_dir}(sim={fc_sim:.2f}) 逆向 {direction}'
             _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
             return False, reason
         elif fc_sim >= 0.5:
-            _log(f'[ARB-WARN]  {source} {sym} {direction} 方仓软锁 {fc_dir}(sim={fc_sim:.2f}) 降权但允许通过')
+            _log(f'[ARB-WARN]  {source} {sym} {direction} 方仓软锁 {fc_dir}(sim={fc_sim:.2f})')
             # 软锁：记录警告但不拦截
 
     # ══ L1.5: 入场区时效检查 ══════════════════════════════════
