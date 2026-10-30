@@ -4739,6 +4739,21 @@ def main():
                     _json.dumps(_triggers, ensure_ascii=False, indent=2))
                 print(f'[vip_entry_triggers] 写入{len(_triggers)}个入场区监控点', file=sys.stderr)
         except Exception as _vte: pass
+        # [封印 2026-10-30 苏摩111] 注入94维三周期策略到auto_analysis_latest
+        try:
+            import importlib.util as _ilu
+            _eng_path = _P(__file__).parent / 'brahma_94d_engine.py'
+            if _eng_path.exists():
+                _spec = _ilu.spec_from_file_location('brahma_94d_engine', _eng_path)
+                _eng  = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_eng)
+                _cycles = {}
+                for _s in symbols:
+                    try: _cycles[_s] = _eng.analyze(_s)
+                    except Exception as _ce: _cycles[_s] = {'error': str(_ce)[:60]}
+                _summary['cycles'] = _cycles
+                print(f'[94d_engine] 三周期注入完成: {list(_cycles.keys())}', file=sys.stderr)
+        except Exception as _94e:
+            print(f'[94d_engine] 注入失败(不影响主流程): {_94e}', file=sys.stderr)
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'
         _out_path.write_text(_json.dumps(_summary, ensure_ascii=False))
         print(f'[auto_analysis_latest] 已写入 {_out_path.name} ({len(symbols)}标的, SSOT信号{len(_structured)}条)', file=sys.stderr)
