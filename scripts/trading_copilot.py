@@ -171,6 +171,16 @@ def near(price, target, pct=PROX_PCT):
     if target == 0: return False
     return abs(price - target) / target <= pct
 
+def near_from_above(price, target, pct=PROX_PCT):
+    """价格从上方接近target（适用于支撑池：价格在上方0~pct%内）"""
+    if target == 0: return False
+    return 0 <= (price - target) / target <= pct
+
+def near_from_below(price, target, pct=PROX_PCT):
+    """价格从下方接近target（适用于止损墙：价格在下方0~pct%内）"""
+    if target == 0: return False
+    return 0 <= (target - price) / target <= pct
+
 # ══════════════════════════════════════════
 # M1. 价位接近监控
 # ══════════════════════════════════════════
@@ -224,12 +234,17 @@ def m1_price_proximity(state, alerts):
                     f'止损 ${liq_s+_sl_dynamic:,.0f} | 目标 ${liq_l:,.0f}  SL={_sl_dynamic}pt\n'
                     f'触发条件：1H收阴 + CVD转负\n📊 Taker趋势：{_taker_trend}'))
             if liq_l > 0:
+                # [修复 2026-10-30 苏摩111] 区分"触及"vs"失守"
+                _is_breach = p < liq_l  # 价格已跌穿支撑池
+                _entry_lo  = round(p * 0.999, 0) if _is_breach else liq_l
+                _entry_hi  = round(p * 1.002, 0) if _is_breach else liq_l + 300
+                _status    = f'⚠️ 失守警报！当前价${p:,.0f}已跌破支撑池' if _is_breach else '触及！'
                 levels.append(('liq_long', liq_l,
-                    f'🟢 BTC支撑池 ${liq_l:,.0f} 触及！\n'
+                    f'{"🔴" if _is_breach else "🟢"} BTC支撑池 ${liq_l:,.0f} {_status}\n'
                     f'当前价 ${p:,.0f}\n\n'
-                    f'多单入场区：${liq_l:,.0f}~${liq_l+300:,.0f}\n'
+                    f'{"⛔ 支撑失守，谨慎做多，等待止跌确认" if _is_breach else f"多单入场区：${_entry_lo:,.0f}~${_entry_hi:,.0f}"}\n'
                     f'止损 ${liq_l-_sl_dynamic:,.0f} | 目标 ${liq_s:,.0f}  SL={_sl_dynamic}pt\n'
-                    f'GEX $80,000=-30.4M 做市商机械支撑\n📊 Taker趋势：{_taker_trend}'))
+                    f'📊 Taker趋势：{_taker_trend}'))
             gex_80k = float(ts.get('80000', 0))
             if gex_80k < 0:
                 levels.append(('gex_80000', 80000.0,
@@ -295,7 +310,16 @@ def m1_price_proximity(state, alerts):
         # 防止liq_s和liq_l同时在±0.3%内 → 多空并列推送
         _triggered = []
         for level_key, target, msg in levels:
-            if near(p, target):
+            # [修复 2026-10-30 苏摩111] 方向性触发：支撑池只从上方触发，止损墙只从下方触发
+            if 'long' in level_key:
+                _hits = near_from_above(p, target)  # 支撑池：price在target上方±0.3%
+                if not _hits and p < target:  # 价格已跌穿支撑池
+                    _hits = abs(p-target)/target <= PROX_PCT  # 仍在0.3%内=失守警报
+            elif 'short' in level_key:
+                _hits = near_from_below(p, target)  # 止损墙：price在target下方±0.3%
+            else:
+                _hits = near(p, target)
+            if _hits:
                 dist = abs(p - target) / target
                 _triggered.append((dist, level_key, target, msg))
         # 按距离排序，只取最近的且方向一致
