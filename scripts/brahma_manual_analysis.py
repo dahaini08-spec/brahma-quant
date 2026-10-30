@@ -4735,11 +4735,21 @@ def main():
                             'tp1': float(_bs_d.get('tp1',0) or 0),
                             'ts': _time.time()})
             if _triggers:
+                # [修复 2026-10-30] 按方仓方向过滤，防止方向矛盾挂单
+                _filtered_tr = []
+                for _tr in _triggers:
+                    _sym_l = _tr.get('sym','').lower()
+                    try:
+                        _fc_now = _json.loads(
+                            (_P(__file__).parent.parent/'data'/f'brahma_state_{_sym_l}.json').read_text()
+                        ).get('fc_signal','?')
+                    except: _fc_now = '?'
+                    if _fc_now == 'SHORT' and _tr.get('direction') == 'long': continue
+                    _filtered_tr.append(_tr)
                 (_P(__file__).parent.parent/'data'/'vip_entry_triggers.json').write_text(
-                    _json.dumps(_triggers, ensure_ascii=False, indent=2))
-                print(f'[vip_entry_triggers] 写入{len(_triggers)}个入场区监控点', file=sys.stderr)
-        except Exception as _vte: pass
-        # [封印 2026-10-30 苏摩111] 注入94维三周期策略到auto_analysis_latest
+                    _json.dumps(_filtered_tr, ensure_ascii=False, indent=2))
+                print(f'[vip_entry_triggers] 写入{len(_filtered_tr)}个(方仓过滤后)', file=sys.stderr)
+        except Exception as _vte: pass      # [封印 2026-10-30 苏摩111] 注入94维三周期策略到auto_analysis_latest
         try:
             import importlib.util as _ilu
             _eng_path = _P(__file__).parent / 'brahma_94d_engine.py'
@@ -4749,9 +4759,21 @@ def main():
                 _cycles = {}
                 for _s in symbols:
                     try: _cycles[_s] = _eng.analyze(_s)
-                    except Exception as _ce: _cycles[_s] = {'error': str(_ce)[:60]}
+                    except Exception as _ce:
+                        _cycles[_s] = {'error': str(_ce)[:60]}
+                        print(f'[94d_engine] ❌ {_s}分析失败: {_ce}', file=__import__('sys').stderr)
                 _summary['cycles'] = _cycles
                 print(f'[94d_engine] 三周期注入完成: {list(_cycles.keys())}', file=sys.stderr)
+                # [修复 2026-10-30] 生成格式化报告文本注入full_reports
+                try:
+                    for _s in _cycles:
+                        if 'error' not in _cycles[_s]:
+                            _rpt_text = _eng.format_report(_cycles[_s])
+                            if 'full_reports' not in _summary: _summary['full_reports'] = {}
+                            _summary['full_reports'][_s + '_94d'] = _rpt_text
+                    print(f'[94d_engine] 格式化报告注入full_reports✅', file=sys.stderr)
+                except Exception as _fe:
+                    print(f'[94d_engine] 报告注入失败(不阻断): {_fe}', file=sys.stderr)
         except Exception as _94e:
             print(f'[94d_engine] 注入失败(不影响主流程): {_94e}', file=sys.stderr)
         _out_path = _P(__file__).parent.parent / 'data' / 'auto_analysis_latest.json'

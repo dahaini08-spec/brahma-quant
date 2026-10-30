@@ -318,7 +318,7 @@ def analyze(sym):
 
     # Step12: 三周期裁决
     min_sl1h=max(atr1h*1.5,px*0.012); min_sl4h=max(atr4h*1.5,px*0.015)
-    s_dir='WAIT'; s_e=s_sl=s_t1=s_t2=0.0; s_trig=s_logic=''
+    s_dir='WAIT'; s_e=s_sl=s_t1=s_t2=0.0; s_trig=''; s_logic=''
     is_ov=st1h<20 and r1h<35; is_ob=st1h>80 and r1h>65
     is_sq=oi4hc<-1.5; is_frn=fr<-0.002
     if (is_ov or is_sq or is_frn) and bull>=bear:
@@ -346,11 +346,19 @@ def analyze(sym):
         s_e=round(min(anchor,liq_s if liq_s else px*1.002),2)
         s_sl=round(s_e+min_sl1h,2); s_t1=round(bb1h_m,2); s_t2=round(bb1h_l*1.01,2)
         s_logic='StochRSI=%s超买+Taker=%s'%(st1h,tk_trend); s_trig='15M Taker连续2根<1.0'
+    # [修复 2026-10-30] WAIT时补充明确原因（is_ov/is_sq/is_frn均在此之前定义）
+    if s_dir=='WAIT' and not s_trig:
+        _wr=[]
+        if not is_ov: _wr.append('StochRSI1H=%.1f(需<20)'%st1h)
+        if not is_sq: _wr.append('4H OI=%.3f%%无SQUEEZE(需<-1.5%%)'%oi4hc)
+        if not (bull>=bear): _wr.append('多头%d<空头%d'%(bull,bear))
+        s_trig='、'.join(_wr) if _wr else '信号未触发'; s_logic='WAIT: '+s_trig
     s_rr=round(abs(s_t1-s_e)/abs(s_e-s_sl),1) if s_sl and s_e and abs(s_e-s_sl)>0 else 0
     # [修复 2026-10-30] RR<1.0时短线信号降级：找更好的入场点
     if s_rr < 1.0 and s_dir!='WAIT':
         s_dir='WAIT'; s_e=s_sl=s_t1=s_t2=0.0
-        s_trig='RR=%.1f<1.0，等更好入场点或Taker更强确认'%s_rr; s_logic='RR不达标'
+        s_trig='RR=%.1f<1.0，等更好入场点（当前StochRSI1H=%.1f，需<20或>80）'%(s_rr,st1h)
+        s_logic='RR不达标（最小要求1.0）'
 
     m_dir='WAIT'; m_e=m_sl=m_t1=m_t2=0.0; m_logic=m_note=''
     if '↑' in st4h_s:
@@ -421,6 +429,9 @@ def analyze(sym):
             's10':{'fr':fr,'basis':basis,'regime':regime,'score':score,'fc':fc,'fc_sim':fcsim,
                    'gzf':gzf,'liq_s':liq_s,'liq_l':liq_l,'fed':fed,'macro_age':macro_age},
             's11':{'bull':bull,'bear':bear,'total':total,'bull_pct':bull_pct,'bear_pct':bear_pct,'bias':bias},
+            's12':{'short_dir':s_dir,'short_trigger':s_trig,'short_logic':s_logic,'short_rr':s_rr,
+                   'mid_dir':m_dir,'mid_logic':m_logic,
+                   'long_dir':lg_dir,'long_logic':lg_logic},
         },
         'short':{'dir':s_dir,'entry':s_e,'sl':s_sl,'tp1':s_t1,'tp2':s_t2,
                  'trigger':s_trig,'logic':s_logic,'rr':s_rr,'period':'1H+15M · 1-3天'},
@@ -567,6 +578,13 @@ def format_report(r):
     else:
         out.append('  RSI1D=%s RSI1W=%s  未达超卖(<32)或超买(>70)'%(s1['1d'],s1['1w']))
 
+    # Step12文本（方便AI直接读取）
+    out.append('')
+    out.append('▌ Step12 JSON结构（机器可读）')
+    s12=st.get('s12',{})
+    out.append('  短线: dir=%s  trigger=%s  rr=%s'%(s12.get('short_dir','?'),s12.get('short_trigger','?')[:30],s12.get('short_rr','?')))
+    out.append('  中线: dir=%s  logic=%s'%(s12.get('mid_dir','?'),s12.get('mid_logic','?')[:40]))
+    out.append('  长线: dir=%s  logic=%s'%(s12.get('long_dir','?'),s12.get('long_logic','?')[:40]))
     return '\n'.join(out)
 
 
