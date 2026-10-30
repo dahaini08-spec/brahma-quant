@@ -289,11 +289,10 @@ def gate(
                 return False, reason
 
     # ══ L2: 信号质量门 ══════════════════════════════════════
-    # [修复 2026-10-30 苏摩111] RR=None不应绕过L2质量门
-    # 根因：M7传RR=None → rr is not None为False → 跳过检查
-    # 修复：RR=None仅允许P0/P1信号通过，P2/P3强制要求RR
-    if rr is None and priority not in ('P0', 'P1'):
-        reason = 'L2: RR未提供，非P0/P1信号必须有RR'
+    # [修复 2026-10-30 苏摩111 v2] RR=None：VIP/M7可豁免，其他模块拦截
+    _vip_sources = ('M7','vip_watcher','m7','auto_analysis','robot')
+    if rr is None and not any(v in source for v in _vip_sources):
+        reason = 'L2: RR未提供，非VIP模块必须有RR'
         _log(f'[ARB-BLOCK] {source} {sym} {direction} → {reason}')
         return False, reason
     if rr is not None and rr < 0.8:
