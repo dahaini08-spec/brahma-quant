@@ -133,7 +133,7 @@ def _or_chat(messages: list, max_tokens: int = 200, timeout: int = 25) -> str:
     if time.time() < _or_backoff_until:
         return ''
     import re as _re
-    _model_chain = [OR_MODEL, OR_MODEL_2, OR_MODEL_3]
+    _model_chain = [OR_MODEL, OR_MODEL_2, OR_MODEL_3, OR_MODEL_4]
     for _try_model in _model_chain:
         try:
             payload = json.dumps({
