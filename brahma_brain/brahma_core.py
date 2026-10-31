@@ -667,6 +667,9 @@ def rebase_params(params: dict, current_price: float,
 
 # 主分析入口
 
+# [修复 2026-10-31] _log内联定义
+def _log(msg): import sys; print(msg, file=sys.stderr)
+
 def analyze(symbol: str, signal_dir: str = None, deep: bool = False) -> dict:
     """
     梵天大脑主入口

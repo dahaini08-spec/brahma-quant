@@ -1,0 +1,768 @@
+#!/usr/bin/env python3
+# ponytail: brahma_decision_engine 560行，独立计算引擎，功能内聚，拆分条件: 单引擎>3000行且有完整测试
+"""
+brahma_decision_engine.py — 梵天决策树 2.0
+设计院封印 2026-08-08 苏摩111自主决策
+
+核心架构：五步漏斗，不是线性加法器
+  Step1 否决门    → 体制死穴 / SL>2% / grade<80 → 任一否则直接丢弃
+  Step2 催化剂验证 → OI暴增 / FR极端 / 清算位在1%内 → 三选一
+  Step3 结构确认  → 15m CHoCH / MTF共振≥3 / 方仓EV>0 → 三选三
+  Step4 风险计算  → SL=15m摆动点 / TP=清算集群 / RR≥1.0
+  Step5 15m确认入场 → BOS/放量/连续阳 → 执行
+
+设计原则：
+  - 每步有明确二元判断（通过/拒绝），不是模糊阈值
+  - 否决权优先：任何一个否决条件触发 → 直接结束
+  - fail-safe：任何步骤异常 → 降级到原有score机制
+"""
+# [2026-10-05 P1 苏摩111] 统一路径管理，替代裸 sys.path.insert
+try:
+    import brahma_path_setup  # noqa
+except ImportError:
+    pass  # 兜底：原有 sys.path.insert 仍保留
+
+
+import json
+import sys
+import time
+import traceback
+import requests
+from pathlib import Path
+
+_BASE = Path(__file__).parent.parent
+
+# [9.29 卫生包 苏摩111] HTTP连接复用 —— 对标 brahma_bus._SESS 先例，行为不变
+# 原requests直调每次新建TCP+TLS握手（~100ms/次），7处调用共享Session后仅首个连接付费
+_SESS = requests.Session()
+
+# ── 常量 ──────────────────────────────────────────────────────────────
+FAPI = 'https://fapi.binance.com'
+
+# 死穴组合：体制×方向（不允许执行）
+DEAD_COMBOS = set()  # [9.17 苏摩111] 清空死穴表——放开系统
+
+MAX_SL_PCT       = 2.0   # SQE Gate1：基础限制（2.0%），动态门控函数会根据grade调整
+MIN_GRADE        = 0     # [9.17 苏摩111] grade门槛降为0——放开系统
+
+# [唯一裁判封印 2026-09-23 苏摩111] SSOT action白名单：只有评分层给出的ENTER系action才可进入五步终审
+_SSOT_ACTIONS_ENTER = {'ENTER', 'ENTER_WATCH', 'ENTER_READY', 'ENTER_STRONG'}
+
+def _dynamic_sl_max(grade: float, regime: str, direction: str, sl_pct: float) -> float:
+    """
+    动态SL上限计算 [设计院 2026-08-12 苏摩111修复P1]
+    核心逻辑：grade越高 = 结构越清晰 = SL越可信 = 应该放行不收紧
+    修复前：grade=100时SL上限仅2.3%，反而卡掉高质量信号（逻辑反直觉）
+    修复后：grade>=85 → 上限2.5%（全宪法通行）
+             grade<85  → 上限2.0%（严格门控）
+    """
+    if float(grade) >= 85.0:
+        return 2.5   # 高质量结构，允许最大宪法止损
+    return 2.0       # 低质量结构，严格限制
+MIN_RR           = 1.5   # 最低风险回报比 [9.29 F2 苏摩111] 1.0→1.5对齐MEMORY铁律（RR<1.5在决策层就拒，不产生executor必拒信号；9.27两条BTC EXECUTE RR=1.00死于口径打架）
+OI_SURGE_THR     = 3.0   # OI单小时变化>3% = 大资金进场
+FR_EXTREME_LONG  = 0.10  # 资金费率>0.1% = 多头过热
+FR_EXTREME_SHORT = -0.05 # 资金费率<-0.05% = 空头拥挤 → 做多机会
+LIQ_NEAR_PCT     = 1.0   # 清算位距现价<1% = 催化剂
+
+
+# ── 工具函数 ──────────────────────────────────────────────────────────
+
+def _get_current_price(symbol: str) -> float:
+    """get current price"""
+    try:
+        r = _SESS.get(f'{FAPI}/fapi/v1/ticker/price?symbol={symbol}', timeout=5).json()
+        return float(r['price'])
+    except Exception:
+        return 0.0
+
+
+def _get_oi_change_1h(symbol: str) -> float:
+    """OI近1H变化%"""
+    try:
+        h = _SESS.get(f'{FAPI}/futures/data/openInterestHist',
+                         params={'symbol': symbol, 'period': '1h', 'limit': 4},
+                         timeout=5).json()
+        if isinstance(h, list) and len(h) >= 2:
+            v0 = float(h[0]['sumOpenInterestValue'])
+            v1 = float(h[-1]['sumOpenInterestValue'])
+            return (v1 - v0) / v0 * 100 if v0 > 0 else 0
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    return 0.0
+
+
+def _get_fr(symbol: str) -> float:
+    """当前资金费率%"""
+    try:
+        r = _SESS.get(f'{FAPI}/fapi/v1/fundingRate?symbol={symbol}&limit=1', timeout=5).json()
+        return float(r[-1]['fundingRate']) * 100 if r else 0
+    except Exception:
+        return 0.0
+
+
+def _get_liq_distances(symbol: str, price: float) -> dict:
+    """读取真实清算地图数据（P2修复 2026-09-12 苏摩111）"""
+    import json as _json
+    from pathlib import Path as _Path
+    try:
+        _liq_path = _Path(__file__).parent.parent / 'data' / f'liq_heatmap_{symbol.lower()}.json'  # [9.29 P0-5 苏摩111] symbol小写对齐collector输出（原大写永远miss→fallback）
+        if _liq_path.exists():
+            _liq = _json.loads(_liq_path.read_text())
+            ns = _liq.get('nearest_short_liq', 0)
+            nl = _liq.get('nearest_long_liq', 0)
+            dist_s = _liq.get('dist_to_short_liq', 0)
+            dist_l = _liq.get('dist_to_long_liq', 0)
+            # 第二层
+            short_map = _liq.get('short_liq_map', {})
+            long_map = _liq.get('long_liq_map', {})
+            sorted_s = sorted(float(k) for k in short_map.keys()) if short_map else []
+            sorted_l = sorted(float(k) for k in long_map.keys()) if long_map else []
+            # [9.29 P0-附带修复 苏摩111] 原bug：second取的是「杠杆分位数」（如3.0），
+            # 但消费方把它当「距离百分比」用（×(1+up_50x/100)）。实际语义：
+            # short_liq_map[lev]=该杠杆的清算价，需换算成%距离。
+            # 取第二近杠杆（sorted[1]=次低杠杆）的清算价→%距离。
+            second_s_px = short_map.get(str(int(sorted_s[1]))) if len(sorted_s) >= 2 else 0
+            second_l_px = long_map.get(str(int(sorted_l[1]))) if len(sorted_l) >= 2 else 0
+            second_s_pct = (second_s_px - price) / price * 100 if second_s_px else (dist_s * 2 if dist_s else 2.0)
+            second_l_pct = (price - second_l_px) / price * 100 if second_l_px else (dist_l * 2 if dist_l else 2.0)
+            return {
+                'up_100x': dist_s if dist_s > 0 else 2.0,   # 真实止损墙距离%
+                'dn_100x': dist_l if dist_l > 0 else 2.0,   # 真实支撑池距离%
+                'up_50x':  second_s_pct,                      # 第二层止损墙
+                'dn_50x':  second_l_pct,                      # 第二层支撑池
+                'nearest_short': ns,                          # 真实止损墙价格
+                'nearest_long':  nl,                          # 真实支撑池价格
+            }
+    except Exception as _e: print(f'[WARN] {__name__}: {_e}', file=sys.stderr)
+    # 回退：用合理默认值而非硬编码0.95%
+    return {
+        'up_100x': 2.0, 'dn_100x': 2.0,
+        'up_50x':  4.0, 'dn_50x':  4.0,
+        'nearest_short': price * 1.02, 'nearest_long': price * 0.98,
+    }
+
+
+def _get_mtf_alignment(symbol: str, direction: str) -> int:
+    """[9.27MTF修复 苏摩111·三方联合批准] 真实现：多周期对齐计数(0-4)
+    数据源=data/brahma_state_{sym}.json（state_refresh每30min刷新，mtime新鲜度D2已守）
+    4个周期判定：1H/4H/1D用RSI>50(多)/<50(空)动量对齐，15M用最近BOS方向对齐。
+    替代前stub硬编码return 0（共振从未生效的根因）。
+    """
+    import json as _json
+    import os as _os
+    from pathlib import Path as _Path
+    try:
+        sym_lower = symbol.replace('USDT', '').lower()
+        sf = _Path('data') / f'brahma_state_{sym_lower}.json'
+        if not sf.exists():
+            return 0
+        # mtime>10min = 数据过期，不参与共振（防用陈旧数据给共振分）
+        if time.time() - sf.stat().st_mtime > 600:
+            return 0
+        st = _json.load(open(sf))
+        mom = st.get('momentum') or {}
+        rsi_map = {'15m': mom.get('rsi_15m'), '1h': mom.get('rsi_1h'),
+                   '4h': mom.get('rsi_4h'), '1d': mom.get('rsi_1d')}
+        count = 0
+        for tf, rsi in rsi_map.items():
+            if rsi is None:
+                continue
+            if direction == 'LONG' and rsi > 50:
+                count += 1
+            elif direction == 'SHORT' and rsi < 50:
+                count += 1
+        # 15M用结构BOS方向微调（若BOS与方向一致+1，与15M RSI不重复计）
+        smc = st.get('smc') or {}
+        bos_list = (smc.get('structure') or {}).get('bos') or []
+        if bos_list:
+            last_bos = str(bos_list[-1].get('type', ''))
+            if direction == 'LONG' and 'BULL' in last_bos:
+                count += 1
+            elif direction == 'SHORT' and 'BEAR' in last_bos:
+                count += 1
+        return max(0, min(4, count))
+    except Exception as e:
+        print(f'[WARN] _get_mtf_alignment: {e}', file=sys.stderr)
+        return 0
+
+
+def _get_fangcang_ev(symbol: str) -> float:
+    """方仓引擎期望收益"""
+    try:
+        from brahma_brain.fangcang_engine import get_fangcang_context
+        fc = get_fangcang_context(symbol)
+        return fc.get('prob_matrix', {}).get('ev', 0.0)
+    except Exception:
+        return 0.0
+
+
+def _check_15m_structure(symbol: str, direction: str) -> tuple[bool, str]:
+    """
+    检查15m结构确认信号
+    返回 (confirmed, reason)
+    """
+    try:
+        kl = _SESS.get(
+            f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=8',
+            timeout=5
+        ).json()
+        if not isinstance(kl, list) or len(kl) < 5:
+            return False, '数据不足'
+
+        bars = kl[-5:-1]
+        opens  = [float(b[1]) for b in bars]
+        closes = [float(b[4]) for b in bars]
+        highs  = [float(b[2]) for b in bars]
+        lows   = [float(b[3]) for b in bars]
+        vols   = [float(b[5]) for b in bars]
+        avg_vol = sum(vols) / len(vols) if vols else 1
+
+        if direction == 'LONG':
+            bos_up   = closes[-1] > highs[-2]
+            vol_surge = vols[-1] > avg_vol * 1.5
+            two_bull  = all(c > o for c, o in zip(closes[-2:], opens[-2:]))
+            if bos_up:   return True, f'15m BOS向上 收盘${closes[-1]:.2f}>前高${highs[-2]:.2f}'
+            if vol_surge: return True, f'15m放量{vols[-1]/avg_vol:.1f}x均量'
+            if two_bull:  return True, '15m连续2根阳线'
+            return False, f'无确认(BOS={bos_up} 量={vols[-1]/avg_vol:.1f}x 连阳={two_bull})'
+        else:  # SHORT
+            bos_dn   = closes[-1] < lows[-2]
+            vol_surge = vols[-1] > avg_vol * 1.5
+            two_bear  = all(c < o for c, o in zip(closes[-2:], opens[-2:]))
+            if bos_dn:    return True, f'15m BOS向下 收盘${closes[-1]:.2f}<前低${lows[-2]:.2f}'
+            if vol_surge: return True, f'15m放量{vols[-1]/avg_vol:.1f}x均量'
+            if two_bear:  return True, '15m连续2根阴线'
+            return False, f'无确认(BOS={bos_dn} 量={vols[-1]/avg_vol:.1f}x 连阴={two_bear})'
+    except Exception as e:
+        return False, f'检查异常:{e}'
+
+
+def _get_atr_1h(symbol: str, n: int = 14) -> float:
+    """
+    获取1H ATR（Average True Range）
+    [设计院封印 2026-08-20 苏摩指令：SL必须≥ATR_1H×1.5，不能低于市场噪音]
+    """
+    try:
+        kl = _SESS.get(
+            f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=1h&limit={n+2}',
+            timeout=5
+        ).json()
+        if not isinstance(kl, list) or len(kl) < n:
+            return 0.0
+        highs  = [float(b[2]) for b in kl]
+        lows   = [float(b[3]) for b in kl]
+        closes = [float(b[4]) for b in kl]
+        trs = []
+        for i in range(1, len(closes)):
+            tr = max(highs[i] - lows[i],
+                     abs(highs[i] - closes[i-1]),
+                     abs(lows[i]  - closes[i-1]))
+            trs.append(tr)
+        atr_val = sum(trs[-n:]) / n
+        return round(atr_val / closes[-1] * 100, 4)  # 返回%
+    except Exception:
+        return 0.0
+
+
+def _get_15m_struct_sl(symbol: str, direction: str, current_price: float) -> float:
+    """用15m最近3H摆动点计算结构止损%"""
+    try:
+        kl = _SESS.get(
+            f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=16',
+            timeout=5
+        ).json()
+        if not isinstance(kl, list) or len(kl) < 8:
+            return 1.5  # 默认
+        bars = kl[-13:-1]
+        lows  = [float(b[3]) for b in bars]
+        highs = [float(b[2]) for b in bars]
+        if direction == 'LONG':
+            sl_price = min(lows) * 0.997
+            return round((current_price - sl_price) / current_price * 100, 2)
+        else:
+            sl_price = max(highs) * 1.003
+            return round((sl_price - current_price) / current_price * 100, 2)
+    except Exception:
+        return 1.5
+
+
+# [entry-SSOT P0-1 2026-09-26 苏摩111] 挂单区推导 + SL铁律对齐
+# SL铁律：SHORT SL=挂单区上沿×1.02~1.025 / LONG SL=下沿×0.98；SL距离≥1.5×ATR1H（ETH≥$37.5/BTC≥$825取大者）
+_SYMBOL_MIN_SL_ABS = {'ETHUSDT': 37.5, 'BTCUSDT': 825.0}
+
+def _get_atr_1h_abs(symbol: str, price: float) -> float:
+    """1H ATR绝对值（美元），复用_get_atr_1h()的百分比结果"""
+    _pct = _get_atr_1h(symbol)
+    if not _pct or not price:
+        return 0.0
+    return abs(price) * _pct / 100.0
+
+
+def _get_entry_zone(symbol: str, direction: str, current_price: float) -> tuple:
+    """
+    从smc_state结构数据推导挂单区（entry_lo/entry_hi/entry_source）。
+    优先级：smc_state的FVG中点/OB边界 > 15m摆动位 > fallback price±0.15%。
+    返回 (entry_lo, entry_hi, entry_source, struct_sl_price or None)
+    """
+    import json as _json
+    from pathlib import Path as _P
+    try:
+        _p = _P(__file__).parent.parent / 'data' / f'brahma_state_{symbol.lower().replace("usdt", "")}.json'
+        if _p.exists():
+            _st = _json.loads(_p.read_text())
+            _smc = _st.get('smc') or {}
+            _zone = None
+            _struct_sl = None
+            if direction == 'LONG':
+                # 距价最近的下方BULL FVG（mid<price，取最近）
+                _cands = sorted([f for f in ((_smc.get('fvg') or {}).get('bull_fvg') or [])
+                                 if f.get('mid', 0) < current_price],
+                                key=lambda f: current_price - f['mid'])
+                if _cands:
+                    _f = _cands[0]
+                    _zone = (float(_f.get('bottom', 0)), float(_f.get('top', 0)))
+                    _struct_sl = _zone[0]  # FVG下沿=结构失效位
+                # age<50bars且未穿越的BULL OB才有效（封印铁律）
+                _obs = sorted([o for o in ((_smc.get('order_blocks') or {}).get('bull_obs') or [])
+                               if o.get('mid', 0) < current_price and not o.get('broken')
+                               and o.get('age_bars', 999) < 50],
+                              key=lambda o: current_price - o['mid'])
+                if _obs:
+                    _o = _obs[0]
+                    _ob_zone = (float(_o.get('low', 0)), float(_o.get('high', 0)))
+                    _zone = _ob_zone if _zone is None else (
+                        min(_zone[0], _ob_zone[0]), max(_zone[1], _ob_zone[1]))
+                    _struct_sl = _ob_zone[0]
+            else:  # SHORT
+                _cands = sorted([f for f in ((_smc.get('fvg') or {}).get('bear_fvg') or [])
+                                 if f.get('mid', 0) > current_price],
+                                key=lambda f: f['mid'] - current_price)
+                if _cands:
+                    _f = _cands[0]
+                    _zone = (float(_f.get('bottom', 0)), float(_f.get('top', 0)))
+                    _struct_sl = _zone[1]  # FVG上沿=结构失效位
+                _obs = sorted([o for o in ((_smc.get('order_blocks') or {}).get('bear_obs') or [])
+                               if o.get('mid', 0) > current_price and not o.get('broken')
+                               and o.get('age_bars', 999) < 50],
+                              key=lambda o: o['mid'] - current_price)
+                if _obs:
+                    _o = _obs[0]
+                    _ob_zone = (float(_o.get('low', 0)), float(_o.get('high', 0)))
+                    _zone = _ob_zone if _zone is None else (
+                        min(_zone[0], _ob_zone[0]), max(_zone[1], _ob_zone[1]))
+                    _struct_sl = _ob_zone[1]
+            if _zone:
+                _lo, _hi = _zone
+                if _lo > 0 and _hi > 0 and _lo < _hi:
+                    return round(_lo, 2), round(_hi, 2), 'smc_fvg_ob', _struct_sl
+            # 15m摆动位 fallback
+            try:
+                kl = _SESS.get(
+                    f'{FAPI}/fapi/v1/klines?symbol={symbol}&interval=15m&limit=16',
+                    timeout=5
+                ).json()
+                if isinstance(kl, list) and len(kl) >= 8:
+                    bars = kl[-13:-1]
+                    lows  = [float(b[3]) for b in bars]
+                    highs = [float(b[2]) for b in bars]
+                    if direction == 'LONG':
+                        return round(min(lows), 2), round(min(lows) * 1.002, 2), '15m_swing', min(lows)
+                    else:
+                        return round(max(highs) * 0.998, 2), round(max(highs), 2), '15m_swing', max(highs)
+            except Exception as _sw_err:
+                try:
+                    from brahma_brain import error_ledger as _el
+                    _el.count('entry_zone_15m_swing', error=_sw_err, context={'symbol': symbol, 'phase': 'decision_engine'})
+                except Exception:
+                    pass
+    except Exception as _smc_err:
+        try:
+            from brahma_brain import error_ledger as _el
+            _el.count('entry_zone_smc', error=_smc_err, context={'symbol': symbol, 'phase': 'decision_engine'})
+        except Exception:
+            pass
+    return (round(current_price * 0.9985, 2), round(current_price * 1.0015, 2),
+            'fallback', None)
+
+
+def _sl_per_ironlaw(symbol: str, direction: str, entry_lo: float, entry_hi: float,
+                    struct_sl: float | None, price: float) -> float:
+    """
+    SL铁律：SHORT SL=挂单区上沿×1.02 / LONG SL=下沿×0.98；
+    SL距离≥1.5×ATR1H，且≥品种绝对下限（ETH≥$37.5/BTC≥$825），取大者。返回SL价格。
+    """
+    if direction == 'LONG':
+        _anchor = struct_sl if (struct_sl and struct_sl < entry_lo) else entry_lo
+        sl_price = _anchor * 0.98
+    else:
+        _anchor = struct_sl if (struct_sl and struct_sl > entry_hi) else entry_hi
+        sl_price = _anchor * 1.02
+    atr_abs = _get_atr_1h_abs(symbol, price)
+    min_dist = max(atr_abs * 1.5, _SYMBOL_MIN_SL_ABS.get(symbol, 0.0))
+    if min_dist > 0 and abs(price - sl_price) < min_dist:
+        sl_price = price - min_dist if direction == 'LONG' else price + min_dist
+    return round(sl_price, 4)
+
+
+# ── 核心决策引擎 ───────────────────────────────────────────────────────
+
+class BrahmaDecisionEngine:
+    """
+    梵天决策树 2.0
+    五步漏斗，每步二元判断
+    """
+
+    def decide(self, signal: dict) -> dict:
+        """
+        输入信号字典，返回决策结果。
+
+        signal 必填字段：
+          symbol, direction, regime, score
+        可选字段：
+          sl_pct, grade, price, timing
+
+        返回：
+          {
+            'action': 'EXECUTE'|'SKIP'|'WAIT_15M'|'WAIT_ENTRY',
+            'reason': str,
+            'step_passed': int,  # 通过到第几步
+            'details': {...},    # 每步详情
+            'entry_plan': {...}  # 仅 EXECUTE/WAIT_15M 时有
+          }
+        """
+        result = {
+            'action': 'SKIP',
+            'reason': '',
+            'step_passed': 0,
+            'details': {},
+            'entry_plan': {},
+            'ts': time.time(),
+        }
+
+        sym       = signal.get('symbol', '')
+        direction = signal.get('direction', '')
+        regime    = signal.get('regime', '')
+        score     = signal.get('score', 0)
+        sl_pct    = signal.get('sl_pct', 0)
+        grade     = signal.get('grade', 100)
+        timing    = signal.get('timing', '')
+
+        try:
+            price = signal.get('price') or _get_current_price(sym)
+            if not price:
+                result['reason'] = '价格获取失败'
+                return result
+
+            # ═══ Step 1: 否决门 ════════════════════════════════════════
+            step1 = {}
+
+            # 1a. 体制×方向死穴
+            dead = (regime, direction) in DEAD_COMBOS
+            step1['dead_combo'] = dead
+            if dead:
+                # ── [结构共振豁免通道 2026-08-15 苏摩111封印] ─────────────────────
+                # 仅豁免 CHOP_MID×LONG 死穴（其他体制死穴不豁免）
+                # 条件：touchQuality≥70 + touches≥2 + base_score≥80
+                _bypass_triggered = False
+                # ── [END 结构共振豁免通道] ──────────────────────────────
+                if not _bypass_triggered:
+                    result['reason'] = f'Step1否决: 体制死穴 {regime}×{direction}'
+                    result['details']['step1'] = step1
+                    return result
+
+            # 1b. SL过宽（动态门控：grade高时允许稍宽）
+            sl_check = sl_pct if sl_pct > 0 else _get_15m_struct_sl(sym, direction, price)
+            # [设计院封印 2026-08-20 苏摩指令] SL必须≥ATR_1H×1.5，不能低于市场噪音
+            # 根因：sl_pct<1.5%时100%EXPIRED（止损宽度不足一个4H ATR波幅）
+            _atr_1h = _get_atr_1h(sym)
+            _sl_atr_min = round(_atr_1h * 1.5, 2) if _atr_1h > 0 else 1.5
+            _sl_atr_min = max(_sl_atr_min, 1.5)   # 绝对下限1.5%
+            if sl_check < _sl_atr_min:
+                sl_check = _sl_atr_min  # 自动放宽到ATR下限，不拒绝
+            step1['sl_pct'] = sl_check
+            step1['sl_atr_min'] = _sl_atr_min
+            _dyn_sl_max = _dynamic_sl_max(grade, regime, direction, sl_check)
+            step1['sl_max_dynamic'] = _dyn_sl_max
+            if sl_check > _dyn_sl_max:
+                result['reason'] = f'Step1否决: SL={sl_check:.1f}%>{_dyn_sl_max:.2f}%(grade={grade:.0f}动态限制)'
+                result['details']['step1'] = step1
+                return result
+
+            # 1c. 结构质量 —— [唯一裁判封印 2026-09-23] 读SSOT action而非grade门槛
+            step1['grade'] = grade
+            _ssot_act = str(signal.get('cf_action', '') or '').upper()
+            # [B分级降权 2026-09-27 苏摩111] SKIP→warn通道（不再硬拒）：Steps2-5照走，
+            # 全过后 EXECUTE/WAIT_15M 但标记 score_gate_warn=True，消费方仓位×0.5
+            # EV门/交叉验证/风控门全部保留，评分官僚门降级为减仓信号
+            _score_warn = False
+            if _ssot_act:
+                if _ssot_act == 'SKIP':
+                    _score_warn = True
+                    step1['score_gate_warn'] = True
+                    step1['warn_note'] = 'B降权: 评分层SKIP→warn通道（后续仓位×0.5）'
+                elif _ssot_act not in _SSOT_ACTIONS_ENTER:
+                    result['reason'] = f'Step1否决: 评分层action={_ssot_act}非ENTER系（SSOT唯一裁判）'
+                    result['details']['step1'] = step1
+                    return result
+            else:
+                # [P0封堵 2026-09-24 苏摩111] 缺cf_action=违规入口，一律拒绝（原回退grade>=80已封禁）
+                # 依据三方联合体检：state_refresh建议层83.2分单经此回退绕过P1-1封禁入纸面
+                result['reason'] = f'Step1否决: 缺cf_action=违规入口（SSOT唯一裁判，禁止grade回退）'
+                result['details']['step1'] = step1
+                return result
+
+            result['step_passed'] = 1
+            step1['passed'] = True
+            result['details']['step1'] = step1
+
+            # ═══ Step 2: 催化剂验证（三选一）══════════════════════════
+            step2 = {}
+            catalysts = []
+
+            oi_chg = _get_oi_change_1h(sym)
+            step2['oi_chg_1h'] = oi_chg
+            if abs(oi_chg) >= OI_SURGE_THR:
+                oi_dir_match = (direction == 'LONG' and oi_chg > 0) or \
+                               (direction == 'SHORT' and oi_chg < 0)
+                if oi_dir_match:
+                    catalysts.append(f'OI暴增{oi_chg:+.1f}%')
+
+            fr = _get_fr(sym)
+            step2['fr'] = fr
+            if direction == 'LONG' and fr < FR_EXTREME_SHORT:
+                catalysts.append(f'FR极端空头{fr:.4f}%→轧空')
+            if direction == 'SHORT' and fr > FR_EXTREME_LONG:
+                catalysts.append(f'FR极端多头{fr:.4f}%→做空')
+
+            liq = _get_liq_distances(sym, price)
+            step2['liq'] = liq
+            # P2修复: 用真实清算距离判断催化剂（原硬编码0.95%=永远不触发）
+            if direction == 'LONG' and liq['up_100x'] <= LIQ_NEAR_PCT:
+                catalysts.append(f'空头止损墙仅+{liq["up_100x"]:.1f}%→逼空目标近')
+            if direction == 'SHORT' and liq['dn_100x'] <= LIQ_NEAR_PCT:
+                catalysts.append(f'多头支撑池仅-{liq["dn_100x"]:.1f}%→猎杀目标近')
+
+            step2['catalysts'] = catalysts
+            if not catalysts:
+                # [9.17 苏摩111] 不再因无催化剂否决——放开系统
+                step2['note'] = '无催化剂但不再否决 [9.17放开]'
+            result['step_passed'] = 2
+            step2['passed'] = True
+            result['details']['step2'] = step2
+
+            # ═══ Step 3: 结构确认（三选三）════════════════════════════
+            step3 = {}
+            confirmations = []
+
+            # 3a. 15m CHoCH（微结构转换）
+            try:
+                from brahma_brain.fangcang_engine import get_fangcang_context
+                fc = get_fangcang_context(sym)
+                ms = fc.get('micro_structure', {})
+                choch = ms.get('choch_count', 0)
+                step3['choch_15m'] = choch
+                if choch >= 3:
+                    confirmations.append(f'15m CHoCH={choch}')
+            except Exception:
+                step3['choch_15m'] = 0
+
+            # 3b. MTF共振≥3
+            mtf_count = _get_mtf_alignment(sym, direction)
+            step3['mtf_count'] = mtf_count
+            if mtf_count >= 3:
+                confirmations.append(f'MTF共振{mtf_count}/4')
+
+            # 3c. 方仓EV>0
+            ev = _get_fangcang_ev(sym)
+            step3['fangcang_ev'] = ev
+            if ev > 0:
+                confirmations.append(f'方仓EV={ev:+.2f}%')
+
+            step3['confirmations'] = confirmations
+            if len(confirmations) < 2:
+                result['reason'] = f'Step3否决: 结构确认不足({len(confirmations)}/3)'
+                result['details']['step3'] = step3
+                result['details']['step2'] = step2
+                result['details']['step1'] = step1
+                return result
+
+            result['step_passed'] = 3
+            step3['passed'] = True
+            result['details']['step3'] = step3
+
+            # ═══ Step 4: 风险计算 ══════════════════════════════════════
+            step4 = {}
+
+            sl_final = sl_check
+            # TP = 方向对应的真实清算位（P2修复 2026-09-12 苏摩111）
+            if direction == 'LONG':
+                tp_price = liq.get('nearest_short', price * 1.02)  # 止损墙=逼空目标
+                sl_price = price * (1 - sl_final / 100)
+            else:
+                tp_price = liq.get('nearest_long', price * 0.98)   # 支撑池=猎杀目标
+                sl_price = price * (1 + sl_final / 100)
+
+            reward = abs(tp_price - price)
+            risk   = abs(price - sl_price)
+            rr     = reward / risk if risk > 0 else 0
+
+            step4.update({
+                'price': price, 'sl_price': sl_price, 'tp_price': tp_price,
+                'sl_pct': sl_final, 'tp_pct': liq['up_100x'] if direction == 'LONG' else liq['dn_100x'],
+                'rr': round(rr, 2),
+            })
+
+            if rr < MIN_RR:
+                result['reason'] = f'Step4否决: RR={rr:.2f}<{MIN_RR}(TP={tp_price:.2f} SL={sl_price:.2f})'
+                result['details']['step4'] = step4
+                result['details']['step3'] = step3
+                result['details']['step2'] = step2
+                result['details']['step1'] = step1
+                return result
+
+            result['step_passed'] = 4
+            step4['passed'] = True
+            result['details']['step4'] = step4
+
+            # ═══ Step 5: 15m入场确认 ═══════════════════════════════════
+            confirmed_15m, reason_15m = _check_15m_structure(sym, direction)
+            step5 = {'confirmed': confirmed_15m, 'reason': reason_15m}
+            result['details']['step5'] = step5
+            result['details']['step4'] = step4
+            result['details']['step3'] = step3
+            result['details']['step2'] = step2
+            result['details']['step1'] = step1
+
+            entry_plan = {
+                'symbol': sym,
+                'direction': direction,
+                'price': price,
+                'sl_price': round(sl_price, 4),
+                'tp1_price': round(tp_price, 4),
+                'tp2_price': round(price * (1 + liq['up_50x'] / 100) if direction == 'LONG'
+                                   else price * (1 - liq['dn_50x'] / 100), 4),  # P2修复: 用真实第二层清算位
+                'sl_pct': sl_final,
+                'rr': rr,
+                'catalysts': catalysts,
+                'confirmations': confirmations,
+            }
+
+            # [entry-SSOT P0-1 2026-09-26 苏摩111] entry_plan补齐挂单区三字段
+            # 结构位推导：smc_state FVG中点/OB边界 > 15m摆动位 > fallback ±0.15%
+            try:
+                _zone_lo, _zone_hi, _entry_source, _struct_sl = _get_entry_zone(sym, direction, price)
+                entry_plan['entry_lo'] = _zone_lo
+                entry_plan['entry_hi'] = _zone_hi
+                entry_plan['entry_source'] = _entry_source
+                # SL铁律对齐：SHORT SL=上沿×1.02 / LONG SL=下沿×0.98，且≥1.5×ATR1H
+                _sl_ironlaw = _sl_per_ironlaw(sym, direction, _zone_lo, _zone_hi, _struct_sl, price)
+                entry_plan['sl_ironlaw_price'] = _sl_ironlaw
+                entry_plan['sl_ironlaw_pct'] = round(abs(price - _sl_ironlaw) / price * 100, 2)
+            except Exception as _ze:
+                entry_plan['entry_source'] = f'zone_error:{_ze}'[:60]
+            result['entry_plan'] = entry_plan
+
+            if confirmed_15m:
+                result['step_passed'] = 5
+                result['action'] = 'EXECUTE'
+                if _score_warn:
+                    result['score_gate_warn'] = True
+                if catalysts:
+                    result['reason'] = f'五步全通过 | 催化剂:{catalysts[0]} | {reason_15m} | RR={rr:.2f}x'
+                else:
+                    result['reason'] = f'五步全通过 | 无催化剂(放开) | {reason_15m} | RR={rr:.2f}x'
+            else:
+                result['action'] = 'WAIT_15M'
+                if _score_warn:
+                    result['score_gate_warn'] = True
+                result['reason'] = f'步骤1-4通过，等待15m确认({reason_15m}) | RR={rr:.2f}x'
+
+        except Exception as e:
+            result['action'] = 'SKIP'
+            result['reason'] = f'决策引擎异常，降级到score机制: {e}'
+            result['traceback'] = traceback.format_exc()[-300:]
+
+        return result
+
+    def format_report(self, signal: dict, decision: dict) -> str:
+        """生成可读决策报告"""
+        sym = signal.get('symbol', '?')
+        direction = signal.get('direction', '?')
+        score = signal.get('score', 0)
+        action = decision['action']
+        reason = decision['reason']
+        step = decision['step_passed']
+
+        icons = {'EXECUTE': '🚀', 'WAIT_15M': '⏳', 'WAIT_ENTRY': '👀', 'SKIP': '❌'}
+        icon = icons.get(action, '?')
+
+        lines = [
+            f'{icon} [{action}] {sym} {direction} | score={score} | 通过{step}/5步',
+            f'   原因: {reason}',
+        ]
+
+        ep = decision.get('entry_plan', {})
+        if ep:
+            lines += [
+                f'   入场: ${ep.get("price", 0):,.2f}',
+                f'   SL:   ${ep.get("sl_price", 0):,.2f} (-{ep.get("sl_pct", 0):.1f}%)',
+                f'   TP1:  ${ep.get("tp1_price", 0):,.2f}  TP2: ${ep.get("tp2_price", 0):,.2f}',
+                f'   RR:   {ep.get("rr", 0):.2f}x  催化剂: {", ".join(ep.get("catalysts", []))}',
+            ]
+
+        return '\n'.join(lines)
+
+
+# ── 全局单例 ───────────────────────────────────────────────────────────
+_engine = None
+
+def get_decision_engine() -> BrahmaDecisionEngine:
+    """获取decision engine"""
+    global _engine
+    if _engine is None:
+        _engine = BrahmaDecisionEngine()
+    return _engine
+
+
+def decide(signal: dict) -> dict:
+    """快捷入口"""
+    return get_decision_engine().decide(signal)
+
+
+# ── 测试入口 ───────────────────────────────────────────────────────────
+if __name__ == '__main__':
+    import sys
+    sys.path.insert(0, str(_BASE))
+    sys.path.insert(0, str(_BASE / 'scripts'))
+
+    engine = BrahmaDecisionEngine()
+
+    # 测试信号
+    test_signals = [
+        {
+            'symbol': 'BTCUSDT', 'direction': 'LONG',
+            'regime': 'BULL_TREND', 'score': 148,
+            'sl_pct': 1.2, 'grade': 85, 'timing': 'READY',
+        },
+        {
+            'symbol': 'ETHUSDT', 'direction': 'LONG',
+            'regime': 'BULL_TREND', 'score': 155,
+            'sl_pct': 1.5, 'grade': 88, 'timing': 'READY',
+        },
+        {
+            'symbol': 'BTCUSDT', 'direction': 'LONG',
+            'regime': 'CHOP_MID', 'score': 130,
+            'sl_pct': 1.8, 'grade': 90,
+        },
+        {
+            'symbol': 'ETHUSDT', 'direction': 'SHORT',
+            'regime': 'BULL_TREND', 'score': 160,
+            'sl_pct': 1.5, 'grade': 85,
+        },
+    ]
+
+    for sig in test_signals:
+        print(f'\n{"="*60}')
+        print(f'测试: {sig["symbol"]} {sig["direction"]} [{sig["regime"]}] score={sig["score"]}')
+        d = engine.decide(sig)
+        print(engine.format_report(sig, d))

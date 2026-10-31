@@ -423,3 +423,24 @@ def council_three_way(
         'votes': votes,
         'agree': agree,
     }
+
+
+# [修复 2026-10-31 苏摩111] council_llm — chat_with_rule的LLM议会简化版
+def council_llm(regime: str = '', bias: str = '', fvg_dir: str = '',
+                oi_signal: str = '', sm_signal: str = '', hurst: float = 0.5,
+                kappa: float = 0, score: int = 0, entry_lo: float = 0,
+                entry_hi: float = 0, price: float = 0, liq_up: float = 0,
+                liq_dn: float = 0, sym: str = 'BTCUSDT') -> dict:
+    """LLM议会简化入口，fallback给council_three_way失败时用"""
+    try:
+        prompt = (f"你是合约交易员。{sym}当前体制:{regime} 偏向:{bias} score:{score} "
+                  f"FVG:{fvg_dir} OI:{oi_signal} Hurst:{hurst:.3f} "
+                  f"入场区:{entry_lo:.1f}~{entry_hi:.1f} 清算上:{liq_up:.1f} 下:{liq_dn:.1f} "
+                  f"用1-3句给出入场建议。")
+        resp = chat(prompt, max_tokens=150)
+        if resp and len(resp) > 5:
+            return {'action': bias or 'WAIT', 'reason': resp[:200], 'confidence': 0.5}
+    except Exception as _e:
+        import sys
+        print(f'[WARN] council_llm: {_e}', file=sys.stderr)
+    return {}
