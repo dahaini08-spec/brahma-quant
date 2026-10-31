@@ -1,1 +1,39 @@
-{"symbol": "BTC", "ts": 1793412300.5853317, "dt": "2026-10-31T02:05:00Z", "current_px": 77345.3, "bucket_pct": 0.3, "heatmap": [{"price": 76571.8, "dist_pct": -1.0, "long_oi": 373.71, "short_oi": 0.0, "net_oi": 373.71, "total_oi": 373.71, "bias": "LONG", "count": 1}, {"price": 76803.9, "dist_pct": -0.7, "long_oi": 46.82, "short_oi": 0.0, "net_oi": 46.82, "total_oi": 46.82, "bias": "LONG", "count": 3}, {"price": 77035.9, "dist_pct": -0.4, "long_oi": 3313.78, "short_oi": 230.46, "net_oi": 3083.32, "total_oi": 3544.25, "bias": "LONG", "count": 6}, {"price": 77268.0, "dist_pct": -0.1, "long_oi": 898.56, "short_oi": 275.65, "net_oi": 622.91, "total_oi": 1174.21, "bias": "LONG", "count": 4}, {"price": 77500.0, "dist_pct": 0.2, "long_oi": 480.94, "short_oi": 1604.39, "net_oi": -1123.44, "total_oi": 2085.33, "bias": "SHORT", "count": 5}, {"price": 77732.0, "dist_pct": 0.5, "long_oi": 856.36, "short_oi": 0.0, "net_oi": 856.36, "total_oi": 856.36, "bias": "LONG", "count": 3}, {"price": 77964.1, "dist_pct": 0.8, "long_oi": 298.67, "short_oi": 0.0, "net_oi": 298.67, "total_oi": 298.67, "bias": "LONG", "count": 1}, {"price": 78196.1, "dist_pct": 1.1, "long_oi": 1653.01, "short_oi": 0.0, "net_oi": 1653.01, "total_oi": 1653.01, "bias": "LONG", "count": 2}, {"price": 78428.1, "dist_pct": 1.4, "long_oi": 55.67, "short_oi": 352.32, "net_oi": -296.65, "total_oi": 407.99, "bias": "SHORT", "count": 2}, {"price": 78660.2, "dist_pct": 1.7, "long_oi": 0.0, "short_oi": 196.44, "net_oi": -196.44, "total_oi": 196.44, "bias": "SHORT", "count": 1}, {"price": 78892.2, "dist_pct": 2.0, "long_oi": 0.0, "short_oi": 396.53, "net_oi": -396.53, "total_oi": 396.53, "bias": "SHORT", "count": 1}, {"price": 79124.2, "dist_pct": 2.3, "long_oi": 0.0, "short_oi": 333.28, "net_oi": -333.28, "total_oi": 333.28, "bias": "SHORT", "count": 1}, {"price": 79588.3, "dist_pct": 2.9, "long_oi": 0.0, "short_oi": 49.74, "net_oi": -49.74, "total_oi": 49.74, "bias": "SHORT", "count": 1}, {"price": 79820.3, "dist_pct": 3.2, "long_oi": 1210.07, "short_oi": 1411.79, "net_oi": -201.71, "total_oi": 2621.86, "bias": "SHORT", "count": 10}, {"price": 80052.4, "dist_pct": 3.5, "long_oi": 1984.97, "short_oi": 276.29, "net_oi": 1708.68, "total_oi": 2261.26, "bias": "LONG", "count": 10}, {"price": 80284.4, "dist_pct": 3.8, "long_oi": 658.58, "short_oi": 0.0, "net_oi": 658.58, "total_oi": 658.58, "bias": "LONG", "count": 3}, {"price": 80516.5, "dist_pct": 4.1, "long_oi": 127.88, "short_oi": 671.51, "net_oi": -543.64, "total_oi": 799.39, "bias": "SHORT", "count": 6}, {"price": 80748.5, "dist_pct": 4.4, "long_oi": 2637.74, "short_oi": 1279.14, "net_oi": 1358.61, "total_oi": 3916.88, "bias": "LONG", "count": 11}, {"price": 80980.5, "dist_pct": 4.7, "long_oi": 2211.52, "short_oi": 747.42, "net_oi": 1464.1, "total_oi": 2958.94, "bias": "LONG", "count": 12}, {"price": 81212.6, "dist_pct": 5.0, "long_oi": 179.61, "short_oi": 616.16, "net_oi": -436.55, "total_oi": 795.77, "bias": "SHORT", "count": 5}, {"price": 81444.6, "dist_pct": 5.3, "long_oi": 311.39, "short_oi": 891.01, "net_oi": -579.61, "total_oi": 1202.4, "bias": "SHORT", "count": 7}], "buy_walls": [{"price": 77035.9, "long_oi": 3313.78, "dist_pct": -0.4}, {"price": 80748.5, "long_oi": 2637.74, "dist_pct": 4.4}, {"price": 80980.5, "long_oi": 2211.52, "dist_pct": 4.7}], "sell_walls": [{"price": 77500.0, "short_oi": 1604.39, "dist_pct": 0.2}, {"price": 79820.3, "short_oi": 1411.79, "dist_pct": 3.2}, {"price": 81444.6, "short_oi": 891.01, "dist_pct": 5.3}], "total_buckets": 21, "data_source": "fapi_oi_hist_klines_reconstruction"}
+{
+  "symbol": "BTCUSDT",
+  "price": 77401.6,
+  "short_liq_map": {
+    "2": 116102.4,
+    "3": 103202.1,
+    "5": 92881.9,
+    "10": 85141.8,
+    "20": 81271.7,
+    "50": 78949.6
+  },
+  "long_liq_map": {
+    "2": 38700.8,
+    "3": 51601.1,
+    "5": 61921.3,
+    "10": 69661.4,
+    "20": 73531.5,
+    "50": 75853.6
+  },
+  "nearest_short_liq": 78949.6,
+  "nearest_long_liq": 75853.6,
+  "dist_to_short_liq": 2.0,
+  "dist_to_long_liq": 2.0,
+  "top_ask_clusters": [
+    [
+      77401.6,
+      3033099.0
+    ]
+  ],
+  "top_bid_clusters": [
+    [
+      77401.6,
+      1235823.0
+    ]
+  ],
+  "liq_bull_score": 5,
+  "liq_bear_score": 5,
+  "ts": 1793415126.0375168
+}
