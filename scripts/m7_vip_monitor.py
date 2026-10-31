@@ -245,7 +245,7 @@ def check_all() -> list:
 
     for sym in ['BTC', 'ETH']:
         sf  = f'{sym}USDT'
-        cfg = _load_vip_cfg()  # [修复 2026-10-30] 每次执行动态加载，不用缓存[sym]
+        cfg = _load_vip_cfg().get(sym, {})  # [修复 2026-10-31] 取sym级别子字典，不是整体
 
         # ── 拉价格 ────────────────────────────────────
         try:
