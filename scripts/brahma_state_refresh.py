@@ -217,6 +217,23 @@ def main():
                 cleaned['liq_long'] = float(_liq['liq_long'])
             if not cleaned.get('liq_short') and _liq.get('liq_short'):
                 cleaned['liq_short'] = float(_liq['liq_short'])
+            # [修复 2026-11-01 苏摩111] liq_heatmap文件直接注入（ETH liq_short丢失根因修复）
+            # 根因：key_levels/coinglass路径在ETH里为空，但liq_heatmap_ethusdt.json有数据
+            if not cleaned.get('liq_short') or not cleaned.get('liq_long'):
+                try:
+                    import pathlib as _pl, json as _jl
+                    _sym_lower = sym.lower()
+                    _hm_f = BASE / 'data' / f'liq_heatmap_{_sym_lower}usdt.json'
+                    if _hm_f.exists():
+                        _hm = _jl.loads(_hm_f.read_text())
+                        _ns = float(_hm.get('nearest_short_liq', 0) or 0)
+                        _nl = float(_hm.get('nearest_long_liq', 0) or 0)
+                        if _ns > 0 and not cleaned.get('liq_short'):
+                            cleaned['liq_short'] = _ns
+                        if _nl > 0 and not cleaned.get('liq_long'):
+                            cleaned['liq_long'] = _nl
+                except Exception as _e:
+                    pass
             # fvg_consensus
             if not cleaned.get('fvg_consensus'):
                 _fvg_votes = cleaned.get('fvg_votes', {}) or {}
@@ -807,6 +824,27 @@ def _inject_gex_to_state():
                 _cs = float(state.get('confluence',{}).get('score',0) if isinstance(state.get('confluence'),dict) else 0)
                 if _cs > float(state.get('score_final',0) or 0):
                     state['score_final'] = _cs
+                # [修复 2026-11-01 苏摩111] liq_heatmap注入(ETH liq_short丢失根因修复)
+                # 根因: key_levels里无liq字段，cleaned赋值后被None覆盖
+                # 修复: 在GEX注入同时从liq_heatmap文件直接写入state
+                try:
+                    _hm_f = BASE / 'data' / f'liq_heatmap_{sym_key.lower()}usdt.json'
+                    if _hm_f.exists():
+                        _hm = _j.loads(_hm_f.read_text())
+                        _ns = float(_hm.get('nearest_short_liq', 0) or 0)
+                        _nl = float(_hm.get('nearest_long_liq', 0) or 0)
+                        _cur = float(_hm.get('price', 0) or 0)
+                        if _ns > 0:
+                            state['liq_short'] = _ns
+                        if _nl > 0:
+                            state['liq_long'] = _nl
+                        # 同步写入short_liq_map杠杆分档
+                        _slm = _hm.get('short_liq_map', {})
+                        _llm = _hm.get('long_liq_map', {})
+                        if _slm: state['liq_short_map'] = _slm
+                        if _llm: state['liq_long_map'] = _llm
+                except Exception as _le:
+                    pass
                 state['ts'] = __import__('time').time()
                 tmp = state_f.with_suffix('.tmp')
                 tmp.write_text(_j.dumps(state, ensure_ascii=False))
