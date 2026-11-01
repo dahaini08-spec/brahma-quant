@@ -356,20 +356,33 @@ def council_three_way(
 
     base = f"{sym}/USDT ${price:,.0f} {regime}体制(score={score:.0f})"
 
+    # [P1 2026-11-01 苏摩111] 三院制AI议会：每个裁判有独立personality+角色分工
+    # 法官Bot（稳健派）= 默认保守，只批准高确信度信号
+    # 猎手Bot（激进派）= 寻找最优入场，允许激进判断
+    # 量化Bot（数据派）= 纯数字逻辑，IC/WR/Hurst说了算
     prompts = {
-        'macro': (
-            f"{base}\n宏观裁判：FR={fear_greed}恐贪 DXY={macro_bias}\n"
-            f"只输出 LONG / SHORT / WAIT，一个词"
+        'judge': (
+            f"你是梵天法官Bot（稳健派）。{base}\n"
+            f"宏观：恐贪={fear_greed} DXY={macro_bias} FR={kappa:.4f}\n"
+            f"你的职责：风控第一，默认保守，只批准强确信度信号。"
+            f"RR不足/信号矛盾/CHOP体制时直接WAIT。\n"
+            f"只输出 LONG / SHORT / WAIT，一个词，无解释。"
         ),
-        'structure': (
-            f"{base}\nFVG={fvg_dir}磁铁${fvg_magnet:,.0f} "
+        'hunter': (
+            f"你是梵天猎手Bot（激进派）。{base}\n"
+            f"FVG={fvg_dir}磁铁${fvg_magnet:,.0f} "
             f"清算上=${liq_up:,.0f}下=${liq_dn:,.0f}\n"
-            f"只输出 LONG / SHORT / WAIT，一个词"
+            f"你的职责：找最高概率入场点，允许激进判断，"
+            f"有明确FVG/清算磁铁支撑时积极输出方向。\n"
+            f"只输出 LONG / SHORT / WAIT，一个词，无解释。"
         ),
         'quant': (
-            f"{base}\nOI={oi_signal} 聪明钱={sm_signal} "
-            f"大户多头={big_long:.1f}% Hurst={hurst:.3f}\n"
-            f"只输出 LONG / SHORT / WAIT，一个词"
+            f"你是梵天量化Bot（数据派）。{base}\n"
+            f"OI={oi_signal} 聪明钱={sm_signal} "
+            f"大户多头={big_long:.1f}% Hurst={hurst:.3f} HAR-RV={harv:.4f}\n"
+            f"你的职责：纯数据说话，Hurst>0.6=趋势/OI方向/聪明钱方向三角验证。"
+            f"数据不一致时输出WAIT。\n"
+            f"只输出 LONG / SHORT / WAIT，一个词，无解释。"
         ),
     }
 
@@ -407,20 +420,36 @@ def council_three_way(
         if not ai_responded:
             _is_rule_fallback = True
 
-    # 多数投票
+    # [P1 2026-11-01 苏摩111] 三院制投票规则升级
+    # judge(法官)=稳健派 / hunter(猎手)=激进派 / quant(量化)=数据派
+    # 规则：judge否决=强制WAIT / 3/3=HIGH / 2/3=MED / 1/3=LOW
     from collections import Counter
     counts = Counter(votes.values())
     winner = counts.most_common(1)[0][0]
     agree  = counts[winner]
-    # [封印 2026-10-22 苏摩111] 用_is_rule_fallback精确判断，而非free_available
-    conf = ('RULE_FALLBACK' if _is_rule_fallback
-            else 'HIGH' if agree == 3
-            else ('MED' if agree == 2 else 'LOW'))
+
+    # 法官一票否决机制：法官说WAIT → 强制WAIT（稳健派铁律）
+    judge_vote = votes.get('judge', 'WAIT')
+    if judge_vote == 'WAIT' and winner != 'WAIT':
+        winner = 'WAIT'
+        agree = counts.get('WAIT', 1)
+        conf = 'JUDGE_VETO'  # 法官否决标注
+    else:
+        conf = ('RULE_FALLBACK' if _is_rule_fallback
+                else 'HIGH' if agree == 3
+                else ('MED' if agree == 2 else 'LOW'))
 
     return {
         'verdict': winner,
         'confidence': conf,
         'votes': votes,
+        # [P1 2026-11-01] 三院制角色映射（兼容旧代码读macro/structure/quant）
+        'judge': votes.get('judge', 'WAIT'),
+        'hunter': votes.get('hunter', 'WAIT'),
+        'quant': votes.get('quant', 'WAIT'),
+        # 兼容旧字段
+        'macro': votes.get('judge', 'WAIT'),
+        'structure': votes.get('hunter', 'WAIT'),
         'agree': agree,
     }
 

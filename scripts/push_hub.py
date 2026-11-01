@@ -257,3 +257,34 @@ if __name__ == "__main__":
     }
     result2 = push_signal_card_v3(test_r)
     print(f"VIP卡片推送: {'✅ 成功' if result2 else '❌ 失败'}")
+
+
+# ══ [P1 2026-11-01 苏摩111] 精细化审批推送格式（OpenMausBot启发）══
+def push_approval_card(sym: str, direction: str, entry: float, sl: float,
+                        tp1: float, rr: float, confidence: float = 0,
+                        regime: str = '', score: int = 0,
+                        logic: str = '', source: str = 'auto') -> bool:
+    """
+    推送带审批选项的VIP信号卡片。
+    苏摩可回复：111=执行 / 改$XXXX=改价执行 / 忽略=跳过
+    """
+    dir_emoji = '🔴' if direction == 'SHORT' else '🟢'
+    conf_str = f'{confidence:.0f}%' if confidence > 0 else f'score={score}'
+    logic_str = f'\n⚡ {logic[:40]}' if logic else ''
+    sl_dist = round(abs(entry - sl) / entry * 100, 2)
+
+    msg = (
+        f'{dir_emoji} {sym} {direction} 信号\n'
+        f'入场 ${entry:,.1f}  SL ${sl:,.1f}  TP ${tp1:,.1f}\n'
+        f'RR={rr}  {conf_str}  SL距={sl_dist}%'
+        f'{logic_str}\n'
+        f'───────────────\n'
+        f'▶ 回复 "111" → 按原参数执行\n'
+        f'▶ 回复 "改${int(entry*0.998):,}" → 改价执行\n'
+        f'▶ 回复 "忽略" → 跳过本次\n'
+        f'🌿 姓赵不宣 | 不是建议'
+    )
+    return push_jarvis(msg, priority='P0', source=source,
+                       direction=direction, sym=sym, rr=rr,
+                       dedup_key=f'approval_{sym}_{direction}_{int(entry)}',
+                       dedup_ttl=3600)
