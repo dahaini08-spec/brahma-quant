@@ -623,6 +623,54 @@ def main():
     if m == 'weekly':  state = check_weekly_levels(state)
     if m == 'heatmap': state = check_market_heatmap(state)
 
+    # ── [Super-agent Router 2026-11-01 苏摩111] EventBus消费层 ──
+    # DeepSeek Super-agent核心：Router消费Worker事件 → 决策 → 推送
+    if m in ('heartbeat', 'all') and time.time() < _DEADLINE:
+        try:
+            import sys as _sys
+            _brain = str(BASE / 'brahma_brain')
+            if _brain not in _sys.path: _sys.path.insert(0, _brain)
+            from brahma_event_bus import poll as _eb_poll, trim_log as _eb_trim
+            from push_hub import push_jarvis as _pj
+
+            # 获取上次处理时间戳（避免重复推送）
+            _last_eb_ts = float(state.get('_last_event_bus_ts', 0) or 0)
+            _new_ts = time.time()
+
+            # P0事件：立即推送（SL/清算/体制切换）
+            _p0_events = _eb_poll(min_priority='P0', since_ts=_last_eb_ts, limit=10)
+            for _ev in _p0_events:
+                _msg = (
+                    f'🚨 [{_ev["label"]}] {_ev["sym"]}\n'
+                    f'{json.dumps(_ev["data"], ensure_ascii=False)[:100]}\n'
+                    f'来源: {_ev["source"]}'
+                )
+                _pj(_msg, priority='P0', source='event_bus',
+                    dedup_key=f'ev_{_ev["type"]}_{_ev["sym"]}_{int(_ev["ts"])}',
+                    dedup_ttl=300)
+
+            # P1事件：心跳批量推送（信号激活/数据自愈）
+            _p1_events = _eb_poll(min_priority='P1', since_ts=_last_eb_ts, limit=20)
+            _p1_filtered = [e for e in _p1_events if e.get('priority') == 'P1']
+            if _p1_filtered:
+                _lines = []
+                for _ev in _p1_filtered[-5:]:  # 最多5条合并推送
+                    _d = _ev.get('data', {})
+                    _lines.append(f'• [{_ev["label"]}] {_ev["sym"]} {str(_d)[:60]}')
+                if _lines:
+                    _batch_msg = '📡 梵天事件汇报\n' + '\n'.join(_lines)
+                    _pj(_batch_msg, priority='P1', source='event_bus',
+                        dedup_key=f'ev_batch_{int(_new_ts//600)}',
+                        dedup_ttl=600)  # 10min内不重复推送同批次
+
+            state['_last_event_bus_ts'] = _new_ts
+            # 定期清理日志（每100次心跳）
+            if state.get('_heartbeat_count', 0) % 100 == 0:
+                _eb_trim(10000)
+        except Exception as _ebe:
+            print(f'[brahma_robot] EventBus消费异常(不阻塞): {_ebe}')
+    # ── EventBus消费层结束 ──
+
     _save_state(state)
     print(f"[brahma_robot] {m} 完成 {time.strftime('%H:%M:%S')}")
 

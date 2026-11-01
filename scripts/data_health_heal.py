@@ -97,6 +97,14 @@ def main():
             print(f'[data_heal] ❌ {name} 修复失败: {e}')
 
     if healed:
+        # [Super-agent Worker 2026-11-01] 发送EventBus事件
+        try:
+            import sys as _sys
+            _brain = str(Path(__file__).parent.parent / 'brahma_brain')
+            if _brain not in _sys.path: _sys.path.insert(0, _brain)
+            from brahma_event_bus import emit_data_healed
+            emit_data_healed(healed)
+        except Exception: pass
         try:
             from push_hub import push_jarvis
             push_jarvis(
