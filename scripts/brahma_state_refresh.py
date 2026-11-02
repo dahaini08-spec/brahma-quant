@@ -585,6 +585,12 @@ def main():
     except Exception as _fe:
         print(f'[state_refresh] fangcang inject err: {_fe}')
 
+    # [封印 2026-11-02 苏摩111] 实时字段补注入：lsr_big/lsr_retail/fr/oi_signal
+    try:
+        _inject_realtime_fields_to_state()
+    except Exception as _rte:
+        print(f'[state_refresh] rt_inject err: {_rte}')
+
     # [P0① 2026-10-30 苏摩111] vip_snapshot实时化：每次state刷新同步更新
     # 根因：deep_analysis每60min跑一次 → vip_snapshot最老45min → 神经感知推陈旧VIP
     # 修复：直接从最新brahma_state生成轻量vip_snapshot（不调用LLM，只读state字段）
@@ -957,6 +963,77 @@ def _groq_market_summary() -> str:
 # M8  8  字段  → 18x IO
 _LIGHT_FIELDS = ['price', 'regime', 'rsi_1h', 'cvd_1h', 'lsr_retail',
                   'hurst', 'oi_direction', 'fr', 'atr_1h', 'gex_zero_flip']
+
+def _inject_realtime_fields_to_state():
+    """[封印 2026-11-02 苏摩111] 补注入实时字段：lsr_big/lsr_retail/fr/oi_signal
+    
+    根因：brahma_core.analyze()不采集LSR/FR聚合字段，导致state这些字段为None
+    修复：每次state_refresh完成后直接从fapi补充注入
+    接入位置：_inject_fangcang_to_state()之后
+    """
+    import json as _j, urllib.request as _ur, ssl as _ssl, time as _t
+    BASE = Path(__file__).resolve().parent.parent
+
+    for sym_key in ['BTC', 'ETH']:
+        state_f = BASE / 'data' / f'brahma_state_{sym_key.lower()}.json'
+        if not state_f.exists():
+            continue
+        try:
+            state = _j.loads(state_f.read_text())
+            sym_usdt = f'{sym_key}USDT'
+            _ctx = _ssl.create_default_context()
+
+            # ① 大户账户LSR (topLongShortAccountRatio)
+            try:
+                _url = f'https://fapi.binance.com/futures/data/topLongShortAccountRatio?symbol={sym_usdt}&period=5m&limit=4'
+                _data = _j.loads(_ur.urlopen(_url, timeout=5, context=_ctx).read())
+                _vals = [float(x['longAccount']) * 100 for x in _data]
+                state['lsr_big'] = round(_vals[-1], 2)
+                state['lsr_big_seq'] = [round(v, 2) for v in _vals]
+                state['lsr_big_chg'] = round(_vals[-1] - _vals[0], 2)
+            except Exception: pass
+
+            # ② 散户LSR (globalLongShortAccountRatio)
+            try:
+                _url2 = f'https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={sym_usdt}&period=5m&limit=1'
+                _data2 = _j.loads(_ur.urlopen(_url2, timeout=5, context=_ctx).read())
+                if _data2:
+                    state['lsr_retail'] = round(float(_data2[-1].get('longAccount', 0)) * 100, 2)
+            except Exception: pass
+
+            # ③ FR (premiumIndex)
+            try:
+                _url3 = f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym_usdt}'
+                _data3 = _j.loads(_ur.urlopen(_url3, timeout=5, context=_ctx).read())
+                _fr = float(_data3.get('lastFundingRate', 0))
+                state['fr']     = _fr
+                state['fr_now'] = round(_fr * 100, 6)  # 百分比格式
+            except Exception: pass
+
+            # ④ OI信号（从oi_sequence计算）
+            try:
+                _oi_seq = state.get('oi_sequence', []) or []
+                if len(_oi_seq) >= 2:
+                    _oi_chg = (_oi_seq[-1] - _oi_seq[0]) / _oi_seq[0] * 100 if _oi_seq[0] else 0
+                    if _oi_chg > 0.5:
+                        state['oi_signal'] = 'LONG_BUILD'
+                    elif _oi_chg < -0.5:
+                        state['oi_signal'] = 'LONG_UNWIND'
+                    else:
+                        state['oi_signal'] = 'NEUTRAL'
+                    state['oi_trend'] = state['oi_signal']
+                    state['oi_chg_total'] = round(_oi_chg, 3)
+            except Exception: pass
+
+            # 原子写入
+            state['ts'] = _t.time()
+            tmp = state_f.with_suffix('.tmp')
+            tmp.write_text(_j.dumps(state, ensure_ascii=False))
+            tmp.replace(state_f)
+            print(f'[rt_inject] {sym_key}: lsr_big={state.get("lsr_big")} fr_now={state.get("fr_now")} oi_signal={state.get("oi_signal")}')
+        except Exception as _e:
+            print(f'[rt_inject] {sym_key} err: {_e}')
+
 
 def _write_light_state():
     """[New 2026-10-10 苏摩111] M8专用轻量视图 + P0别名字段注入
