@@ -1025,6 +1025,15 @@ def _inject_realtime_fields_to_state():
                     state['oi_chg_total'] = round(_oi_chg, 3)
             except Exception: pass
 
+            # ⑤ score别名修正：score_final才是真实94d评分
+            _sf = state.get('score_final')
+            if _sf is not None and float(_sf or 0) > 0:
+                state['score'] = float(_sf)
+
+            # ⑥ step11_verdict别名：trading_copilot读step11_verdict
+            if not state.get('step11_verdict') and state.get('nodes_verdict'):
+                state['step11_verdict'] = state['nodes_verdict']
+
             # 原子写入
             state['ts'] = _t.time()
             tmp = state_f.with_suffix('.tmp')
