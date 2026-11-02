@@ -322,9 +322,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 
 # ── [封印 2026-10-18 苏摩111] 42标的闭环三层 ──────────────────────────────
 # Layer1: 批量分析（错峰:07，避开:00/:13/:15/:30/:33/:47/:52/:05密集区）
-7 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_flow_batch.py --pool A_CORE >> logs/flow_batch.log 2>&1  # A组10标的每小时
-7 */4 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_flow_batch.py --pool B_WATCH >> logs/flow_batch.log 2>&1  # B组20标的每4小时
-7 */8 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_flow_batch.py --pool C_OPPO >> logs/flow_batch.log 2>&1   # C组12标的每8小时
+7 * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_flow_batch.lock timeout 60 python3 scripts/brahma_flow_batch.py --pool A_CORE >> logs/flow_batch.log 2>&1  # A组10标的每小时
+7 */4 * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_flow_batch.lock timeout 120 python3 scripts/brahma_flow_batch.py --pool B_WATCH >> logs/flow_batch.log 2>&1  # B组20标的每4小时
+7 */8 * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_flow_batch.lock timeout 120 python3 scripts/brahma_flow_batch.py --pool C_OPPO >> logs/flow_batch.log 2>&1   # C组12标的每8小时
 # Layer2: 信号路由（:23，batch完成后16min，有充足时间）
 23 * * * * cd /root/.openclaw/workspace/trading-system && timeout 30 python3 -c "import sys,json,pathlib; sys.path.insert(0,'scripts'); sys.path.insert(0,'brahma_brain'); from brahma_signal_router import route_signals; f='data/batch_signals.json'; d=json.load(open(f)) if pathlib.Path(f).exists() else {}; route_signals([d[s] for s in d if not s.startswith('_')]) if d else None" >> logs/signal_router.log 2>&1
 
@@ -361,9 +361,9 @@ DERIBIT_SECRET=J6kL7mN8oP9qR0sT1uV
 # 每5min心跳：自检+信号监控+prediction结算+相关性预警
 # [宿主优化 2026-10-27 苏摩111] 从*/5→*/10：robot内部自适应时段调频
 # ASIA(00-07): 仅健康+信号(4H冷却) / EU(07-13): 核心模块 / US(13-22): 全模块
-*/10 * * * * cd /root/.openclaw/workspace/trading-system && timeout 60 python3 scripts/brahma_robot.py --mode heartbeat >> logs/robot.log 2>&1
+*/10 * * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_robot.lock timeout 60 python3 scripts/brahma_robot.py --mode heartbeat >> logs/robot.log 2>&1
 # 定时播报：UTC01/07/13:30（亚盘/欧盘/美盘开盘布局）
-30 1,7,13 * * * cd /root/.openclaw/workspace/trading-system && timeout 120 python3 scripts/brahma_robot.py --mode broadcast >> logs/robot_broadcast.log 2>&1
+30 1,7,13 * * * cd /root/.openclaw/workspace/trading-system && flock -n /tmp/brahma_robot.lock timeout 120 python3 scripts/brahma_robot.py --mode broadcast >> logs/robot_broadcast.log 2>&1
 
 # macro_regime_engine — 宏观体制锚 [封印 2026-10-26 苏摩111]
 # 每4H:33分，计算周线/月线宏观体制，注入顶层偏置

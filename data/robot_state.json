@@ -1,7 +1,10 @@
 {
-  "last_health_check": 1793413800.6923246,
+  "last_health_check": 1793582528.003657,
   "last_health_alerts": [
-    "🔧 self_heal触发2项修复"
+    "⚠️ BTC state过期763min",
+    "🔧 self_heal触发12项修复",
+    "🚨 supercronic未运行→已尝试重启",
+    "⚠️ ETH state过期762min"
   ],
   "last_btc_eth_corr": 0.887,
   "macro_BTC": "BULL_EARLY",
@@ -17,8 +20,8 @@
   "last_smart_check": 1793412000.6801708,
   "last_weekly_check": 1793413200.290102,
   "_test_write": 1793086601.7767353,
-  "last_account_sense": 1793411400.4011486,
-  "last_self_heal": 1793413800.6923246,
+  "last_account_sense": 1793582528.003657,
+  "last_self_heal": 1793582528.003657,
   "last_signal_push_btc": 1793409600.195822,
   "last_pred_check": 1793412000.611436,
   "_heartbeat_count": 80,
