@@ -1046,8 +1046,113 @@ def main():
 
     # M8: Groq恒量分析层 [2026-10-10 苏摩111] 每分钟8次 = 11520次/日 = 80%配额
     m8_groq_smart_layer(state)
+
+    # [封印 2026-11-02 苏摩111] M9 EventBus事件emit
+    try: m9_event_emit(state)
+    except Exception as _m9e: print(f'[M9 ERR] {_m9e}')
+
     save_state(state)
 
+
+
+def m9_event_emit(state: dict):
+    """[封印 2026-11-02 苏摩111] Phase1 五信号EventBus接入
+    复用现有fetch/state基础设施，不重复API调用
+    接入位置：trading_copilot.py main()末尾
+    """
+    import sys as _s9
+    _brain = str(WORKDIR / 'brahma_brain')
+    if _brain not in _s9.path: _s9.path.insert(0, _brain)
+    try:
+        from brahma_event_bus import emit as _emit
+    except Exception as _e9:
+        print(f'[M9] EventBus导入失败: {_e9}'); return
+
+    for sym in ['BTC', 'ETH']:
+        try:
+            p = get_price(sym)
+            if p == 0: continue
+
+            # ① GEX_FLIP — 零翻转穿越检测
+            try:
+                _gex = json.loads((WORKDIR / 'data' / 'gex_state.json').read_text())
+                _zf = float(_gex.get(sym.upper(), {}).get('zero_flip', 0) or 0)
+                if _zf > 0:
+                    _old_zone = state.get(f'{sym}_gamma_zone', '')
+                    _new_zone = 'POS' if p >= _zf else 'NEG'
+                    if _old_zone and _old_zone != _new_zone:
+                        _emit('GEX_FLIP', sym=f'{sym}USDT', priority='P1',
+                              data={'zf': _zf, 'price': p,
+                                    'from': _old_zone, 'to': _new_zone},
+                              dedup_key=f'gex_flip_{sym}_{_new_zone}', dedup_ttl=3600)
+                        print(f'[M9] GEX_FLIP {sym} {_old_zone}→{_new_zone} @${p:,.1f}')
+                    state[f'{sym}_gamma_zone'] = _new_zone
+            except Exception as _ge: pass
+
+            # ② BB_SQUEEZE — 读state，零API成本
+            try:
+                _bs9 = json.loads((WORKDIR / f'data/brahma_state_{sym.lower()}.json').read_text())
+                _bb_w = float(_bs9.get('bb_width') or 99)
+                if _bb_w < 0.35:
+                    _emit('BB_SQUEEZE', sym=f'{sym}USDT', priority='P2',
+                          data={'bb_width': _bb_w, 'price': p},
+                          dedup_key=f'bb_squeeze_{sym}', dedup_ttl=1800)
+                    print(f'[M9] BB_SQUEEZE {sym} bb_w={_bb_w}%')
+            except Exception: pass
+
+            # ③ WHALE_ALERT — 5min粒度大户急降（补充m4的24H粒度）
+            try:
+                _lsr5 = fetch(
+                    f'https://fapi.binance.com/futures/data/'
+                    f'topLongShortAccountRatio?symbol={sym}USDT&period=5m&limit=4'
+                )
+                _vals = [float(x['longAccount']) * 100 for x in _lsr5]
+                _d5 = round(_vals[-1] - _vals[0], 2)
+                if abs(_d5) >= 3.0:
+                    _emit('WHALE_ALERT', sym=f'{sym}USDT', priority='P0',
+                          data={'delta_5m': _d5, 'lsr_now': _vals[-1], 'price': p},
+                          dedup_key=f'whale_{sym}_{int(time.time()//300)}',
+                          dedup_ttl=300)
+                    print(f'[M9] WHALE_ALERT {sym} delta5m={_d5:+.2f}pt')
+            except Exception: pass
+
+            # ④ FUNDING_SPIKE — FR极端突变（m3已推送，此处只emit）
+            try:
+                _fr9 = fetch(
+                    f'https://fapi.binance.com/fapi/v1/premiumIndex?symbol={sym}USDT'
+                )
+                _fr_now = float(_fr9.get('lastFundingRate', 0) or 0) * 100
+                if abs(_fr_now) > 0.1:
+                    _emit('FUNDING_SPIKE', sym=f'{sym}USDT', priority='P0',
+                          data={'fr': round(_fr_now, 5), 'price': p},
+                          dedup_key=f'fr_spike_{sym}', dedup_ttl=14400)
+                    print(f'[M9] FUNDING_SPIKE {sym} FR={_fr_now:+.5f}%')
+            except Exception: pass
+
+        except Exception as _e9b:
+            print(f'[M9 {sym} ERR] {_e9b}')
+
+    # ⑤ CORRELATION_BREAK — BTC/ETH收益差>1.5%
+    try:
+        _bp = get_price('BTC'); _ep = get_price('ETH')
+        _bp_prev = float(state.get('BTC_price_1h', _bp) or _bp)
+        _ep_prev = float(state.get('ETH_price_1h', _ep) or _ep)
+        _br = (_bp - _bp_prev) / _bp_prev * 100 if _bp_prev else 0
+        _er = (_ep - _ep_prev) / _ep_prev * 100 if _ep_prev else 0
+        _diff = abs(_br - _er)
+        if _diff >= 1.5:
+            _emit('CORRELATION_BREAK', sym='ALL', priority='P1',
+                  data={'btc_ret': round(_br, 3), 'eth_ret': round(_er, 3),
+                        'diff': round(_diff, 3)},
+                  dedup_key='corr_break', dedup_ttl=3600)
+            print(f'[M9] CORRELATION_BREAK BTC{_br:+.2f}% ETH{_er:+.2f}% diff={_diff:.2f}%')
+    except Exception: pass
+
+    # 每小时刷新基准价格
+    if time.time() - float(state.get('_price_1h_ts', 0) or 0) > 3600:
+        state['BTC_price_1h'] = get_price('BTC')
+        state['ETH_price_1h'] = get_price('ETH')
+        state['_price_1h_ts'] = time.time()
 
 if __name__ == '__main__':
     main()
