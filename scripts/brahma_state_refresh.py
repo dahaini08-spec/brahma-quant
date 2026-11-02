@@ -1010,11 +1010,15 @@ def _inject_realtime_fields_to_state():
                 state['fr_now'] = round(_fr * 100, 6)  # 百分比格式
             except Exception: pass
 
-            # ④ OI信号（从oi_sequence计算）
+            # ④ OI信号（fapi实时拉取，比oi_sequence更可靠）
             try:
-                _oi_seq = state.get('oi_sequence', []) or []
-                if len(_oi_seq) >= 2:
-                    _oi_chg = (_oi_seq[-1] - _oi_seq[0]) / _oi_seq[0] * 100 if _oi_seq[0] else 0
+                _oi_hist = _j.loads(_ur.urlopen(
+                    f'https://fapi.binance.com/futures/data/openInterestHist?symbol={sym_usdt}&period=1h&limit=4',
+                    timeout=5, context=_ctx).read())
+                if len(_oi_hist) >= 2:
+                    _oi_first = float(_oi_hist[0]['sumOpenInterest'])
+                    _oi_last  = float(_oi_hist[-1]['sumOpenInterest'])
+                    _oi_chg   = (_oi_last - _oi_first) / _oi_first * 100 if _oi_first else 0
                     if _oi_chg > 0.5:
                         state['oi_signal'] = 'LONG_BUILD'
                     elif _oi_chg < -0.5:
