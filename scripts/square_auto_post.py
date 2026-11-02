@@ -193,25 +193,44 @@ def run(syms: list, dry_run: bool = False) -> None:
             return {}
 
     def _extract_sym_segment(full_out: str, sym: str) -> str:
-        """从全文截取单币段：【BTC...到下一个【ETH或结尾
-        [2026-09-30 苏摩111 价格串币bug根修] parse_analysis_output正则是全文first-match，
-        传全文会让BTC/ETH拿到同一dict（后者覆盖前者），BTC帖发布ETH价位。
-        接入位置：square_auto_post.py _fresh_signal_pkg + 合并发帖路径
+        """从全文截取单币段
+        [2026-11-02 苏摩111 根因修复] 实际输出格式是:
+          🏛️ 梵天80维全能力分析 | BTC/USDT 基准$78,263...
+        不是【BTCUSDT...】，旧正则永远匹配失败 → 全文混用 → 价格串币
+        新逻辑：匹配「梵天...| SYM/USDT」或「梵天...| SYMUSDT」作为段落分界
         """
         import re as _re
-        # [Fix 2026-10-03 苏摩111] 修复BTC段落提取：输出格式是【BTCUSDT...】
-        # 先找精确匹配（如BTCUSDT），再fallback到宽松匹配（BTC开头）
-        m = _re.search(rf'【{sym}USDT[^】]*】', full_out)
-        if not m:
-            m = _re.search(rf'【{sym}[^】]*】', full_out)
+        # 优선순위1: 실제 출력 형식 「梵天...| BTC/USDT」 또는 「梵天...| BTCUSDT」
+        patterns = [
+            rf'梵天[^|\n]{{0,30}}\|[^|\n]{{0,10}}{sym}/USDT',
+            rf'梵天[^|\n]{{0,30}}\|[^|\n]{{0,10}}{sym}USDT',
+            rf'【{sym}USDT[^】]*】',
+            rf'【{sym}[^】]*】',
+        ]
+        m = None
+        for pat in patterns:
+            m = _re.search(pat, full_out)
+            if m:
+                break
         if not m:
             return ''
-        start = m.start()
-        # 找下一个【币种...】标记作为段落结束
-        nxt = _re.search(r'【(?:BTC|ETH|SOL|BNB|XRP|SUI|DOGE|ADA|LTC|LINK|AVAX)(?:USDT)?[^】]*】',
-                         full_out[start + 1:])
-        end = (start + 1 + nxt.start()) if nxt else len(full_out)
-        return full_out[start:end]
+        # 단락 시작: 헤더 앞 분리선(━━ 또는 ——)까지 포함
+        seg_start = full_out.rfind('━━', 0, m.start())
+        if seg_start < 0 or m.start() - seg_start > 200:
+            seg_start = full_out.rfind('——', 0, m.start())
+        if seg_start < 0 or m.start() - seg_start > 200:
+            seg_start = m.start()
+        # 다음 심볼 섹션 찾기 (같은 分隔线 패턴)
+        other_syms = [s for s in ['BTC','ETH','SOL','BNB','XRP'] if s != sym]
+        other_pat = '|'.join([rf'梵天[^|\n]{{0,30}}\|[^|\n]{{0,10}}{s}(?:/USDT|USDT)' for s in other_syms])
+        nxt = _re.search(other_pat, full_out[seg_start + 1:])
+        seg_end = (seg_start + 1 + nxt.start()) if nxt else len(full_out)
+        # nxt 앞의 분리선까지만 포함
+        if nxt:
+            sep = _re.search(r'[━—]{5,}', full_out[seg_start+1:seg_start+1+nxt.start()][::-1])
+            if sep:
+                seg_end = seg_start + 1 + nxt.start() - sep.start()
+        return full_out[seg_start:seg_end]
 
     fresh = _fresh_signal_pkg(syms)
     # ── 多币种：合并单帖路径（P0-2）──
