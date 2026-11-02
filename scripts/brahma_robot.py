@@ -650,8 +650,24 @@ def main():
                     dedup_ttl=300)
 
             # P1事件：心跳批量推送（信号激活/数据自愈）
+            # [封印 2026-11-02 苏摩111] 方向性事件加regime门控
             _p1_events = _eb_poll(min_priority='P1', since_ts=_last_eb_ts, limit=20)
-            _p1_filtered = [e for e in _p1_events if e.get('priority') == 'P1']
+            _directional_types = {'SIGNAL_ACTIVATE','BOS_CONFIRMED','FVG_TOUCHED',
+                                   'PREMIUM_ZONE_ENTER','DISCOUNT_ZONE_ENTER','GEX_FLIP',
+                                   'CORRELATION_BREAK','COUNCIL_CONSENSUS'}
+            def _regime_ok(ev):
+                """方向性事件：体制+score双重门控"""
+                if ev.get('type') not in _directional_types:
+                    return True  # 非方向性事件直接放行
+                _d = ev.get('data',{}) or {}
+                _regime = _d.get('regime', state.get('regime_btc',''))
+                _score  = float(_d.get('score', 0) or 0)
+                # CHOP_MID体制下score<110的方向性信号拦截
+                if 'CHOP' in str(_regime) and _score < 110:
+                    print(f'[robot_govern] 拦截 {ev["type"]} regime={_regime} score={_score}')
+                    return False
+                return True
+            _p1_filtered = [e for e in _p1_events if e.get('priority') == 'P1' and _regime_ok(e)]
             if _p1_filtered:
                 _lines = []
                 for _ev in _p1_filtered[-5:]:  # 最多5条合并推送
