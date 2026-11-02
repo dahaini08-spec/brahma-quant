@@ -285,6 +285,35 @@ def get_latest_sqe_signal() -> dict | None:
     return sorted(candidates, key=lambda s: float(s.get('timestamp', 0) or 0))[-1]
 
 
+def _count_today_battlefield() -> int:
+    """统计今日battlefield类型帖子已发条数"""
+    try:
+        from datetime import timezone, timedelta
+        CST = timezone(timedelta(hours=8))
+        today = datetime.now(CST).strftime('%Y-%m-%d')
+        if not SQUARE_LOG.exists():
+            return 0
+        cnt = 0
+        with open(SQUARE_LOG, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line: continue
+                try:
+                    d = json.loads(line)
+                    if d.get('post_type') not in ('battlefield', 'signal_alert'):
+                        continue
+                    ts = float(d.get('ts', 0))
+                    post_day = datetime.fromtimestamp(ts, CST).strftime('%Y-%m-%d')
+                    if post_day == today:
+                        cnt += 1
+                except Exception:
+                    pass
+        return cnt
+    except Exception:
+        return 0
+
+MAX_DAILY_BATTLEFIELD = 2  # [2026-11-02 苏摩111] battlefield每日上限2条，防重复刷屏
+
 def main():
     parser = argparse.ArgumentParser(description='梵天信号→Square自动发布')
     parser.add_argument('--dry-run', action='store_true', help='仅生成内容，不实际发布')
@@ -304,6 +333,14 @@ def main():
         if not signal:
             print("ℹ️ 无可发布信号（无24H内score≥80且sl<=3%的信号）")
             print("HEARTBEAT_OK")
+            sys.exit(0)
+
+    # [2026-11-02 苏摩111] 每日battlefield上限检查
+    if not args.dry_run:
+        today_bf = _count_today_battlefield()
+        if today_bf >= MAX_DAILY_BATTLEFIELD:
+            print(f'[signal_to_square] 今日battlefield已发{today_bf}条，达到上限{MAX_DAILY_BATTLEFIELD}，跳过')
+            print('HEARTBEAT_OK')
             sys.exit(0)
 
     print(f"📡 信号: {signal.get('symbol')} score={signal.get('score')} "

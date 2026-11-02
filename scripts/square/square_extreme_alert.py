@@ -272,9 +272,43 @@ def build_signal_post(sym, chg, d, smc, oi_data):
     return content
 
 
+def _count_today_posts() -> int:
+    """统计今日extreme_alert已发条数"""
+    try:
+        from datetime import date
+        today = datetime.now(CST).strftime('%Y-%m-%d')
+        if not LOG_FILE.exists():
+            return 0
+        cnt = 0
+        with open(LOG_FILE, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line: continue
+                try:
+                    d = json.loads(line)
+                    if d.get('post_type') != 'extreme_alert': continue
+                    ts = float(d.get('ts', 0))
+                    post_day = datetime.fromtimestamp(ts, tz=CST).strftime('%Y-%m-%d')
+                    if post_day == today:
+                        cnt += 1
+                except Exception:
+                    pass
+        return cnt
+    except Exception:
+        return 0
+
+MAX_DAILY_EXTREME = 2  # [2026-11-02 苏摩111] 每日extreme_alert上限2条，防刷屏
+
 def run(dry_run=False):
     cd = load_cooldown()
     now_str = datetime.now(CST).strftime('%m/%d %H:%M')
+
+    # [2026-11-02 苏摩111] 每日上限检查
+    if not dry_run:
+        today_cnt = _count_today_posts()
+        if today_cnt >= MAX_DAILY_EXTREME:
+            print(f'[extreme_alert] 今日已发{today_cnt}条，达到上限{MAX_DAILY_EXTREME}，跳过')
+            return
 
     # 拉涨幅榜
     try:
