@@ -594,6 +594,30 @@ if __name__=='__main__':
         try:
             r=analyze(sym.upper())
             print(format_report(r))
+            _emit_to_event_bus(sym.upper(), r)
             print()
         except Exception as e:
             import traceback; traceback.print_exc()
+
+
+def _emit_to_event_bus(sym: str, result: dict):
+    """[Super-agent Worker 2026-11-01 苏摩111] 94d分析完成后emit到EventBus"""
+    try:
+        import sys as _sys
+        _brain = str(BASE / 'brahma_brain')
+        if _brain not in _sys.path: _sys.path.insert(0, _brain)
+        from brahma_event_bus import emit_signal, emit
+        s12 = result.get('s12', {})
+        score = float(result.get('score_final', 0) or 0)
+        regime = result.get('regime', '')
+        mid_dir = s12.get('mid_dir', 'WAIT')
+        if mid_dir in ('LONG', 'SHORT'):
+            rr = float(s12.get('mid_rr', 0) or 0)
+            emit_signal(f'{sym}USDT', mid_dir, score, rr, source='brahma_94d_engine')
+        import time as _t
+        emit('ANALYSIS_DONE', sym=f'{sym}USDT', priority='P3',
+             data={'score': score, 'regime': regime, 'mid_dir': mid_dir},
+             source='brahma_94d_engine',
+             dedup_key=f'analysis_{sym}_{int(_t.time()//3600)}', dedup_ttl=3600)
+    except Exception:
+        pass
