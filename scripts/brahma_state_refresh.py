@@ -1029,7 +1029,38 @@ def _inject_realtime_fields_to_state():
                     state['oi_chg_total'] = round(_oi_chg, 3)
             except Exception: pass
 
-            # ⑤ score别名修正：score_final才是真实94d评分
+            # ⑤ Hurst指数实时计算（R/S法，fapi 1h K线100条）
+            try:
+                if not state.get('hurst') or float(state.get('hurst') or 0) <= 0:
+                    import math as _math, statistics as _stat
+                    _kl_h = _j.loads(_ur.urlopen(
+                        f'https://fapi.binance.com/fapi/v1/klines?symbol={sym_usdt}&interval=1h&limit=100',
+                        timeout=5, context=_ctx).read())
+                    _cl_h = [float(k[4]) for k in _kl_h]
+                    if len(_cl_h) >= 50:
+                        def _hurst_rs(series):
+                            N = len(series)
+                            rs_vals = []
+                            for n in [N//4, N//2, N]:
+                                if n < 8: continue
+                                sub = series[:n]
+                                mean_s = _stat.mean(sub)
+                                devs = [x - mean_s for x in sub]
+                                cum = [sum(devs[:i+1]) for i in range(len(devs))]
+                                R = max(cum) - min(cum)
+                                S = _stat.stdev(sub)
+                                if S > 0: rs_vals.append((n, R/S))
+                            if len(rs_vals) < 2: return 0.5
+                            ns  = [_math.log(r[0]) for r in rs_vals]
+                            rss = [_math.log(r[1]) for r in rs_vals]
+                            n2 = len(ns)
+                            slope = (n2*sum(x*y for x,y in zip(ns,rss)) - sum(ns)*sum(rss)) /                                     (n2*sum(x**2 for x in ns) - sum(ns)**2)
+                            return round(slope, 3)
+                        _h = _hurst_rs(_cl_h)
+                        state['hurst'] = _h
+            except Exception: pass
+
+            # ⑥ score别名修正：score_final才是真实94d评分
             _sf = state.get('score_final')
             if _sf is not None and float(_sf or 0) > 0:
                 state['score'] = float(_sf)
@@ -1037,6 +1068,16 @@ def _inject_realtime_fields_to_state():
             # ⑥ step11_verdict别名：trading_copilot读step11_verdict
             if not state.get('step11_verdict') and state.get('nodes_verdict'):
                 state['step11_verdict'] = state['nodes_verdict']
+
+            # ⑧ cvd_1h补注入
+            try:
+                if state.get('cvd_1h') is None:
+                    import pathlib as _pl
+                    _cf = _pl.Path(f'/root/.openclaw/workspace/trading-system/data/cvd_realtime_{sym_key.lower()}usdt.json')
+                    if _cf.exists():
+                        _cd = _j.loads(_cf.read_text())
+                        state['cvd_1h'] = float(_cd.get('cvd_1h') or _cd.get('value') or 0)
+            except Exception: pass
 
             # 原子写入
             state['ts'] = _t.time()
