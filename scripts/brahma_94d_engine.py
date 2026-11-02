@@ -588,18 +588,6 @@ def format_report(r):
     return '\n'.join(out)
 
 
-if __name__=='__main__':
-    syms=sys.argv[1:] or ['BTC','ETH']
-    for sym in syms:
-        try:
-            r=analyze(sym.upper())
-            print(format_report(r))
-            _emit_to_event_bus(sym.upper(), r)
-            print()
-        except Exception as e:
-            import traceback; traceback.print_exc()
-
-
 def _emit_to_event_bus(sym: str, result: dict):
     """[Super-agent Worker 2026-11-01 苏摩111] 94d分析完成后emit到EventBus"""
     try:
@@ -621,3 +609,15 @@ def _emit_to_event_bus(sym: str, result: dict):
              dedup_key=f'analysis_{sym}_{int(_t.time()//3600)}', dedup_ttl=3600)
     except Exception:
         pass
+
+if __name__=='__main__':
+    syms=sys.argv[1:] or ['BTC','ETH']
+    for sym in syms:
+        try:
+            r=analyze(sym.upper())
+            print(format_report(r))
+            _emit_to_event_bus(sym.upper(), r)
+            print()
+        except Exception as e:
+            import traceback; traceback.print_exc()
+
