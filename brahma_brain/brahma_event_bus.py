@@ -58,10 +58,15 @@ EVENT_TYPES = {
     'DISCOUNT_ZONE_ENTER':('P1', '进入折扣做多区'),
     # P0 — 闪崩
     'FLASH_CRASH':        ('P0', '闪崩检测'),
+    'WHALE_ALERT':        ('P0', '大户5min急降>3pt'),
+    'FUNDING_SPIKE':      ('P0', 'FR极端突变>0.1%'),
     # P2 — 跨资产
     'CROSS_ASSET_DIVERGE':('P2', '跨标的强弱分化'),
     'HURST_REGIME_CHANGE':('P2', 'Hurst体制变化'),
+    'BB_SQUEEZE':         ('P2', '布林带极度收窄<0.35%'),
     'COUNCIL_CONSENSUS':  ('P1', 'AI三院制共识'),
+    'GEX_FLIP':           ('P1', 'GEX零翻转穿越'),
+    'CORRELATION_BREAK':  ('P1', 'BTC/ETH相关性裂口>1.5%'),
     # P3 — 审计
     'ANALYSIS_DONE':    ('P3', '分析完成'),
     'CRON_RUN':         ('P3', 'Cron执行'),
