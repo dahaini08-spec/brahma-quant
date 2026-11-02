@@ -51,6 +51,17 @@ EVENT_TYPES = {
     'FR_EXTREME':       ('P2', '资金费极端'),
     'HURST_CHANGE':     ('P2', 'Hurst体制变化'),
     'POSITION_UPDATE':  ('P2', '持仓更新'),
+    # P1 — SMC结构层（Phase2新增）
+    'BOS_CONFIRMED':      ('P1', 'BOS结构突破确认'),
+    'FVG_TOUCHED':        ('P1', 'FVG磁铁触达'),
+    'PREMIUM_ZONE_ENTER': ('P1', '进入溢价做空区'),
+    'DISCOUNT_ZONE_ENTER':('P1', '进入折扣做多区'),
+    # P0 — 闪崩
+    'FLASH_CRASH':        ('P0', '闪崩检测'),
+    # P2 — 跨资产
+    'CROSS_ASSET_DIVERGE':('P2', '跨标的强弱分化'),
+    'HURST_REGIME_CHANGE':('P2', 'Hurst体制变化'),
+    'COUNCIL_CONSENSUS':  ('P1', 'AI三院制共识'),
     # P3 — 审计
     'ANALYSIS_DONE':    ('P3', '分析完成'),
     'CRON_RUN':         ('P3', 'Cron执行'),

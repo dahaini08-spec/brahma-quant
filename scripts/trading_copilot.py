@@ -1154,6 +1154,107 @@ def m9_event_emit(state: dict):
         state['ETH_price_1h'] = get_price('ETH')
         state['_price_1h_ts'] = time.time()
 
+    # ━━━ Phase2 SMC结构层 + 闪崩检测 ━━━
+    # [封印 2026-11-02 苏摩111] BOS_CONFIRMED/FVG_TOUCHED/PREMIUM_ZONE_ENTER/FLASH_CRASH
+
+    for sym in ['BTC', 'ETH']:
+        try:
+            p = get_price(sym)
+            if p == 0: continue
+
+            # ⑥ FVG_TOUCHED — 读state._fvg_map，零API成本
+            try:
+                import ast as _ast9
+                _st9 = json.loads((WORKDIR / f'data/brahma_state_{sym.lower()}.json').read_text())
+                _fvg_raw = (_st9.get('confluence',{}) or {}).get('breakdown',{}).get('_fvg_map',{})
+                if isinstance(_fvg_raw, str):
+                    try: _fvg_raw = _ast9.literal_eval(_fvg_raw)
+                    except: _fvg_raw = {}
+                for _tf, _fvgs in (_fvg_raw.items() if isinstance(_fvg_raw,dict) else []):
+                    for _f in (_fvgs if isinstance(_fvgs,list) else []):
+                        _dist = abs(float(_f.get('dist_pct',99)))
+                        _age  = int(_f.get('age', 999))
+                        if _dist <= 0.15 and _age < 50 and not _f.get('filled'):
+                            _emit('FVG_TOUCHED', sym=f'{sym}USDT', priority='P1',
+                                  data={'tf':_tf,'type':_f['type'],
+                                        'lo':_f['lo'],'hi':_f['hi'],'mid':_f['mid'],
+                                        'dist_pct':_dist,'age':_age},
+                                  dedup_key=f'fvg_touched_{sym}_{_tf}_{int(_f["lo"])}',
+                                  dedup_ttl=1800)
+                            print(f'[M9-P2] FVG_TOUCHED {sym} {_tf} {_f["type"]} mid={_f["mid"]:.1f} dist={_dist:.3f}%')
+            except Exception: pass
+
+            # ⑦ PREMIUM_ZONE_ENTER — 区间Zone切换检测
+            try:
+                import sys as _sp2; _bp2 = str(WORKDIR/'brahma_brain')
+                if _bp2 not in _sp2.path: _sp2.path.insert(0,_bp2)
+                from smc_engine import calc_premium_discount as _cpd
+                _lm2 = json.loads((WORKDIR/f'data/liq_heatmap_{sym.lower()}usdt.json').read_text())
+                _rh2 = float(_lm2.get('nearest_short_liq', p*1.02) or p*1.02)
+                _rl2 = float(_lm2.get('nearest_long_liq',  p*0.98) or p*0.98)
+                _pd2 = _cpd(_rh2, _rl2, p)
+                _zone_now = _pd2.get('zone','')
+                _zone_old = state.get(f'{sym}_pd_zone','')
+                if _zone_old and _zone_now != _zone_old:
+                    _is_premium  = 'PREMIUM' in _zone_now
+                    _is_discount = 'DISCOUNT' in _zone_now
+                    if _is_premium or _is_discount:
+                        _etype = 'PREMIUM_ZONE_ENTER' if _is_premium else 'DISCOUNT_ZONE_ENTER'
+                        _emit(_etype, sym=f'{sym}USDT', priority='P1',
+                              data={'zone':_zone_now,'prev':_zone_old,'price':p,
+                                    'pos':round(_pd2.get('position',0.5)*100,1)},
+                              dedup_key=f'zone_{sym}_{_zone_now}', dedup_ttl=7200)
+                        print(f'[M9-P2] {_etype} {sym} {_zone_old}→{_zone_now} pos={round(_pd2.get("position",0.5)*100,1)}%')
+                state[f'{sym}_pd_zone'] = _zone_now
+            except Exception: pass
+
+            # ⑧ BOS_CONFIRMED — 实时K线BOS检测，方向与fc一致才emit
+            try:
+                _k1h = fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}USDT&interval=1h&limit=25')
+                _h1h = [float(x[2]) for x in _k1h]
+                _l1h = [float(x[3]) for x in _k1h]
+                _c1h = [float(x[4]) for x in _k1h]
+                import sys as _sp3; _bp3 = str(WORKDIR/'brahma_brain')
+                if _bp3 not in _sp3.path: _sp3.path.insert(0,_bp3)
+                from smc_engine import detect_bos_choch as _dbos
+                _bos = _dbos(_h1h, _l1h, _c1h)
+                _bos_list = _bos.get('bos_list',[]) or []
+                if _bos_list:
+                    _last_bos = _bos_list[-1]
+                    _bos_dir  = _last_bos.get('type','')  # BOS_BULL / BOS_BEAR
+                    _bos_px   = float(_last_bos.get('price', 0))
+                    # 只推与fc方向一致的BOS
+                    _st9b = json.loads((WORKDIR/f'data/brahma_state_{sym.lower()}.json').read_text())
+                    _fc   = _st9b.get('fc_signal','')
+                    _fc_ok = (_bos_dir=='BOS_BULL' and _fc=='LONG') or                              (_bos_dir=='BOS_BEAR'  and _fc=='SHORT')
+                    _bos_key = f'bos_{sym}_{_bos_dir}_{int(_bos_px)}'
+                    if _fc_ok and _bos_key != state.get(f'{sym}_last_bos_key',''):
+                        _emit('BOS_CONFIRMED', sym=f'{sym}USDT', priority='P1',
+                              data={'type':_bos_dir,'price':_bos_px,'fc':_fc,'tf':'1H'},
+                              dedup_key=_bos_key, dedup_ttl=7200)
+                        print(f'[M9-P2] BOS_CONFIRMED {sym} {_bos_dir}@${_bos_px:.1f} fc={_fc}')
+                        state[f'{sym}_last_bos_key'] = _bos_key
+            except Exception: pass
+
+            # ⑨ FLASH_CRASH — 1min K线闪崩检测
+            try:
+                _k1m = fetch(f'https://fapi.binance.com/fapi/v1/klines?symbol={sym}USDT&interval=1m&limit=3')
+                _o1m = float(_k1m[-2][1]); _c1m = float(_k1m[-2][4]); _v1m = float(_k1m[-2][5])
+                _v_avg = sum(float(x[5]) for x in _k1m) / len(_k1m)
+                _chg1m = (_c1m - _o1m) / _o1m * 100
+                _vol_mult = _v1m / _v_avg if _v_avg > 0 else 1
+                _threshold = -2.0 if sym == 'ETH' else -1.5
+                if _chg1m <= _threshold and _vol_mult >= 3.0:
+                    _emit('FLASH_CRASH', sym=f'{sym}USDT', priority='P0',
+                          data={'chg_1m': round(_chg1m,3), 'vol_mult': round(_vol_mult,1),
+                                'price': p},
+                          dedup_key=f'flash_{sym}', dedup_ttl=300)
+                    print(f'[M9-P2] FLASH_CRASH {sym} {_chg1m:.2f}% vol={_vol_mult:.1f}x')
+            except Exception: pass
+
+        except Exception as _e_p2:
+            print(f'[M9-P2 {sym} ERR] {_e_p2}')
+
 if __name__ == '__main__':
     main()
 
