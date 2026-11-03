@@ -255,7 +255,24 @@ def _build_lanhui(info: dict, original: str) -> str:
     elif conclusion:
         parts += ['', conclusion.replace('今天正确的交易，昨天就该准备好了',
                                           '提前布好局，等市场来找你。')]
-    
+
+    # [2026-11-03 苏摩111] 字数保障段：LLM失败时模板兜底确保≥280字
+    # 从原帖提取1-2句有价值的内容扩充
+    _extra_lines = [l.strip() for l in original.split('\n')
+                    if len(l.strip())>15 and not l.strip().startswith('#')
+                    and not l.strip().startswith('🌿') and not l.strip().startswith('关注')]
+    if _extra_lines:
+        _pick = _extra_lines[len(_extra_lines)//2]  # 取中间段
+        parts += ['', _pick[:120]]  # 截取120字以内
+
+    _filler = random.choice([
+        f'高频交易的核心不是预测，是管理风险。一笔止损出来的单，不是失败——是保留继续参与的资格。',
+        f'市场给机会的方式很简单：等你追进去之后才走。所以我选择等端点触发，不在中间猜。',
+        f'做了5年，见过太多「感觉要涨」然后被套的。现在只信数据，不信感觉。',
+        f'散户亏钱80%不是因为方向错了，是因为在错误的位置入场，然后扛单。位置比方向更重要。',
+    ])
+    parts += ['', _filler]
+
     # 结尾
     parts += ['', random.choice([
         f'关注我，每天{coin_str}实盘计划，不放空炮。',
