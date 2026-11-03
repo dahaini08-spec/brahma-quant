@@ -144,6 +144,126 @@ def _ob(kl, px, lookback=30):
     return (sorted(bull_obs,key=lambda x:abs(px-x['lo']))[:1],
             sorted(bear_obs,key=lambda x:abs(px-x['hi']))[:1])
 
+
+def _eql_eqh(kl, px, lookback=30, tol=0.003):
+    """EQL/EQH等高低点扫单检测（SMC Engine深度融合）
+    返回：{'eqh_swept':bool,'eqh_level':float,'eql_swept':bool,'eql_level':float}
+    """
+    if not kl or len(kl) < 6:
+        return {'eqh_swept': False, 'eqh_level': 0, 'eql_swept': False, 'eql_level': 0}
+    seg = kl[-min(lookback, len(kl)):]
+    highs = [float(k[2]) for k in seg]
+    lows  = [float(k[3]) for k in seg]
+    # 等高点（EQH）：上方两个相近高点 = 空头止损聚集
+    eqh_level = 0.0
+    for i in range(len(highs)-1):
+        for j in range(i+2, len(highs)):
+            if highs[j] == 0: continue
+            if abs(highs[i]-highs[j])/highs[j] < tol:
+                lvl = (highs[i]+highs[j])/2
+                if lvl > px and lvl > eqh_level:
+                    eqh_level = round(lvl, 2)
+    # EQH已被扫：当前价格穿越等高点 = 空头止损已被触发
+    eqh_swept = eqh_level > 0 and px >= eqh_level * (1 - tol)
+
+    # 等低点（EQL）：下方两个相近低点 = 多头止损聚集
+    eql_level = 0.0
+    for i in range(len(lows)-1):
+        for j in range(i+2, len(lows)):
+            if lows[j] == 0: continue
+            if abs(lows[i]-lows[j])/lows[j] < tol:
+                lvl = (lows[i]+lows[j])/2
+                if lvl < px and (eql_level == 0 or lvl > eql_level):
+                    eql_level = round(lvl, 2)
+    # EQL已被扫：当前价格穿越等低点 = 多头止损已被触发
+    eql_swept = eql_level > 0 and px <= eql_level * (1 + tol)
+
+    return {
+        'eqh_swept': eqh_swept, 'eqh_level': eqh_level,
+        'eql_swept': eql_swept, 'eql_level': eql_level,
+    }
+
+
+def _ob_tested(ob_list, kl, direction='bear'):
+    """OB测试状态检测：是否被价格测试过但未失效（SMC Engine深度融合）
+    测试过但未失效的OB = 更强的支撑/阻力（主力在此吸筹/出货）
+    返回 bool
+    """
+    if not ob_list or not kl:
+        return False
+    closes = [float(k[4]) for k in kl]
+    for ob in ob_list:
+        lo, hi = ob.get('lo', 0), ob.get('hi', 0)
+        if not lo or not hi: continue
+        # 检查K线是否曾进入OB区间但未穿越
+        tested = False
+        broken = False
+        for c in closes[:-1]:  # 历史收盘（不含当前）
+            if lo <= c <= hi:
+                tested = True
+            if direction == 'bear' and c < lo * 0.998:
+                broken = True
+                break
+            if direction == 'bull' and c > hi * 1.002:
+                broken = True
+                break
+        if tested and not broken:
+            return True
+    return False
+
+
+def _choch_early(kl, direction='LONG'):
+    """CHoCH早期反转检测：单根K线级别的结构转变（SMC Engine深度融合）
+    比HH/HL/LH/LL判断更早捕捉反转
+    direction='LONG'检测多转空的BEAR_CHoCH
+    direction='SHORT'检测空转多的BULL_CHoCH
+    """
+    if not kl or len(kl) < 6:
+        return {'choch': False, 'choch_type': '', 'choch_level': 0}
+    highs  = [float(k[2]) for k in kl]
+    lows   = [float(k[3]) for k in kl]
+    closes = [float(k[4]) for k in kl]
+    px = closes[-1]
+
+    # 找最近的结构点（简化pivot，lookback=5）
+    def find_pivots(vals, n=5):
+        pivots = []
+        for i in range(n, len(vals)-1):
+            if direction == 'LONG':  # 找HL(更高低点)
+                if vals[i] > vals[i-1] and vals[i] > vals[i+1]:
+                    pivots.append((i, vals[i]))
+            else:  # 找LH(更低高点)
+                if vals[i] < vals[i-1] and vals[i] < vals[i+1]:
+                    pivots.append((i, vals[i]))
+        return pivots
+
+    choch = False; choch_type = ''; choch_level = 0
+
+    if direction == 'LONG':
+        # BEAR_CHoCH：多头结构中跌破前HL = 转空早期信号
+        hl_pivots = [(i, v) for i, v in enumerate(lows[-20:]) 
+                     if i > 0 and lows[-20:][i] > lows[-20:][i-1]]
+        if len(hl_pivots) >= 2:
+            prev_hl = hl_pivots[-2][1]
+            last_hl = hl_pivots[-1][1]
+            if last_hl > prev_hl and px < last_hl:
+                choch = True
+                choch_type = 'BEAR_CHoCH⚡'
+                choch_level = round(last_hl, 2)
+    else:
+        # BULL_CHoCH：空头结构中突破前LH = 转多早期信号
+        lh_pivots = [(i, v) for i, v in enumerate(highs[-20:])
+                     if i > 0 and highs[-20:][i] < highs[-20:][i-1]]
+        if len(lh_pivots) >= 2:
+            prev_lh = lh_pivots[-2][1]
+            last_lh = lh_pivots[-1][1]
+            if last_lh < prev_lh and px > last_lh:
+                choch = True
+                choch_type = 'BULL_CHoCH⚡'
+                choch_level = round(last_lh, 2)
+
+    return {'choch': choch, 'choch_type': choch_type, 'choch_level': choch_level}
+
 def _oi_chg(ov):
     if not ov: return 0.0
     v=[float(o['sumOpenInterest']) for o in ov]
@@ -247,7 +367,7 @@ def analyze(sym):
     struct_bull=sum(['↑' in x for x in [st1h_s,st4h_s,st1d_s,st1w_s]])
     struct_bear=sum(['↓' in x for x in [st1h_s,st4h_s,st1d_s,st1w_s]])
 
-    # Step7: FVG + OB
+    # Step7: FVG + OB（含SMC Engine深度融合：EQL/EQH + OB测试状态 + CHoCH早期检测）
     fb1h,fbe1h=_fvg(k1h,px) if k1h else (None,None)
     fb4h,fbe4h=_fvg(k4h,px) if k4h else (None,None)
     fb1d,fbe1d=_fvg(k1d,px) if k1d else (None,None)
@@ -255,6 +375,42 @@ def analyze(sym):
     ob_b4h,ob_s4h=_ob(k4h,px) if k4h else ([],[])
     fvg_bull=sum([fb1h is not None,fb4h is not None,fb1d is not None])
     fvg_bear=sum([fbe1h is not None,fbe4h is not None,fbe1d is not None])
+    # [SMC Engine融合 2026-11-03 苏摩111] EQL/EQH扫单 + OB测试状态 + CHoCH早期反转
+    _eqlh_1h = _eql_eqh(k1h, px) if k1h else {}
+    _eqlh_4h = _eql_eqh(k4h, px) if k4h else {}
+    _ob_tested_bull = _ob_tested(ob_b1h + ob_b4h, k1h or k4h or [], 'bull')
+    _ob_tested_bear = _ob_tested(ob_s1h + ob_s4h, k1h or k4h or [], 'bear')
+    # signal_dir在Step10才定义，此处从结构推断方向
+    _inferred_dir = 'SHORT' if (fvg_bear > fvg_bull) else ('LONG' if fvg_bull > fvg_bear else 'WAIT')
+    _choch_1h = _choch_early(k1h, _inferred_dir) if k1h and _inferred_dir != 'WAIT' else {}
+    _choch_4h = _choch_early(k4h, _inferred_dir) if k4h and _inferred_dir != 'WAIT' else {}
+    # EQL/EQH扫单得分（SMC逻辑：已被扫=方向确认+1~2分）
+    _eql_score = 0
+    _eql_note  = []
+    if _inferred_dir == 'SHORT':
+        if _eqlh_1h.get('eqh_swept') and _eqlh_1h.get('eqh_level', 0) > 0:
+            _eql_score += 2; _eql_note.append(f'1H EQH${_eqlh_1h["eqh_level"]:,.0f}已扫+2')
+        if _eqlh_4h.get('eqh_swept') and _eqlh_4h.get('eqh_level', 0) > 0:
+            _eql_score += 1; _eql_note.append(f'4H EQH${_eqlh_4h["eqh_level"]:,.0f}已扫+1')
+        if _eqlh_1h.get('eql_level', 0) > 0 and not _eqlh_1h.get('eql_swept'):
+            _eql_score -= 1; _eql_note.append(f'1H EQL${_eqlh_1h["eql_level"]:,.0f}未扫-1')
+    else:
+        if _eqlh_1h.get('eql_swept') and _eqlh_1h.get('eql_level', 0) > 0:
+            _eql_score += 2; _eql_note.append(f'1H EQL${_eqlh_1h["eql_level"]:,.0f}已扫+2')
+        if _eqlh_4h.get('eql_swept') and _eqlh_4h.get('eql_level', 0) > 0:
+            _eql_score += 1; _eql_note.append(f'4H EQL${_eqlh_4h["eql_level"]:,.0f}已扫+1')
+    # OB测试状态加权（测试过但未失效=主力在此=+1.5分）
+    _ob_test_score = 0; _ob_test_note = []
+    if _inferred_dir == 'SHORT' and _ob_tested_bear:
+        _ob_test_score += 1; _ob_test_note.append('Bear OB已被测试未失效×1.3')
+    elif _inferred_dir == 'LONG' and _ob_tested_bull:
+        _ob_test_score += 1; _ob_test_note.append('Bull OB已被测试未失效×1.3')
+    # CHoCH早期信号（早于BOS一根K线的反转确认，+2分）
+    _choch_score = 0; _choch_note = []
+    if _choch_1h.get('choch'):
+        _choch_score += 2; _choch_note.append(f'1H {_choch_1h["choch_type"]}@${_choch_1h["choch_level"]:,.0f}')
+    if _choch_4h.get('choch') and not _choch_1h.get('choch'):
+        _choch_score += 1; _choch_note.append(f'4H {_choch_4h["choch_type"]}@${_choch_4h["choch_level"]:,.0f}')
 
     # Step8: OI
     oi15c=_oi_chg(R['oi15']); oi1hc=_oi_chg(R['oi1h']); oi4hc=_oi_chg(R['oi4h'])
@@ -420,7 +576,12 @@ def analyze(sym):
                   'bull':struct_bull,'bear':struct_bear},
             's7':{'fvg':{'bull_1h':fb1h,'bear_1h':fbe1h,'bull_4h':fb4h,'bear_4h':fbe4h,'bull_1d':fb1d,'bear_1d':fbe1d},
                   'ob':{'bull_1h':ob_b1h[:1],'bear_1h':ob_s1h[:1],'bull_4h':ob_b4h[:1],'bear_4h':ob_s4h[:1]},
-                  'bull':fvg_bull,'bear':fvg_bear},
+                  'bull':fvg_bull,'bear':fvg_bear,
+                  'eql_1h':_eqlh_1h,'eql_4h':_eqlh_4h,
+                  'ob_tested_bull':_ob_tested_bull,'ob_tested_bear':_ob_tested_bear,
+                  'choch_1h':_choch_1h,'choch_4h':_choch_4h,
+                  'eql_score':_eql_score,'ob_test_score':_ob_test_score,
+                  'choch_score':_choch_score,'choch_note':_choch_note},
             's8':{'15m':oi15c,'1h':oi1hc,'4h':oi4hc,'seq':oi_seq,
                   'sig':oi_sig,'note':oi_note,'bull':oi_bull,'bear':oi_bear},
             's9':{'retail':round(lp,1),'big':bl,'pos':bp,'bl_chg':bl_chg,'bp_chg':bp_chg,
@@ -522,6 +683,22 @@ def format_report(r):
     ob=s7['ob']
     out.append('  1H Bull OB: %s  1H Bear OB: %s'%(ob_s(ob['bull_1h']),ob_s(ob['bear_1h'])))
     out.append('  4H Bull OB: %s  4H Bear OB: %s'%(ob_s(ob['bull_4h']),ob_s(ob['bear_4h'])))
+    # [SMC Engine融合输出] EQL/EQH + OB测试 + CHoCH
+    # eql_score是int，choch_note是list
+    _eql_s = s7.get('eql_score', 0)
+    _s7_eql_note = ','.join(s7.get('choch_note', []) + ([f'EQL+{_eql_s}'] if _eql_s else []))
+    _s7_choch    = s7.get('choch_1h',{})
+    _s7_eql1h    = s7.get('eql_1h',{})
+    if _s7_choch.get('choch'):
+        out.append('  CHoCH: %s@$%s ⚡'%(_s7_choch['choch_type'],'{:,.0f}'.format(_s7_choch['choch_level'])))
+    if _s7_eql1h.get('eqh_level',0)>0:
+        swept='✅已扫' if _s7_eql1h.get('eqh_swept') else '⏳未扫'
+        out.append('  EQH(做空止损池): $%s %s'%('{:,.0f}'.format(_s7_eql1h['eqh_level']),swept))
+    if _s7_eql1h.get('eql_level',0)>0:
+        swept='✅已扫' if _s7_eql1h.get('eql_swept') else '⏳未扫'
+        out.append('  EQL(做多止损池): $%s %s'%('{:,.0f}'.format(_s7_eql1h['eql_level']),swept))
+    if s7.get('ob_tested_bear') or s7.get('ob_tested_bull'):
+        out.append('  OB已被测试未失效: %s ✅主力吸筹/出货位'%('Bear OB' if s7.get('ob_tested_bear') else 'Bull OB'))
     out.append('')
     out.append('▌ Step8: OI资金流+FR  (多头维度%d/3  空头维度%d/3)'%(s8['bull'],s8['bear']))
     out.append('  OI序列(千张/1H): %s'%s8['seq'])
