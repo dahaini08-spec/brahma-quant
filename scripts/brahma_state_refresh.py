@@ -1019,10 +1019,19 @@ def _inject_realtime_fields_to_state():
                     _oi_first = float(_oi_hist[0]['sumOpenInterest'])
                     _oi_last  = float(_oi_hist[-1]['sumOpenInterest'])
                     _oi_chg   = (_oi_last - _oi_first) / _oi_first * 100 if _oi_first else 0
-                    if _oi_chg > 0.5:
-                        state['oi_signal'] = 'LONG_BUILD'
-                    elif _oi_chg < -0.5:
-                        state['oi_signal'] = 'LONG_UNWIND'
+                    # [P1修复 2026-11-04 苏摩111] OI方向需联合price_chg判断
+                    # OI减+价涨=SHORT_SQUEEZE(空头回补) ≠ LONG_UNWIND(多头平仓)
+                    _px_now  = float(state.get('price', 0) or 0)
+                    _px_prev = float((_oi_hist[0].get('price', 0)) or _px_now)
+                    _px_chg  = (_px_now - _px_prev) / _px_prev * 100 if _px_prev else 0
+                    if _oi_chg > 0.5 and _px_chg >= 0:
+                        state['oi_signal'] = 'LONG_BUILD'      # OI增+价涨=多头主动建仓
+                    elif _oi_chg > 0.5 and _px_chg < 0:
+                        state['oi_signal'] = 'BEAR_BUILD'      # OI增+价跌=空头主动建仓⚠️
+                    elif _oi_chg < -0.5 and _px_chg > 0:
+                        state['oi_signal'] = 'SHORT_SQUEEZE'   # OI减+价涨=空头被迫平仓🔥
+                    elif _oi_chg < -0.5 and _px_chg <= 0:
+                        state['oi_signal'] = 'LONG_UNWIND'     # OI减+价跌=多头止损出局
                     else:
                         state['oi_signal'] = 'NEUTRAL'
                     state['oi_trend'] = state['oi_signal']
