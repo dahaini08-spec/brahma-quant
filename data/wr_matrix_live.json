@@ -1,0 +1,24 @@
+{
+  "updated_at": "2026-11-04T01:20:34.305363+00:00",
+  "total_settled": 110,
+  "matrix": {
+    "CHOP_MID:SHORT": {
+      "total": 27,
+      "win": 11,
+      "loss": 0,
+      "expired": 16,
+      "wr": 0.4074,
+      "ev_avg": 1.4363,
+      "avg_score": 0.0
+    },
+    "CHOP_MID:LONG": {
+      "total": 83,
+      "win": 15,
+      "loss": 40,
+      "expired": 28,
+      "wr": 0.1807,
+      "ev_avg": -0.6259,
+      "avg_score": 0.0
+    }
+  }
+}

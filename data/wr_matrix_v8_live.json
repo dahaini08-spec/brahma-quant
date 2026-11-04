@@ -1,0 +1,182 @@
+{
+  "ETH": {
+    "CHOP_MID": {
+      "SHORT": {
+        "ALL": {
+          "n": 28,
+          "win": 12,
+          "loss": 0,
+          "expired": 16,
+          "wr": 42.86,
+          "ev": 1.6192,
+          "avg_score": 33.6,
+          "source": "live_signal_log"
+        }
+      },
+      "LONG": {
+        "ALL": {
+          "n": 66,
+          "win": 24,
+          "loss": 28,
+          "expired": 14,
+          "wr": 36.36,
+          "ev": -0.0038,
+          "avg_score": 31.4,
+          "source": "live_signal_log"
+        }
+      }
+    },
+    "BULL_TREND": {
+      "LONG": {
+        "ALL": {
+          "n": 3572,
+          "win": 1974,
+          "loss": 1598,
+          "expired": 0,
+          "wr": 55.2,
+          "ev": 0.22,
+          "avg_score": 128.0,
+          "source": "backtest_3572",
+          "note": "MEMORY.md封印6.5年回测"
+        }
+      }
+    },
+    "BEAR_TREND": {
+      "SHORT": {
+        "ALL": {
+          "n": 1800,
+          "win": 1080,
+          "loss": 720,
+          "expired": 0,
+          "wr": 60.0,
+          "ev": 0.28,
+          "avg_score": 124.0,
+          "source": "backtest_est"
+        }
+      }
+    }
+  },
+  "BTC": {
+    "CHOP_MID": {
+      "LONG": {
+        "ALL": {
+          "n": 100,
+          "win": 6,
+          "loss": 52,
+          "expired": 42,
+          "wr": 6.0,
+          "ev": -1.0365,
+          "avg_score": 32.7,
+          "source": "live_signal_log"
+        }
+      },
+      "SHORT": {
+        "ALL": {
+          "n": 26,
+          "win": 10,
+          "loss": 0,
+          "expired": 16,
+          "wr": 38.46,
+          "ev": 1.2394,
+          "avg_score": 36.9,
+          "source": "live_signal_log"
+        }
+      }
+    },
+    "BULL_TREND": {
+      "LONG": {
+        "ALL": {
+          "n": 3655,
+          "win": 2072,
+          "loss": 1583,
+          "expired": 0,
+          "wr": 56.7,
+          "ev": 0.25,
+          "avg_score": 130.0,
+          "source": "backtest_3655",
+          "note": "MEMORY.md封印6.5年回测"
+        }
+      },
+      "SHORT": {
+        "ALL": {
+          "n": 200,
+          "win": 100,
+          "loss": 100,
+          "expired": 0,
+          "wr": 50.0,
+          "ev": 0.0,
+          "avg_score": 120.0,
+          "source": "backtest_est"
+        }
+      }
+    },
+    "BEAR_TREND": {
+      "SHORT": {
+        "ALL": {
+          "n": 2000,
+          "win": 1200,
+          "loss": 800,
+          "expired": 0,
+          "wr": 60.0,
+          "ev": 0.3,
+          "avg_score": 125.0,
+          "source": "backtest_est"
+        }
+      },
+      "LONG": {
+        "ALL": {
+          "n": 200,
+          "win": 80,
+          "loss": 120,
+          "expired": 0,
+          "wr": 40.0,
+          "ev": -0.1,
+          "avg_score": 110.0,
+          "source": "backtest_est"
+        }
+      }
+    },
+    "BULL_EARLY": {
+      "LONG": {
+        "ALL": {
+          "n": 500,
+          "win": 275,
+          "loss": 225,
+          "expired": 0,
+          "wr": 55.0,
+          "ev": 0.15,
+          "avg_score": 120.0,
+          "source": "backtest_est"
+        }
+      }
+    },
+    "BEAR_EARLY": {
+      "SHORT": {
+        "ALL": {
+          "n": 600,
+          "win": 330,
+          "loss": 270,
+          "expired": 0,
+          "wr": 55.0,
+          "ev": 0.2,
+          "avg_score": 122.0,
+          "source": "backtest_est"
+        }
+      }
+    },
+    "BEAR_RECOVERY": {
+      "LONG": {
+        "ALL": {
+          "n": 300,
+          "win": 180,
+          "loss": 120,
+          "expired": 0,
+          "wr": 60.0,
+          "ev": 0.35,
+          "avg_score": 118.0,
+          "source": "backtest_est"
+        }
+      }
+    }
+  }
+}
